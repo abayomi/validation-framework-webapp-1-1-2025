@@ -6,7 +6,8 @@ export const formHomeSlice =  createSlice({
         name: 'Test',
         email: 'test@email.com',
         fieldsData: '',
-        rulesData: ''
+        rulesData: '',
+        objectMetaData: ''
     },
     reducers: {
         nameChange: (state, action) => {
@@ -21,14 +22,18 @@ export const formHomeSlice =  createSlice({
         rulesDataChange: (state, action) => {
             state.rulesData = action.payload.rules;
         },
+        objectMetaDataChange: (state, action) => {
+            state.objectMetaData = action.payload.objectMetaData;
+        },
     }
 })
 
-export const { nameChange, emailChange, fieldsDataChange, rulesDataChange } = formHomeSlice.actions
+export const { nameChange, emailChange, fieldsDataChange, rulesDataChange, objectMetaDataChange } = formHomeSlice.actions
 
 export const selectName = state => state.user.name;
 export const selectEmail = state => state.user.email;
 export const fieldsData = state => state.user.fieldsData;
 export const rulesData = state => state.user.rulesData;
+export const objectMetaData = state => state.user.objectMetaData;
 
 export default formHomeSlice.reducer

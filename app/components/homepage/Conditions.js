@@ -14,7 +14,7 @@ const Conditions = () => {
                 {data.map(item => (
                     <div>
                         <br />
-                        <li>Name: <b>{item.id}</b></li>
+                        <li>Id: <b>{item.id}</b></li>
                         <li>Type: <b>{item.type}</b></li>
                         <li>Value: <b>{item.value}</b></li>
                         <li>Short Description: <b>{item.shortDescription}</b></li>
@@ -29,7 +29,6 @@ const Conditions = () => {
     return (
         <div>
             {transformData(conditions)}
-            {/* <p><pre>{JSON.stringify(conditions, null, 2)}</pre></p> */}
         </div>
     )
 }

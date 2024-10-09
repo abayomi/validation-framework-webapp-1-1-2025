@@ -3,6 +3,7 @@ import withAuth from "../withAuth";
 import { useSelector, useDispatch } from 'react-redux'
 import DataTable from 'react-data-table-component';
 import Conditions from "./Conditions";
+import Button from 'react-bootstrap/Button';
 
 const RulesObject = () => {
     const dispatch = useDispatch()
@@ -12,7 +13,7 @@ const RulesObject = () => {
     const transformData = (data) => {
         return (
             <div>
-            <h1 className="title is-1">Rules</h1>
+            <h2 className="title is-1">Rules</h2>
             <DataTable columns={columns} data={data} expandableRows
               expandableRowsComponent={Conditions} expandableRowExpanded={row => true} 
               highlightOnHover
@@ -43,6 +44,12 @@ const RulesObject = () => {
           name: 'Error Message',
           selector: row => row.errorMessage,
           reorder: true,
+        },
+        {
+          name: 'Action',
+          cell: () => <Button variant="info" size="sm" >Edit</Button>,
+          sortable: false,
+          reorder: false
         }
     ];
 

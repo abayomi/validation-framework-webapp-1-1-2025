@@ -5,11 +5,13 @@ import Counter from "./components/counter/Counter";
 import Navbar from './components/navbar/Navbar';
 import Profile from "./components/profile/Profile";
 import Homepage from "./components/homepage/Homepage";
+import CreateMasterObject from "./components/createobject/createFieldMaster"
+import TabMenu from "./components/createobject/tabMenu";
+import ViewTabMenu from "./components/homepage/tabMenu";
 
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './store/store';
-import { BrowserRouter } from "react-router-dom";
 import './App.scss';
 
 export default function Home() {
@@ -24,10 +26,13 @@ export default function Home() {
           <Navbar />
           <div className="container mt-2" style={{ marginTop: 40 }}>
             <Routes>
-              <Route path="/" element={ <Homepage/> } />
+              <Route path="/" element={ <ViewTabMenu/> } />
               <Route path="about" element={ <About/> } />          
               <Route path="counter" element={ <Counter/> } />
-              <Route path="profile/:name" element={ <Profile/> }/>
+              <Route path="profile/:name" element={ <Profile/> }/>              
+              <Route path="createmasterobject" element={ <TabMenu/> } />        
+              <Route path="updatemasterobject/object" element={ <TabMenu/> } /> 
+              <Route path="updatemasterobject/field" element={ <TabMenu/> } />  
             </Routes>
           </div>
 

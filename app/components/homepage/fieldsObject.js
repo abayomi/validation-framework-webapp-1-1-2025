@@ -5,8 +5,10 @@ import { useSelector, useDispatch } from 'react-redux'
 import { rulesDataChange } from "./formHomeSlice";
 import DataTable from 'react-data-table-component';
 import RulesObject from "./RulesObject";
+import Button from 'react-bootstrap/Button';
 
-const FieldsObject = () => {
+const FieldsObject = ( props ) => {
+    const { source } = props
     const dispatch = useDispatch()
     const [isRulesShown, setRulesTable] = useState(false);
     const [rulesData, setRulesData] = useState([]);  
@@ -15,7 +17,7 @@ const FieldsObject = () => {
     const transformData = (data) => {
         return (
             <div>
-            <h1 className="title is-1">Fields</h1>
+            <h2 className="title is-1">Object Fields</h2>
             <DataTable columns={columns} data={data} onRowClicked={onRowClicked} 
               highlightOnHover
               pointerOnHover
@@ -26,8 +28,8 @@ const FieldsObject = () => {
 
     const columns = [
         {
-          name: 'Field Master Id',
-          selector: row => row.fieldMasterId,
+          name: 'Object Name',
+          selector: row => row.fieldName,
           sortable: true,
           reorder: true,
         },
@@ -38,23 +40,25 @@ const FieldsObject = () => {
           reorder: true,
         },
         {
-          name: 'Field Name',
-          selector: row => row.fieldName,
-          sortable: true,
-          reorder: true,
-        },
-        {
           name: 'Field Master Definition',
           selector: row => row.fieldMasterDefinition,
           sortable: true,
           reorder: true,
+        },
+        {
+          name: 'Action',
+          cell: () => <Button variant="info" size="sm" >Edit</Button>,
+          sortable: false,
+          reorder: false
         }
     ];
 
     const onRowClicked = (row, event) => { 
         dispatch(rulesDataChange(row))
-        setRulesTable(true);
-        setRulesData(row);
+        if(source !== 'objectMaster'){
+          setRulesTable(true);
+          setRulesData(row);
+        }
     };
 
     return (
@@ -65,4 +69,4 @@ const FieldsObject = () => {
     )
 }
 
-export default withAuth(FieldsObject);
+export default FieldsObject;
