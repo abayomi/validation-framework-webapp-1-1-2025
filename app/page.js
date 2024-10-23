@@ -8,17 +8,55 @@ import Homepage from "./components/homepage/Homepage";
 import CreateMasterObject from "./components/createobject/createFieldMaster"
 import TabMenu from "./components/createobject/tabMenu";
 import ViewTabMenu from "./components/homepage/tabMenu";
+import UpdateFieldMasterObject from "./components/updateobject/updateFieldMaster";
+import { useState, useEffect } from "react";
 
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './store/store';
 import './App.scss';
 
+import {
+  ApolloClient,
+  InMemoryCache,
+  ApolloProvider,
+  HttpLink,
+  from
+  } from "@apollo/client";
+import { onError } from "@apollo/client/link/error";
+
+const errorLink = onError(({ graphqlErrors, newworkError }) => {
+  if (graphqlErrors) {
+    graphqlErrors.map((message, location, path) => {
+      alert(`Graphql error ${message}`);
+    });
+  }
+});
+const link = from([
+  errorLink,
+  new HttpLink({
+    uri: 'https://4wx5b547dnen5gb5mce4tzfq3q.appsync-api.us-east-1.amazonaws.com/graphql?x-api-key=da2-67o2rwbpvjazhfprabeu7bshji',
+    headers: {
+      'x-api-key': 'da2-67o2rwbpvjazhfprabeu7bshji'
+    }
+  })
+]);
+
+const client = new ApolloClient({
+  cache: new InMemoryCache(),
+  link: link
+});
+
 export default function Home() {
+  const [isBrowser, setIsBrowser] = useState(false);
+  useEffect(() => {    
+    setIsBrowser(typeof window !== "undefined");
+  }, [isBrowser]);
   return (
     <main className={styles.main}>
       <div className={styles.description}>
-      <BrowserRouter>
+      <ApolloProvider client={client}>
+      {isBrowser? <BrowserRouter>
         <Provider store={store} >
           
 
@@ -32,22 +70,22 @@ export default function Home() {
               <Route path="profile/:name" element={ <Profile/> }/>              
               <Route path="createmasterobject" element={ <TabMenu/> } />        
               <Route path="updatemasterobject/object" element={ <TabMenu/> } /> 
-              <Route path="updatemasterobject/field" element={ <TabMenu/> } />  
+              <Route path="updatemasterobject/field/:id" element={ <UpdateFieldMasterObject/> } />  
             </Routes>
           </div>
 
-          <footer class="bg-white">
-            <div class="bg-light py-4">
-              <div class="container text-center">
-                <p class="text-muted mb-0 py-2">Validation Framework</p>
+          <footer className="bg-white">
+            <div className="bg-light py-4">
+              <div className="container text-center">
+                <p className="text-muted mb-0 py-2">Validation Framework</p>
               </div>
             </div>
           </footer>
         </div>
 
         </Provider>
-      </BrowserRouter>    
-
+      </BrowserRouter>: null}
+    </ApolloProvider>
       </div>
     </main>
   );

@@ -8,14 +8,17 @@ import Button from 'react-bootstrap/Button';
 const RulesObject = () => {
     const dispatch = useDispatch()
     const rulesData = useSelector(state => state.user.rulesData)
-    console.log(rulesData);
 
     const transformData = (data) => {
         return (
             <div>
             <h2 className="title is-1">Rules</h2>
-            <DataTable columns={columns} data={data} expandableRows
-              expandableRowsComponent={Conditions} expandableRowExpanded={row => true} 
+            <DataTable 
+              columns={columns} 
+              data={data} 
+              expandableRows
+              expandableRowsComponent={Conditions} 
+              expandableRowExpanded={row => true} 
               highlightOnHover
               pointerOnHover
               pagination 

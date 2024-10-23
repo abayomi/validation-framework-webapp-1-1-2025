@@ -5,7 +5,6 @@ import { useSelector, useDispatch } from 'react-redux'
 const Conditions = () => {
     const dispatch = useDispatch()
     const conditions = useSelector(state => state.user.rulesData[0].conditions)
-    console.log(conditions);
     
     const transformData = (data) => {
         return (

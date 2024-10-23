@@ -24,6 +24,7 @@ const ViewObjectMaster = () => {
 
   useEffect(() => {
     // fetchData.onAuthenticate2().then((res)=>{
+    //   console.log("====================================================================555=============================================");
     //   setTrending(res);
     // })
   }, []);

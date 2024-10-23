@@ -1,7 +1,6 @@
 import axios from 'axios';
 
 export const onAuthenticate = payload => {
-  // test
   const URL = 'https://jsonplaceholder.typicode.com/posts?_start=10&_limit=10';
   return axios(URL, {
     method: 'GET',

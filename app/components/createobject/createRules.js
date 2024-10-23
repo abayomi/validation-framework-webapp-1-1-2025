@@ -14,7 +14,7 @@ import CreateConditions from './createConditions'
 
 function CustomToggle({ children, eventKey, deleteOnClick }) {
   return (
-    <div class="w-100">        
+    <div className="w-100">        
         <span>Rule - {eventKey}</span>
         <Button className="float-end" variant="danger" size="sm" onClick={(e) => deleteOnClick(e, eventKey)} >
             Delete
@@ -24,21 +24,38 @@ function CustomToggle({ children, eventKey, deleteOnClick }) {
   );
 }
 
-const CreateRules = (props) => {
-    console.log(props);
-    const {id, eventKey, isUpdate, deleteOnClick} = props
-    const [date, setDate] = useState(new Date());    
-    const [dateTwo, setDateTwo] = useState(new Date());
+const CreateRules = ({ id, eventKey, isUpdate, deleteOnClick, onRuleChange, item }) => {
+   
+    const [rule, setRule] = useState({
+            ...item,
+            condition: item?.condition || []
+    });
 
 
-    const [conditionCounter, setConditionCounter] = useState(1);    
-    const [conditionItems, setConditionItems] = useState([{eventKey : 1}]);
+    const [conditionCounter, setConditionCounter] = useState(0);    
+    const [conditionItems, setConditionItems] = useState([]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        const updatedRule = { ...rule, [name]: value };
+        setRule(updatedRule);
+        onRuleChange(eventKey - 1, updatedRule);
+    };
+
+    const handleConditionChange = (index, updatedCondition) => {
+        const updatedConditions = [...rule.condition];
+        updatedConditions[index] = updatedCondition;
+      
+        const updatedRule = { ...rule, condition: updatedConditions };
+        setRule(updatedRule);
+      
+        onRuleChange(eventKey - 1, updatedRule);
+      };
 
     const onAddCondition = (event) => {
         let updatedConditionCounter = conditionCounter + 1
         setConditionCounter(updatedConditionCounter)
-        setConditionItems((prev) => [...prev, {eventKey : updatedConditionCounter}]);
-        console.log(conditionItems);
+        setConditionItems((prev) => [...prev, {}]);
     };
 
     const deleteRow = (index) => {
@@ -58,27 +75,31 @@ const CreateRules = (props) => {
                         {/* <h4 className="title is-1">Rules</h4> */}
                         <Form.Group as={Col} className="mb-3" controlId="ruleGroupNumber">
                             <Form.Label>Rule group Number</Form.Label>
-                            <Form.Control type="text" placeholder="" />
+                            <Form.Control type="text" name="ruleGroupNumber" placeholder="" onChange={handleChange}/>
                         </Form.Group>
 
                     
-                        <Form.Group as={Col} className="mb-3" controlId="validationCode">
+                        <Form.Group as={Col} className="mb-3" controlId="validationRuleCode">
                             <Form.Label>Validation code</Form.Label>
-                            <Form.Select aria-label="Validation code">
+                            <Form.Select aria-label="Validation code" name="validationRuleCode" onChange={handleChange}>
                                 <option></option>
                                 <option value="1">One</option>
                                 <option value="2">Two</option>
                                 <option value="3">Three</option>
+                                <option value="4">Four</option>
+                                <option value="5">Five</option>
                             </Form.Select>
                         </Form.Group>
 
                         <Form.Group as={Col} className="mb-3" controlId="validationErrorCode">
                             <Form.Label>Validation error code</Form.Label>
-                            <Form.Select aria-label="Validation error code">
+                            <Form.Select aria-label="Validation error code" name="validationErrorCode" onChange={handleChange}>
                                 <option></option>
                                 <option value="1">One</option>
                                 <option value="2">Two</option>
                                 <option value="3">Three</option>
+                                <option value="4">Four</option>
+                                <option value="5">Five</option>
                             </Form.Select>
                         </Form.Group>   
 
@@ -86,25 +107,10 @@ const CreateRules = (props) => {
                             <Form.Label>Error message</Form.Label>
                             <Form.Control type="text" placeholder="" disabled/>
                         </Form.Group>
-                        {isUpdate ? (
-                            <Form.Group as={Col} className="mb-3" controlId="errorMessage">
-                            <Form.Label>Start Date</Form.Label>
-                            <Form.Control
-                                type="date"
-                                name="datepic"
-                                placeholder="DateRange"
-                                value={date}
-                                onChange={(e) => setDate(e.target.value)}
-                                disabled
-                            />
-                            </Form.Group>
-                        ) : (
-                            ''
-                        )}
                         
                         <Form.Group as={Col} className="mb-3" controlId="errorMessage">
                             <Form.Label>Mandatory rule indicator</Form.Label>
-                            <center><Form.Check className="mb-3 col-3" type="checkbox" id="checkbox" label="" checked disabled={isUpdate} /></center>
+                            <center><Form.Check className="mb-3 col-3" type="checkbox" id="checkbox" name="mandatoryRuleInd" label="" onChange={handleChange}/></center>
                         </Form.Group>
                     </Row>
 
@@ -118,18 +124,17 @@ const CreateRules = (props) => {
                             <Form.Label>Type</Form.Label>
                         </Form.Group>
 
-                        <Form.Group as={Col} className="mb-3" controlId="condition">
+                        <Form.Group as={Col} className="mb-2" controlId="condition">
                             <Form.Label>Condition</Form.Label>
                         </Form.Group>
 
-                        <Form.Group as={Col} className="mb-3" controlId="startDate">
-                            <Form.Label>Start date</Form.Label>
+                        <Form.Group as={Col} className="mb-1" controlId="condition">
+                            <Form.Label></Form.Label>
                         </Form.Group>
-                        <Form.Group as={Col} className="mb-3"></Form.Group>
                     </Row>
 
                     {conditionItems.map((item, key) => (
-                        <CreateConditions isUpdate={isUpdate} id="0" eventKey={key + 1} dateTwo={dateTwo} deleteRow={deleteRow} setDateTwo={setDateTwo} />
+                        <CreateConditions isUpdate={isUpdate} id={key} eventKey={key + 1} deleteRow={deleteRow} onConditionChange={handleConditionChange} item={item}/>
                     ))} 
 
                 </Accordion.Body>
