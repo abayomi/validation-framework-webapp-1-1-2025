@@ -4,11 +4,8 @@ import About from  "./components/about/about";
 import Counter from "./components/counter/Counter";
 import Navbar from './components/navbar/Navbar';
 import Profile from "./components/profile/Profile";
-import Homepage from "./components/homepage/Homepage";
-import CreateMasterObject from "./components/createobject/createFieldMaster"
 import TabMenu from "./components/createobject/tabMenu";
 import ViewTabMenu from "./components/homepage/tabMenu";
-import UpdateFieldMasterObject from "./components/updateobject/updateFieldMaster";
 import { useState, useEffect } from "react";
 
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
@@ -70,7 +67,7 @@ export default function Home() {
               <Route path="profile/:name" element={ <Profile/> }/>              
               <Route path="createmasterobject" element={ <TabMenu/> } />        
               <Route path="updatemasterobject/object" element={ <TabMenu/> } /> 
-              <Route path="updatemasterobject/field/:id" element={ <UpdateFieldMasterObject/> } />  
+              <Route path="updatemasterobject/field" element={ <TabMenu/> } />  
             </Routes>
           </div>
 
