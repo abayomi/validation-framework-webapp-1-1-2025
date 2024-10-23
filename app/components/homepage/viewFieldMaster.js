@@ -68,7 +68,7 @@ const ViewFieldMaster = () => {
   ];
 
   const rowUpdate = (fieldData) => {
-    navigate(`/updatemasterobject/field/${fieldData.fieldMasterId}`, { state: { fieldData } });
+    navigate(`/updatemasterobject/field`, { state: { fieldData } });
   };
 
   const onRowClicked = (row, event) => {

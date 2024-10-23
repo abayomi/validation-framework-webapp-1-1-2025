@@ -30,7 +30,7 @@ const CreateRules = ({ id, eventKey, isUpdate, deleteOnClick, onRuleChange, item
             ...item,
             condition: item?.condition || []
     });
-
+    console.log("============================================================rule==", rule);
 
     const [conditionCounter, setConditionCounter] = useState(0);    
     const [conditionItems, setConditionItems] = useState([]);

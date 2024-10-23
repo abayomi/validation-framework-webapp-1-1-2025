@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
@@ -40,13 +40,24 @@ const CreateFieldMasterObject = ( props ) => {
   
   const { location } = props
   const isUpdate = Boolean(location.pathname === "/updatemasterobject/object" || location.pathname === "/updatemasterobject/field");
-  const [fieldCounter, setFieldCounter] = useState(0);  
-  const [ruleItems, setRuleItems] = useState([]);
 
   const [formData, setFormData] = useState({
     enterpriseFieldInd: false,
     fieldMasterInUseInd: false,
-  });
+  }); 
+  const [ruleItems, setRuleItems] = useState([]);
+
+  useEffect(() => {
+    if (isUpdate && location.state) {
+      const fieldData = location.state.fieldData;
+      console.log(fieldData);
+      setFormData(fieldData);
+      if (fieldData.rules) {
+        setRuleItems(fieldData.rules);
+      }
+    }
+  }, [isUpdate, location.state]);
+  const [fieldCounter, setFieldCounter] = useState(0);
   const [createEnterpriseField, { data, loading, error }] = useMutation(CREATE_ENTERPRISE_FIELD);
 
   const onAddBtnClick = (event) => {
@@ -111,9 +122,9 @@ const CreateFieldMasterObject = ( props ) => {
         variables.rule = rules[0];
       }
       console.log(variables);
-      await createEnterpriseField({
-        variables,
-      });
+      // await createEnterpriseField({
+      //   variables,
+      // });
       console.log('Form submitted successfully');
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -168,7 +179,7 @@ const CreateFieldMasterObject = ( props ) => {
             <CreateRules 
               id={key + 1}
               eventKey={key + 1} 
-              isUpdate={false} 
+              isUpdate={isUpdate} 
               deleteOnClick={deleteOnClick}
               onRuleChange={handleRuleChange}
               item={item} />
