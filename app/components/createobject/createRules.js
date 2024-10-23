@@ -48,7 +48,6 @@ const CreateRules = ({ id, eventKey, isUpdate, deleteOnClick, onRuleChange, item
       
         const updatedRule = { ...rule, condition: updatedConditions };
         setRule(updatedRule);
-      
         onRuleChange(eventKey - 1, updatedRule);
       };
 
@@ -59,11 +58,14 @@ const CreateRules = ({ id, eventKey, isUpdate, deleteOnClick, onRuleChange, item
     };
 
     const deleteRow = (index) => {
-        const newArr = [...conditionItems];
-        newArr.splice(index - 1, 1);
-        setConditionItems(newArr);
+        const newConditions = [...conditionItems];
+        newConditions.splice(index - 1, 1);
+        setConditionItems(newConditions);
+        const updatedRule = { ...rule, condition: newConditions };
+        setRule(updatedRule);
+        onRuleChange(eventKey - 1, updatedRule);
     }
-    
+
     return (
         <div>
             <Accordion.Item eventKey={ eventKey }>
