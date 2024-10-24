@@ -2,16 +2,14 @@
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { useState } from "react";
-import { useAccordionButton } from 'react-bootstrap/AccordionButton';
-import Card from 'react-bootstrap/Card';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 
 const CreateConditions = (props) => {
     const {deleteRow, eventKey, isUpdate, onConditionChange, item } = props
 
+    const disabled = isUpdate && item;
     const [condition, setCondition] = useState( item || []);
-
     const handleConditionChange = (e) => {
         const { name, value } = e.target;
 
@@ -24,7 +22,7 @@ const CreateConditions = (props) => {
         <div>
             <Row eventKey={ eventKey }>
             <Form.Group as={Col} className="mb-3 col-3" controlId="type">
-                <Form.Select aria-label="Type" name="ruleConditionTypeCode" onChange={handleConditionChange}>
+                <Form.Select aria-label="Type" name="type" value={condition.type} onChange={handleConditionChange} disabled={disabled}>
                 <option></option>
                 <option value="1">One</option>
                 <option value="2">Two</option>
@@ -34,14 +32,16 @@ const CreateConditions = (props) => {
             <Form.Group as={Col} className="mb-3 col-3" controlId="condition">
                 <Form.Control
                 as="textarea"
-                name="ruleConditionValue"
+                name="value"
+                value={condition.value}
                 placeholder=""
                 style={{ height: '100px' }}
                 onChange={handleConditionChange}
+                disabled={disabled}
                 />
             </Form.Group>
             <Form.Group as={Col} className="mb-3 col-3" controlId="">
-                <Button className="mb-3" variant="danger" size="sm" onClick={() => deleteRow(eventKey)}>Delete</Button>
+                <Button className="mb-3" variant="danger" size="sm" onClick={() => deleteRow(eventKey)} disabled={disabled}>Delete</Button>
             </Form.Group>
             </Row>
         </div>

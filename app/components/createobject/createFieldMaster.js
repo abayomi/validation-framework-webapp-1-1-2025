@@ -41,10 +41,13 @@ const CreateFieldMasterObject = ( props ) => {
   const { location } = props
   const isUpdate = Boolean(location.pathname === "/updatemasterobject/object" || location.pathname === "/updatemasterobject/field");
 
-  const [formData, setFormData] = useState({
+  const emptyFormData = {
     enterpriseFieldInd: false,
     fieldMasterInUseInd: false,
-  }); 
+    fieldName:'',
+    fieldDefinition:'',
+  };
+  const [formData, setFormData] = useState(emptyFormData); 
   const [ruleItems, setRuleItems] = useState([]);
 
   useEffect(() => {
@@ -56,14 +59,18 @@ const CreateFieldMasterObject = ( props ) => {
         setRuleItems(fieldData.rules);
       }
     }
+    if (!isUpdate) {
+      setFormData(emptyFormData);
+      setRuleItems([]);
+    }
   }, [isUpdate, location.state]);
-  const [fieldCounter, setFieldCounter] = useState(0);
+  const [ruleCounter, setRuleCounter] = useState(0);
   const [createEnterpriseField, { data, loading, error }] = useMutation(CREATE_ENTERPRISE_FIELD);
 
   const onAddBtnClick = (event) => {
-    setRuleItems((prev) => [...prev, {0 : fieldCounter}]);
-    setFieldCounter(fieldCounter + 1)
-    console.log(fieldCounter);    
+    setRuleItems((prev) => [...prev, {0 : ruleCounter}]);
+    setRuleCounter(ruleCounter + 1)
+    console.log(ruleCounter);    
     console.log(ruleItems);
   };
 
@@ -103,8 +110,8 @@ const CreateFieldMasterObject = ( props ) => {
       if (ruleItems.length > 0) {
         const rules = ruleItems.map(item => {
           const rule = {
-            validationRuleCode: item.validationRuleCode,
-            validationErrorCode: item.validationErrorCode,
+            validationRuleCode: item.type,
+            validationErrorCode: item.errorCode,
             mandatoryRuleInd: 'true',
             description: {
               shortDescription: "short",
@@ -114,7 +121,12 @@ const CreateFieldMasterObject = ( props ) => {
           };
 
           if (item.condition && item.condition.length > 0) {
-              rule.condition = item.condition;
+              rule.condition = item.conditions.map(condition => {
+                  return {
+                    ruleConditionTypeCode: condition.type,
+                    ruleConditionValue: condition.value,
+                  }
+              });
           }
 
           return rule;
@@ -142,7 +154,7 @@ const CreateFieldMasterObject = ( props ) => {
       <Form onSubmit={handleSubmit}>
         <Form.Group className="mb-3 col-3" as={Col} controlId="dialectCode">
           <Form.Label>Dialect code</Form.Label>
-          <Form.Select aria-label="Dialect code" value={formData.dialectCode} onChange={handleInputChange}>
+          <Form.Select aria-label="Dialect code" value={formData.dialectCode} onChange={handleInputChange} disabled={isUpdate} >
             <option value=""></option>
             <option value="us_en">us_en</option>
             <option value="ca_en">ca_en</option>
@@ -157,7 +169,7 @@ const CreateFieldMasterObject = ( props ) => {
         </Form.Group>
         <Form.Group className="mb-3 col-3" as={Col} controlId="fieldDefinition">
           <Form.Label>Field Definition</Form.Label>
-          <Form.Control type="text" placeholder="" value={formData.fieldDefinition} onChange={handleInputChange} />
+          <Form.Control type="text" placeholder="" value={formData.fieldDefinition} onChange={handleInputChange} disabled={isUpdate} />
         </Form.Group>
         <Form.Check className="mb-3 col-3" 
           type="checkbox"
@@ -165,6 +177,7 @@ const CreateFieldMasterObject = ( props ) => {
           label="Enterprise field indicator"
           checked={formData.enterpriseFieldInd}
           onChange={handleInputChange}
+          disabled={isUpdate}
         />
         <Form.Check className="mb-3 col-3" 
           type="checkbox"
@@ -172,6 +185,7 @@ const CreateFieldMasterObject = ( props ) => {
           label="Field Master InUse indicator"
           checked={formData.fieldMasterInUseInd}
           onChange={handleInputChange}
+          disabled={isUpdate}
         />
         <Button className="mb-3" variant="info" size="sm" onClick={onAddBtnClick}>Add Rules</Button>
         <Accordion className="mb-3" defaultActiveKey="0" flush>
