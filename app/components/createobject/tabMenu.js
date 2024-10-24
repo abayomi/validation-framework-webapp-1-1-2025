@@ -7,7 +7,12 @@ import { useLocation } from "react-router-dom";
 
 const TabMenu = () => {  
   const location = useLocation();
-  const activeKey = location.pathname === "/updatemasterobject/object" ? 'objectMaster' : 'fieldMaster'
+  let activeKey = "objectMaster";
+  let isUpdate = false;
+  if (location.pathname.includes("updatemasterobject")) {
+    isUpdate = true;
+    activeKey = location.pathname === "/updatemasterobject/object" ? 'objectMaster' : 'fieldMaster';
+  }
   const [key, setKey] = useState(activeKey);
 
   return (
@@ -17,12 +22,16 @@ const TabMenu = () => {
       onSelect={(k) => setKey(k)}
       className="mb-3"
     >
-      <Tab eventKey="fieldMaster" title="Field Master">
-        <CreateFieldMasterObject location={location} />
-      </Tab>
-      <Tab eventKey="objectMaster" title="Object Master">
-        <CreateObjectMaster location={location} />
-      </Tab>
+      {(!isUpdate || isUpdate && activeKey === "objectMaster") && (
+        <Tab eventKey="objectMaster" title="Object Master">
+          <CreateObjectMaster location={location} />
+        </Tab>
+      )}
+      {(!isUpdate || isUpdate && activeKey === "fieldMaster") && (
+        <Tab eventKey="fieldMaster" title="Field Master">
+          <CreateFieldMasterObject location={location} />
+        </Tab>
+      )}
     </Tabs>
   );
 }
