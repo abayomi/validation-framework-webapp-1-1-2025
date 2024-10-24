@@ -102,6 +102,9 @@ const ViewFieldMaster = () => {
           pointerOnHover
         />
       )}
+      {error && (
+        <p>Error data:{error}</p>
+      )}
       {isRulesShown && <RulesObject data={rulesData} />}
     </div>
   );

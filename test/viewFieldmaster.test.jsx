@@ -29,3 +29,14 @@ test('renders loading state', async () => {
     expect(screen.getByText('Loading data...')).toBeInTheDocument();
   });
 });
+
+test('logs error when error state is true', async () => {
+  useQuery.mockReturnValue({ error: 'Test error message' });
+  render(<ViewFieldMaster />);
+  await waitFor(() => {
+    expect(screen.getByText((content, element) => {
+      return content.includes('Error data:') && content.includes('Test error message');
+    })).toBeInTheDocument();
+  });
+
+});
