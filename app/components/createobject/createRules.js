@@ -73,11 +73,6 @@ const CreateRules = ({ id, eventKey, isUpdate, deleteOnClick, onRuleChange, item
                 <Accordion.Body>
                     <Row>
                         {/* <h4 className="title is-1">Rules</h4> */}
-                        <Form.Group as={Col} className="mb-3" controlId="ruleGroupNumber">
-                            <Form.Label>Rule group Number</Form.Label>
-                            <Form.Control type="text" name="ruleGroupNumber" value={rule.ruleGroupNumber} placeholder="" onChange={handleChange} disabled={disabled}/>
-                        </Form.Group>
-
                     
                         <Form.Group as={Col} className="mb-3" controlId="validationRuleCode">
                             <Form.Label>Validation code</Form.Label>
@@ -108,30 +103,29 @@ const CreateRules = ({ id, eventKey, isUpdate, deleteOnClick, onRuleChange, item
                             <Form.Control type="text" value={rule.errorMessage} placeholder="" disabled/>
                         </Form.Group>
                         
+                        <Form.Group as={Col} className="mb-3" controlId="ruleGroupNumber">
+                            <Form.Label>Rule group Number</Form.Label>
+                            <Form.Control type="text" name="ruleGroupNumber" value={rule.ruleGroupNumber} placeholder="" onChange={handleChange} disabled={disabled}/>
+                        </Form.Group>
+
                         <Form.Group as={Col} className="mb-3" controlId="errorMessage">
                             <Form.Label>Mandatory rule indicator</Form.Label>
                             <center><Form.Check className="mb-3 col-3" type="checkbox" id="checkbox" name="mandatoryRuleInd" label="" onChange={handleChange} disabled={disabled}/></center>
                         </Form.Group>
                     </Row>
-
-                    
+                    <Row>
+                        <Form.Group as={Col} className="mb-3" controlId="shortDescription0">
+                            <Form.Label>Short Description</Form.Label>
+                            <Form.Control type="text" name="shortDescription0" value={rule.shortDescription0} placeholder="" onChange={handleChange} disabled={disabled}/>
+                        </Form.Group>
+                        <Form.Group as={Col} className="mb-3" controlId="longDescription0">
+                            <Form.Label>Long Description</Form.Label>
+                            <Form.Control type="text" name="longDescription0" value={rule.longDescription0} placeholder="" onChange={handleChange} disabled={disabled}/>
+                        </Form.Group>
+                    </Row>
                     <h4 className="title is-1">Conditions
                         <Button className="ms-3" variant="info" size="sm" onClick={onAddCondition} disabled={disabled}>Add Conditions</Button>
                     </h4>
-
-                    <Row>
-                        <Form.Group as={Col} className="mb-3" controlId="type">
-                            <Form.Label>Type</Form.Label>
-                        </Form.Group>
-
-                        <Form.Group as={Col} className="mb-2" controlId="condition">
-                            <Form.Label>Condition</Form.Label>
-                        </Form.Group>
-
-                        <Form.Group as={Col} className="mb-1" controlId="condition">
-                            <Form.Label></Form.Label>
-                        </Form.Group>
-                    </Row>
 
                     {conditionItems.map((condition, key) => (
                         <CreateConditions isUpdate={isUpdate} id={key} eventKey={key + 1} deleteRow={deleteRow} onConditionChange={handleConditionChange} item={condition}/>

@@ -114,8 +114,8 @@ const CreateFieldMasterObject = ( props ) => {
             validationErrorCode: item.errorCode,
             mandatoryRuleInd: 'true',
             description: {
-              shortDescription: "short",
-              longDescription: "long"
+              shortDescription: item.shortDescription0,
+              longDescription: item.longDescription0 || '',
             },
             ruleGroupNumber: item.ruleGroupNumber
           };
@@ -134,9 +134,9 @@ const CreateFieldMasterObject = ( props ) => {
         variables.rule = rules[0];
       }
       console.log(variables);
-      // await createEnterpriseField({
-      //   variables,
-      // });
+      await createEnterpriseField({
+        variables,
+      });
       console.log('Form submitted successfully');
     } catch (error) {
       console.error('Error submitting form:', error);
