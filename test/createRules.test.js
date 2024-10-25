@@ -120,6 +120,7 @@ describe('CreateRules Component', () => {
     });
   });
 
+  /* Unfinised testing. Lei will deal with it.
   test('increments conditionCounter', () => {
     const mockOnRuleChange = jest.fn();
     render(
@@ -133,4 +134,5 @@ describe('CreateRules Component', () => {
     );
     expect(screen.queryByText('Delete Condition')).not.toBeInTheDocument();
   });
+  */
 });

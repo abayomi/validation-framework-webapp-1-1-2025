@@ -1,65 +1,55 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useQuery } from '@apollo/client';
+import { useNavigate } from "react-router-dom";
+import { loadFetchFieldMetaData } from '../../graphql/queries'
 import withAuth from "../withAuth";
-import { useSelector, useDispatch } from 'react-redux'
-import { fieldsDataChange, objectMetaDataChange } from "./formHomeSlice";
 import Button from 'react-bootstrap/Button';
 import DataTable from 'react-data-table-component';
-import data from "./data";
+import mockData from "./data";
 import FieldsObject from "./fieldsObject";
-import { useNavigate } from "react-router-dom";
 
-const ViewObjectMaster = () => {    
-  const [trending, setTrending] = useState([]);
-  const [isFieldsShown, setFieldsTable] = useState(false);
-  const [fieldsData, setFieldsData] = useState([]);  
-  let [objectMetaData, setObjectMetaData] = useState([...data.data.FetchObjectMetaData]);  
-  const dispatch = useDispatch()
+
+const addPropertiesToRowList = (rowList) => {
+  return rowList.map((item) => {
+    (item.fieldsCount == undefined) && (item.fieldsCount = item.fields.length);
+    (item.isSelected == undefined) && (item.isSelected = false);
+    return item;
+  });
+};
+
+const removeSelectedMark = function (rowList) {
+  return rowList.map(function (item) {
+    return { ...item, isSelected: false };
+  });
+};
+
+const markSelectedRow = function (rowList, selectedRow) {
+  const foundIndex = rowList.findIndex(x => x.objectMasterId == selectedRow.objectMasterId);
+  rowList[foundIndex] = { ...selectedRow, isSelected: true };
+  return rowList;
+};
+
+const fetchDataFromAPI = (isMockData) => {
+  if (isMockData) {
+    return data; // dummy data from a file.
+  } else {
+    const { error, loading, realData } = useQuery(loadFetchFieldMetaData);
+    return realData;
+  }
+};
+
+const ViewObjectMaster = () => {
+  //const apiData = fetchDataFromAPI(true); 
+  const [rawRowList, setRawRowList] = useState([...mockData.data.FetchObjectMetaData]);
+  const [currSelectedRow, setCurrSelectedRow] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // fetchData.onAuthenticate2().then((res)=>{
-    //   console.log("====================================================================555=============================================");
-    //   setTrending(res);
-    // })
+
   }, []);
-    
 
-  const createTableDataWithObjProp = (data, tableObj) => {
-    return data.map(item => {
-      if(item.fieldsCount == undefined) { item.fieldsCount = item.fields.length;}
-      if(item.isSelected == undefined) { item.isSelected = false;}
-      tableObj.push(item)
-    });
-  };
-
-  const transformData = (data) => {
-    let tableObj = [];
-    createTableDataWithObjProp(
-      data,
-      tableObj
-    );
-    return (
-      <div>
-        <DataTable columns={columns} data={tableObj} onRowClicked={onRowClicked} 
-          selectableRows={true}
-          selectableRowsSingle
-          selectableRowSelected={(row) => row.isSelected}
-          selectableRowsHighlight
-          pagination
-          highlightOnHover
-          pointerOnHover
-          checkbox={false}
-        />
-      </div>     
-    ); 
-  }
-
-  const rowUpdate = () => {
-    navigate('/updatemasterobject/object');
-  }
-
-  const columns = [
+  const tableColumns = [
     {
       name: 'Object Name',
       selector: row => row.objectName,
@@ -74,48 +64,46 @@ const ViewObjectMaster = () => {
     },
     {
       name: 'Action',
-      cell: () => <Button variant="info" size="sm" onClick={rowUpdate} >Edit</Button>,
+      cell: () => (
+        <Button variant="info" size="sm" onClick={() => navigate('/updatemasterobject/object')}>
+          Edit
+        </Button>
+      ),
       sortable: false,
       reorder: false
     }
   ];
-  const onRowClicked = (row, event) => {
-    dispatch(fieldsDataChange(row))
-    
-    const a = {...row}
-    const b = JSON.parse(JSON.stringify(objectMetaData));   
-    b.map(item => item.isSelected = false);
-    a.isSelected = true;
-    const foundIndex =  objectMetaData.findIndex(x => x.objectMasterId == row.objectMasterId);
-    b[foundIndex] = a;
-    setObjectMetaData(b);
-    dispatch(objectMetaDataChange({objectMetaData: objectMetaData, row: row}))
 
-    setFieldsTable(true);
-    setFieldsData(row);
+  const highLightSelectedRow = (row) => {
+    const rowListWithSelectedMark = markSelectedRow(removeSelectedMark(rawRowList), row);
+    setRawRowList(rowListWithSelectedMark);
   };
 
-  const ExpandedComponent = ({ data1 }) => <pre>{JSON.stringify(data1, null, 2)}</pre>;
+  const clickRow = (row) => {
+    setCurrSelectedRow(row); // Show Object Fields section
+    highLightSelectedRow(row);
+  };
 
+  // DataTable's doc: https://react-data-table-component.netlify.app/?path=/docs/api-props--docs
   return (
     <div>
-      <table>
-      {trending && trending.map((post, index) => (
-          <tbody key={index}>
-            <tr>
-              <td>
-                <h4>{post.title}</h4>
-                <p>{post.body}</p>
-              </td>
-            </tr>
-          </tbody>
-        ))}
-      </table>
+      <DataTable
+        pagination
+        highlightOnHover
+        pointerOnHover
+        selectableRowsSingle
+        selectableRowsHighlight
+        selectableRowSelected={(row) => row.isSelected}
+        selectableRows={true}
+        checkbox={false}
+        columns={tableColumns}
+        data={addPropertiesToRowList(rawRowList)}
+        onRowClicked={clickRow}
+      />
 
-      {transformData(objectMetaData)}
-      {isFieldsShown && <FieldsObject data={fieldsData} source={'objectMaster'}/>}
+      {currSelectedRow && <FieldsObject dataComeFrom={'objectMaster'} selectedRow={currSelectedRow} />}
     </div>
-  )
+  );
 }
 
 export default withAuth(ViewObjectMaster);
