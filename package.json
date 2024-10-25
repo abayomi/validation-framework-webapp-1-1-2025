@@ -9,12 +9,6 @@
     "lint": "next lint",
     "test": "jest --coverage"
   },
-  "jest": {
-    "testEnvironment": "jsdom",
-    "transform": {
-      "^.+\\.jsx?$": "babel-jest"
-    }
-  },
   "dependencies": {
     "@apollo/client": "^3.11.8",
     "@reduxjs/toolkit": "^1.9.5",
@@ -35,6 +29,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.25.9",
     "@babel/preset-react": "^7.25.9",
+    "@swc/jest": "^0.2.36",
     "@testing-library/jest-dom": "^6.6.2",
     "@testing-library/react": "^16.0.1",
     "babel-jest": "^29.7.0",

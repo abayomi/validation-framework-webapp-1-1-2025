@@ -5,6 +5,7 @@ import { useQuery } from '@apollo/client';
 import { withAuth } from '../app/components/withAuth';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { cleanup } from '@testing-library/react';
 import ViewFieldMaster from '../app/components/homepage/viewFieldMaster';
 
 jest.mock('@apollo/client', () => ({
@@ -22,6 +23,16 @@ jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
 }));
 
+beforeEach(() => {
+  jest.spyOn(console, 'log').mockImplementation(() => {});
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+});
+
+afterEach(() => {
+  console.log.mockRestore();
+  console.error.mockRestore();
+});
+
 test('renders loading state', async () => {
   useQuery.mockReturnValue({ loading: true });
   render(<ViewFieldMaster />);
@@ -38,5 +49,4 @@ test('logs error when error state is true', async () => {
       return content.includes('Error data:') && content.includes('Test error message');
     })).toBeInTheDocument();
   });
-
 });
