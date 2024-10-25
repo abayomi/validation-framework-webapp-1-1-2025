@@ -1,16 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
-import axios from 'axios';
 import withAuth from "../withAuth";
 import { useSelector, useDispatch } from 'react-redux'
-import Form from 'react-bootstrap/Form';
-import { nameChange, emailChange, fieldsDataChange, objectMetaDataChange } from "./formHomeSlice";
+import { fieldsDataChange, objectMetaDataChange } from "./formHomeSlice";
 import Button from 'react-bootstrap/Button';
 import DataTable from 'react-data-table-component';
 import data from "./data";
 import FieldsObject from "./fieldsObject";
 import { useNavigate } from "react-router-dom";
-import * as fetchData from "../../services/commonService";
 
 const ViewObjectMaster = () => {    
   const [trending, setTrending] = useState([]);  

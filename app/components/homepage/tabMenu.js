@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
-import Homepage from "./Homepage"
 import ViewObjectMaster from './viewObjectMaster';
 import ViewFieldMaster from './viewFieldMaster'
 import { useLocation } from "react-router-dom";
 
 const TabMenu = () => {  
   const location = useLocation();
-  const [key, setKey] = useState('ViewObjectMaster');
+  const [key, setKey] = useState('ViewObjectMaster'); // Set up the default tab. The value is the eventKey of a <Tab>.
 
   return (
     <Tabs
