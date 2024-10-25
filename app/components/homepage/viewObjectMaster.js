@@ -10,9 +10,7 @@ import FieldsObject from "./fieldsObject";
 import { useNavigate } from "react-router-dom";
 
 const ViewObjectMaster = () => {    
-  const [trending, setTrending] = useState([]);  
-  const name = useSelector(state => state.user.name)
-  const email = useSelector(state => state.user.email)
+  const [trending, setTrending] = useState([]);
   const [isFieldsShown, setFieldsTable] = useState(false);
   const [fieldsData, setFieldsData] = useState([]);  
   let [objectMetaData, setObjectMetaData] = useState([...data.data.FetchObjectMetaData]);  
