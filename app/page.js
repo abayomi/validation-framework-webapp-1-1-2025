@@ -11,14 +11,13 @@ import { Routes, Route, BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import store from "./store/store";
 import "./App.scss";
-
 import {
   ApolloClient,
   InMemoryCache,
   ApolloProvider,
   HttpLink,
   from
-  } from "@apollo/client";
+} from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
 
 const errorLink = onError(({ graphqlErrors, newworkError }) => {
@@ -54,7 +53,7 @@ export default function Home() {
         <Provider store={store} >
           <div className="App">
             <Navbar />
-            <div className="container mt-2" style={{ marginTop: 40 }}>
+            <div className="container mt-2" style={{ marginTop: "40px" }}>
               <Routes>
                 <Route path="/" element={ <ViewTabMenu /> } />
                 <Route path="about" element={ <About /> } />          
@@ -66,13 +65,7 @@ export default function Home() {
               </Routes>
             </div>
 
-            <footer className="bg-white">
-              <div className="bg-light py-4">
-                <div className="container text-center">
-                  <p className="text-muted mb-0 py-2">Validation Framework</p>
-                </div>
-              </div>
-            </footer>
+            <footer className="container bg-light py-4 text-muted mb-0 text-center">Validation Framework</footer>
           </div>
         </Provider>
     </BrowserRouter>
