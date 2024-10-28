@@ -12,20 +12,22 @@ import Accordion from 'react-bootstrap/Accordion';
 import CreateConditions from './createConditions'
 
 
-function CustomToggle({ children, eventKey, deleteOnClick }) {
-  return (
-    <div className="w-100">        
-        <span>Rule - {eventKey}</span>
-        <Button className="float-end" variant="danger" size="sm" onClick={(e) => deleteOnClick(e, eventKey)} >
-            Delete
+function CustomToggle({ eventkey, deleteOnClick }) {
+    const decoratedOnClick = useAccordionButton(eventkey);
+  
+    return (
+      <div className="d-flex justify-content-between align-items-center w-100 p-2">
+        <span onClick={decoratedOnClick} style={{ cursor: 'pointer' }}>
+          Rule - {eventkey}
+        </span>
+        <Button variant="danger" size="sm" onClick={(e) => deleteOnClick(e, eventkey)}>
+          Delete
         </Button>
-        
-    </div> 
-  );
-}
+      </div>
+    );
+  }
 
-const CreateRules = ({ id, eventKey, isUpdate, deleteOnClick, onRuleChange, item }) => {
-
+const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item }) => {
     const disabled = isUpdate && item;
     const [rule, setRule] = useState({
             ...item,
@@ -37,7 +39,7 @@ const CreateRules = ({ id, eventKey, isUpdate, deleteOnClick, onRuleChange, item
         const { name, value } = e.target;
         const updatedRule = { ...rule, [name]: value };
         setRule(updatedRule);
-        onRuleChange(eventKey - 1, updatedRule);
+        onRuleChange(eventkey - 1, updatedRule);
     };
 
     const handleConditionChange = (index, updatedCondition) => {
@@ -46,7 +48,7 @@ const CreateRules = ({ id, eventKey, isUpdate, deleteOnClick, onRuleChange, item
       
         const updatedRule = { ...rule, conditions: updatedConditions };
         setRule(updatedRule);
-        onRuleChange(eventKey - 1, updatedRule);
+        onRuleChange(eventkey - 1, updatedRule);
       };
 
     const onAddCondition = (event) => {
@@ -61,77 +63,76 @@ const CreateRules = ({ id, eventKey, isUpdate, deleteOnClick, onRuleChange, item
         setConditionItems(newConditions);
         const updatedRule = { ...rule, conditions: newConditions };
         setRule(updatedRule);
-        onRuleChange(eventKey - 1, updatedRule);
+        onRuleChange(eventkey - 1, updatedRule);
     }
 
     return (
         <div>
-            <Accordion.Item eventKey={ eventKey }>
-                <Accordion.Header>
-                    <CustomToggle eventKey={ eventKey } deleteOnClick={ deleteOnClick }></CustomToggle>
-                </Accordion.Header>
-                <Accordion.Body>
-                    <Row>
-                        {/* <h4 className="title is-1">Rules</h4> */}
+            <Accordion.Item eventkey={ eventkey }>
+            <CustomToggle eventkey={eventkey} deleteOnClick={deleteOnClick} />
+            <Accordion.Collapse eventKey={eventkey}>  
+            <div className="p-2">
+                <Row>
+                    {/* <h4 className="title is-1">Rules</h4> */}
+                
+                    <Form.Group as={Col} className="mb-3" controlId="validationRuleCode">
+                        <Form.Label>Validation code</Form.Label>
+                        <Form.Select aria-label="Validation code" name="type" value={rule.type} onChange={handleChange} disabled={disabled}>
+                            <option></option>
+                            <option value="1">One</option>
+                            <option value="2">Two</option>
+                            <option value="3">Three</option>
+                            <option value="4">Four</option>
+                            <option value="5">Five</option>
+                        </Form.Select>
+                    </Form.Group>
+
+                    <Form.Group as={Col} className="mb-3" controlId="validationErrorCode">
+                        <Form.Label>Validation error code</Form.Label>
+                        <Form.Select aria-label="Validation error code" name="errorCode" value={rule.errorCode} onChange={handleChange} disabled={disabled}>
+                            <option></option>
+                            <option value="1">One</option>
+                            <option value="2">Two</option>
+                            <option value="3">Three</option>
+                            <option value="4">Four</option>
+                            <option value="5">Five</option>
+                        </Form.Select>
+                    </Form.Group>   
+
+                    <Form.Group as={Col} className="mb-3" controlId="errorMessage">
+                        <Form.Label>Error message</Form.Label>
+                        <Form.Control type="text" value={rule.errorMessage} placeholder="" disabled/>
+                    </Form.Group>
                     
-                        <Form.Group as={Col} className="mb-3" controlId="validationRuleCode">
-                            <Form.Label>Validation code</Form.Label>
-                            <Form.Select aria-label="Validation code" name="type" value={rule.type} onChange={handleChange} disabled={disabled}>
-                                <option></option>
-                                <option value="1">One</option>
-                                <option value="2">Two</option>
-                                <option value="3">Three</option>
-                                <option value="4">Four</option>
-                                <option value="5">Five</option>
-                            </Form.Select>
-                        </Form.Group>
+                    <Form.Group as={Col} className="mb-3" controlId="ruleGroupNumber">
+                        <Form.Label>Rule group Number</Form.Label>
+                        <Form.Control type="text" name="ruleGroupNumber" value={rule.ruleGroupNumber} placeholder="" onChange={handleChange} disabled={disabled}/>
+                    </Form.Group>
 
-                        <Form.Group as={Col} className="mb-3" controlId="validationErrorCode">
-                            <Form.Label>Validation error code</Form.Label>
-                            <Form.Select aria-label="Validation error code" name="errorCode" value={rule.errorCode} onChange={handleChange} disabled={disabled}>
-                                <option></option>
-                                <option value="1">One</option>
-                                <option value="2">Two</option>
-                                <option value="3">Three</option>
-                                <option value="4">Four</option>
-                                <option value="5">Five</option>
-                            </Form.Select>
-                        </Form.Group>   
+                    <Form.Group as={Col} className="mb-3" controlId="errorMessage">
+                        <Form.Label>Mandatory rule indicator</Form.Label>
+                        <center><Form.Check className="mb-3 col-3" type="checkbox" id="checkbox" name="mandatoryRuleInd" label="" onChange={handleChange} disabled={disabled}/></center>
+                    </Form.Group>
+                </Row>
+                <Row>
+                    <Form.Group as={Col} className="mb-3" controlId="shortDescription0">
+                        <Form.Label>Short Description</Form.Label>
+                        <Form.Control type="text" name="shortDescription0" value={rule.shortDescription0} placeholder="" onChange={handleChange} disabled={disabled}/>
+                    </Form.Group>
+                    <Form.Group as={Col} className="mb-3" controlId="longDescription0">
+                        <Form.Label>Long Description</Form.Label>
+                        <Form.Control type="text" name="longDescription0" value={rule.longDescription0} placeholder="" onChange={handleChange} disabled={disabled}/>
+                    </Form.Group>
+                </Row>
+                <h4 className="title is-1">Conditions
+                    <Button className="ms-3" variant="info" size="sm" onClick={onAddCondition} disabled={disabled}>Add Conditions</Button>
+                </h4>
 
-                        <Form.Group as={Col} className="mb-3" controlId="errorMessage">
-                            <Form.Label>Error message</Form.Label>
-                            <Form.Control type="text" value={rule.errorMessage} placeholder="" disabled/>
-                        </Form.Group>
-                        
-                        <Form.Group as={Col} className="mb-3" controlId="ruleGroupNumber">
-                            <Form.Label>Rule group Number</Form.Label>
-                            <Form.Control type="text" name="ruleGroupNumber" value={rule.ruleGroupNumber} placeholder="" onChange={handleChange} disabled={disabled}/>
-                        </Form.Group>
-
-                        <Form.Group as={Col} className="mb-3" controlId="errorMessage">
-                            <Form.Label>Mandatory rule indicator</Form.Label>
-                            <center><Form.Check className="mb-3 col-3" type="checkbox" id="checkbox" name="mandatoryRuleInd" label="" onChange={handleChange} disabled={disabled}/></center>
-                        </Form.Group>
-                    </Row>
-                    <Row>
-                        <Form.Group as={Col} className="mb-3" controlId="shortDescription0">
-                            <Form.Label>Short Description</Form.Label>
-                            <Form.Control type="text" name="shortDescription0" value={rule.shortDescription0} placeholder="" onChange={handleChange} disabled={disabled}/>
-                        </Form.Group>
-                        <Form.Group as={Col} className="mb-3" controlId="longDescription0">
-                            <Form.Label>Long Description</Form.Label>
-                            <Form.Control type="text" name="longDescription0" value={rule.longDescription0} placeholder="" onChange={handleChange} disabled={disabled}/>
-                        </Form.Group>
-                    </Row>
-                    <h4 className="title is-1">Conditions
-                        <Button className="ms-3" variant="info" size="sm" onClick={onAddCondition} disabled={disabled}>Add Conditions</Button>
-                    </h4>
-
-                    {conditionItems.map((condition, key) => (
-                        <CreateConditions isUpdate={isUpdate} id={key} eventKey={key + 1} deleteRow={deleteRow} onConditionChange={handleConditionChange} item={condition}/>
-                    ))} 
-
-                </Accordion.Body>
+                {conditionItems.map((condition, key) => (
+                    <CreateConditions isUpdate={isUpdate} id={key} eventkey={key + 1} deleteRow={deleteRow} onConditionChange={handleConditionChange} item={condition}/>
+                ))} 
+            </div>
+            </Accordion.Collapse>
             </Accordion.Item>
         </div>
        

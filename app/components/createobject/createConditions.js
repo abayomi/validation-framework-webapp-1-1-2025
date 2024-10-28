@@ -41,7 +41,7 @@ const CreateConditions = (props) => {
                 />
             </Form.Group>
             <Form.Group as={Col} className="mb-3 col-3" controlId="">
-                <Button className="mb-3" variant="danger" size="sm" onClick={() => deleteRow(eventkey)} disabled={disabled}>Delete</Button>
+                <Button className="mb-3" variant="danger" size="sm" onClick={() => deleteRow(eventkey)} disabled={disabled}>Delete Condition</Button>
             </Form.Group>
             </Row>
         </div>

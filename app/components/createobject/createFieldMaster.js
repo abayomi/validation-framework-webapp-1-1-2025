@@ -68,7 +68,7 @@ const CreateFieldMasterObject = ( props ) => {
   const [createEnterpriseField, { data, loading, error }] = useMutation(CREATE_ENTERPRISE_FIELD);
 
   const onAddBtnClick = (event) => {
-    setRuleItems((prev) => [...prev, {0 : ruleCounter}]);
+    setRuleItems((prev) => [...prev, []]);
     setRuleCounter(ruleCounter + 1)
     console.log(ruleCounter);    
     console.log(ruleItems);
@@ -189,15 +189,16 @@ const CreateFieldMasterObject = ( props ) => {
         />
         <Button className="mb-3" variant="info" size="sm" onClick={onAddBtnClick}>Add Rules</Button>
         <Accordion className="mb-3" defaultActiveKey="0" flush>
-            {ruleItems.map((item, key) => (
-            <CreateRules 
-              id={key + 1}
-              eventKey={key + 1} 
-              isUpdate={isUpdate} 
-              deleteOnClick={deleteOnClick}
-              onRuleChange={handleRuleChange}
-              item={item} />
-            ))}
+        {ruleItems.map((item, index) => {
+            return (
+              <CreateRules
+                eventkey={index + 1} 
+                isUpdate={isUpdate} 
+                deleteOnClick={deleteOnClick}
+                onRuleChange={handleRuleChange}
+                item={item} />
+            );
+          })}
         </Accordion>
 
         <Button variant="primary" type="submit">
