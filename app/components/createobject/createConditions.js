@@ -6,7 +6,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 
 const CreateConditions = (props) => {
-    const {deleteRow, eventKey, isUpdate, onConditionChange, item } = props
+    const {deleteRow, eventkey, isUpdate, onConditionChange, item } = props
 
     const disabled = isUpdate && item;
     const [condition, setCondition] = useState( item || []);
@@ -15,12 +15,12 @@ const CreateConditions = (props) => {
 
         const updatedCondition = { ...condition, [name]: value };
         setCondition(updatedCondition);
-        onConditionChange(eventKey - 1, updatedCondition);
+        onConditionChange(eventkey - 1, updatedCondition);
     };
 
     return (
         <div>
-            <Row eventKey={ eventKey }>
+            <Row eventkey={ eventkey }>
             <Form.Group as={Col} className="mb-3 col-3" controlId="type">
                 <Form.Select aria-label="Type" name="type" value={condition.type} onChange={handleConditionChange} disabled={disabled}>
                 <option></option>
@@ -41,7 +41,7 @@ const CreateConditions = (props) => {
                 />
             </Form.Group>
             <Form.Group as={Col} className="mb-3 col-3" controlId="">
-                <Button className="mb-3" variant="danger" size="sm" onClick={() => deleteRow(eventKey)} disabled={disabled}>Delete</Button>
+                <Button className="mb-3" variant="danger" size="sm" onClick={() => deleteRow(eventkey)} disabled={disabled}>Delete</Button>
             </Form.Group>
             </Row>
         </div>

@@ -100,6 +100,7 @@ const ViewFieldMaster = () => {
           pagination
           highlightOnHover
           pointerOnHover
+          rowProps={(row) => ({ 'data-testid': `row-${row.id}` })}
         />
       )}
       {error && (

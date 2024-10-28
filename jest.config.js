@@ -1,5 +1,6 @@
 module.exports = {
     testEnvironment: "jsdom",
+    verbose: true,
     transform: {
       "^.+\\.(js|jsx|ts|tsx)$": "@swc/jest",
     },
