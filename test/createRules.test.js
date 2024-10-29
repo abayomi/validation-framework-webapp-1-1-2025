@@ -80,9 +80,9 @@ describe('CreateRules Component', () => {
 
   it('deletes a condition when delete button in CreateConditions is clicked', () => {
     render(<CreateRules {...mockProps} />);
-   
+
     fireEvent.click(screen.getByRole('button', { name: /add conditions/i }));
-    
+
     let deleteConditionButtonArray = screen.getAllByRole('button', { name: /Delete Condition/i });
     expect(deleteConditionButtonArray).toHaveLength(1);
     const deleteConditionButton = deleteConditionButtonArray[0];
@@ -99,39 +99,38 @@ describe('CreateRules Component', () => {
     };
 
     jest.spyOn(React, 'useState')
-    .mockImplementationOnce((initial) => [initial, mockSetRule])
-  
+      .mockImplementationOnce((initial) => [initial, mockSetRule])
+
     render(
-      <CreateRules 
-        eventkey={1} 
-        isUpdate={false} 
-        deleteOnClick={jest.fn()} 
-        onRuleChange={mockOnRuleChange} 
-        item={mockRule} 
+      <CreateRules
+        eventkey={1}
+        isUpdate={false}
+        deleteOnClick={jest.fn()}
+        onRuleChange={mockOnRuleChange}
+        item={mockRule}
       />
     );
-  
+
     const createConditionsElement = screen.getByTestId('create-conditions-1');
     const textarea = createConditionsElement.querySelector('textarea');
-  
     fireEvent.change(textarea, { target: { value: 'updatedCondition2' } });
-  
+
     expect(mockSetRule).toHaveBeenCalledWith({
-      "conditions":  [{ value: 'updatedCondition2' }]
+      "conditions": [{ value: 'updatedCondition2' }]
     });
   });
 
   test('increments conditionCounter', () => {
     const mockOnRuleChange = jest.fn();
-    const mockRule = {};
     render(
-      <CreateRules 
-        eventkey={1} 
-        isUpdate={false} 
-        deleteOnClick={jest.fn()} 
-        onRuleChange={mockOnRuleChange} 
-        item={mockRule} 
+      <CreateRules
+        eventkey={1}
+        isUpdate={false}
+        deleteOnClick={jest.fn()}
+        onRuleChange={mockOnRuleChange}
+        item={[]}
       />
     );
+    expect(screen.queryByText('Delete Condition')).not.toBeInTheDocument();
   });
 });
