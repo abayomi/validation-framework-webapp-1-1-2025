@@ -77,7 +77,7 @@ const ViewFieldMaster = () => {
         : data && <DataTable 
           columns={columns} 
           data={filteredItems} 
-          onRowClicked={(row, event)=>onRowClicked(row)} 
+          onRowClicked={onRowClicked}
           selectableRows={true}
           selectableRowsSingle
           selectableRowSelected={row => row.isSelected}
@@ -85,7 +85,6 @@ const ViewFieldMaster = () => {
           pagination
           highlightOnHover
           pointerOnHover
-          keyField={'123'}
         />
       }
       {error && (
