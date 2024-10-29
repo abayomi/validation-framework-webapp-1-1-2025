@@ -18,24 +18,10 @@ const ViewFieldMaster = () => {
 
   const { error, loading, data, refetch } = useQuery(loadFetchFieldMetaData);
   const [filterText, setFilterText] = useState('');
-  const [objectMetaData, setObjectMetaData] = useState([]);
 
-  useEffect(() => {
-    if (error) {
-      console.error('Error fetching data:', error);
-    }
-    if (loading) {
-      console.log('Loading data...');
-    }
-    if (data) {
-      console.log(data);
-      setObjectMetaData(data.FetchFieldMetaData);
-    }
-  }, [error, loading, data]);
-
-  const filteredItems = objectMetaData.filter(item => 
+  const filteredItems = data ? data.FetchFieldMetaData.filter(item => 
     item.fieldMasterId && item.fieldMasterId.toLowerCase().includes(filterText.toLowerCase())
-  );
+  ):[];
 
   const columns = [
     {
@@ -72,9 +58,7 @@ const ViewFieldMaster = () => {
   };
 
   const onRowClicked = (row, event) => {
-    console.log("==============================================onRowClicked==1===");
     dispatch(rulesDataChange(row));
-    console.log("==============================================onRowClicked=====");
     setRulesTable(true);
     setRulesData(row.rules);
   };
@@ -89,8 +73,8 @@ const ViewFieldMaster = () => {
       />
       <Button size="sm" className="ms-3" onClick={() => refetch()}>Refresh</Button>
       {loading 
-       ? <p>Loading data...</p>
-       : <DataTable
+        ? <p>Loading data...</p> 
+        : data && <DataTable 
           columns={columns} 
           data={filteredItems} 
           onRowClicked={onRowClicked} 
@@ -101,7 +85,7 @@ const ViewFieldMaster = () => {
           pagination
           highlightOnHover
           pointerOnHover
-          keyField="fieldMasterId"
+          rowProps={(row) => ({ 'data-testid': `row-${row.id}` })}
         />
       }
       {error && (
