@@ -119,12 +119,6 @@ describe('CreateRules Component', () => {
     expect(mockSetRule).toHaveBeenCalledWith({
       "conditions":  [{ value: 'updatedCondition2' }]
     });
-  
-    // // 验证 onRuleChange 是否被正确调用
-    // expect(mockOnRuleChange).toHaveBeenCalledWith(0, {
-    //   ...mockRule,
-    //   conditions: ['condition1', 'updatedCondition2']
-    // });
   });
 
   test('increments conditionCounter', () => {
@@ -139,17 +133,5 @@ describe('CreateRules Component', () => {
         item={mockRule} 
       />
     );
-  
-    // const counter = screen.getByTestId('counter');
-    // const button = screen.getByText('Increment');
-  
-    // // Initial state
-    // expect(counter.textContent).toBe('0');
-  
-    // // Simulate button click
-    // fireEvent.click(button);
-  
-    // // Updated state
-    // expect(counter.textContent).toBe('1');
   });
 });

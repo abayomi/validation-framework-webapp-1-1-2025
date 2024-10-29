@@ -2,10 +2,9 @@ import React from 'react';
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { useQuery } from '@apollo/client';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import ViewFieldMaster from '../app/components/homepage/viewFieldMaster';
-import { rulesDataChange } from '../app/components/homepage/formHomeSlice';
 
 jest.mock('@apollo/client', () => ({
   useQuery: jest.fn(),
@@ -64,15 +63,12 @@ test('filters items based on filterText', async () => {
 
   render(<ViewFieldMaster />);
 
-  // Check that all items are rendered initially
   expect(screen.getByText('123')).toBeInTheDocument();
   expect(screen.getByText('456')).toBeInTheDocument();
   expect(screen.getByText('789')).toBeInTheDocument();
 
-  // Simulate entering filter text
   fireEvent.change(screen.getByPlaceholderText('Filter By Id'), { target: { value: '123' } });
 
-  // Check that only the filtered item is rendered
   expect(screen.getByText('123')).toBeInTheDocument();
   expect(screen.queryByText('456')).not.toBeInTheDocument();
   expect(screen.queryByText('789')).not.toBeInTheDocument();
