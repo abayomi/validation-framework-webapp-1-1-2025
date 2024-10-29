@@ -11,8 +11,8 @@ import { loadFetchFieldMetaData } from '../../graphql/queries'
 import RulesObject from './RulesObject';
 
 const ViewFieldMaster = () => {
+  
   const dispatch = useDispatch();
-  const [isRulesShown, setRulesTable] = useState(false);
   const [rulesData, setRulesData] = useState([]);
   const navigate = useNavigate();
 
@@ -59,7 +59,6 @@ const ViewFieldMaster = () => {
 
   const onRowClicked = (row, event) => {
     dispatch(rulesDataChange(row));
-    setRulesTable(true);
     setRulesData(row.rules);
   };
 
@@ -80,18 +79,18 @@ const ViewFieldMaster = () => {
           onRowClicked={onRowClicked} 
           selectableRows={true}
           selectableRowsSingle
-          selectableRowSelected={(row) => row.isSelected}
+          selectableRowSelected={row => row.isSelected}
           selectableRowsHighlight
           pagination
           highlightOnHover
           pointerOnHover
-          rowProps={(row) => ({ 'data-testid': `row-${row.id}` })}
+          rowProps={row => ({ 'data-testid': `row-${row.id}` })}
         />
       }
       {error && (
         <p>Error data:{error}</p>
       )}
-      {isRulesShown && <RulesObject data={rulesData} />}
+      <RulesObject data={rulesData} />
     </div>
   );
 };

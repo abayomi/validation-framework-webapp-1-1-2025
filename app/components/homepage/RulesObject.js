@@ -10,7 +10,7 @@ const RulesObject = () => {
     const rulesData = useSelector(state => state.user.rulesData)
 
     const transformData = (data) => {
-        return (
+        return data && (
             <div>
             <h2 className="title is-1">Rules</h2>
             <DataTable 

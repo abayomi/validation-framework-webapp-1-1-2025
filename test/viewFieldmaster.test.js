@@ -122,9 +122,7 @@ it.only('calls onRowClicked and updates state when a row is clicked', async () =
   });
 
   const mockReturn = jest.fn();
-  const setRulesTableMock = jest.fn();
   const setRulesDataMock = jest.fn();
-  const setFilterTextMock = jest.fn();
   useDispatch.mockReturnValue(mockReturn);
   useSelector.mockReturnValue(mockReturn);
   rulesDataChange.mockReturnValue(mockReturn);
@@ -132,9 +130,7 @@ it.only('calls onRowClicked and updates state when a row is clicked', async () =
   jest.spyOn(React, 'useEffect')
     .mockImplementationOnce(() => ['', setRulesTableMock]);
   jest.spyOn(React, 'useState')
-    .mockImplementationOnce(() => ['', setRulesTableMock])  // isRulesShown
     .mockImplementationOnce(() => [[], setRulesDataMock]) // rulesData
-    .mockImplementationOnce(() => ['', setFilterTextMock]) // filterText
     .mockImplementationOnce(() => [mockData, setFilterTextMock]);
 
   render(<ViewFieldMaster />);
