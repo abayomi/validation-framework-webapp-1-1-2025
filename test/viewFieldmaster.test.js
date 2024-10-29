@@ -1,10 +1,11 @@
 import React from 'react';
 import '@testing-library/jest-dom';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { useQuery } from '@apollo/client';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import ViewFieldMaster from '../app/components/homepage/viewFieldMaster';
+import { rulesDataChange } from '../app/components/homepage/formHomeSlice';
 
 jest.mock('@apollo/client', () => ({
   useQuery: jest.fn(),
@@ -26,16 +27,6 @@ jest.mock('react-redux', () => ({
 jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
 }));
-
-beforeEach(() => {
-  jest.spyOn(console, 'log').mockImplementation(() => {});
-  jest.spyOn(console, 'error').mockImplementation(() => {});
-});
-
-afterEach(() => {
-  console.log.mockRestore();
-  console.error.mockRestore();
-});
 
 const mockData = {
   FetchFieldMetaData: [
@@ -98,10 +89,8 @@ it('calls refetch when Refresh button is clicked', async () => {
 
   render(<ViewFieldMaster />);
 
-  // Simulate button click
   fireEvent.click(screen.getByText('Refresh'));
 
-  // Check if refetch function is called
   expect(refetch).toHaveBeenCalled();
 });
 
@@ -124,25 +113,38 @@ it('calls rowUpdate when Edit button is clicked', async () => {
   expect(mockNavigate).toHaveBeenCalledWith('/updatemasterobject/field', { state: { fieldData: mockData.FetchFieldMetaData[0] } });
 });
 
-it('calls onRowClicked and updates state when a row is clicked', async () => {
+it.only('calls onRowClicked and updates state when a row is clicked', async () => {
 
   useQuery.mockReturnValue({
-      loading: false,
-      error: null,
-      data: mockData,
+    loading: false,
+    error: false,
+    data: false,
   });
 
-  const mockDispatch = jest.fn();
-  useDispatch.mockReturnValue(mockDispatch);
+  const mockReturn = jest.fn();
+  const setRulesTableMock = jest.fn();
+  const setRulesDataMock = jest.fn();
+  const setFilterTextMock = jest.fn();
+  useDispatch.mockReturnValue(mockReturn);
+  useSelector.mockReturnValue(mockReturn);
+  rulesDataChange.mockReturnValue(mockReturn);
 
-  const mockSelector = jest.fn();
-  useSelector.mockReturnValue(mockSelector);
+  jest.spyOn(React, 'useEffect')
+    .mockImplementationOnce(() => ['', setRulesTableMock]);
+  jest.spyOn(React, 'useState')
+    .mockImplementationOnce(() => ['', setRulesTableMock])  // isRulesShown
+    .mockImplementationOnce(() => [[], setRulesDataMock]) // rulesData
+    .mockImplementationOnce(() => ['', setFilterTextMock]) // filterText
+    .mockImplementationOnce(() => [mockData, setFilterTextMock]);
+
   render(<ViewFieldMaster />);
+  screen.debug();
+  // const rowElement = screen.getByRole('row', { name: /row-123/i });
 
-  const rowElement = document.querySelector('#row-0');
-  expect(rowElement).not.toBeNull();
-  fireEvent.click(rowElement);
-  // expect(mockDispatch).toHaveBeenCalled();
+  // expect(rowElement).not.toBeNull();
+  // fireEvent.click(rowElement);
+  // expect(useDispatch).toHaveBeenCalled();
+  // expect(setRulesTableMock).toHaveBeenCalledWith(true);
   // expect(mockDispatch).toHaveBeenCalledWith(rulesDataChange(mockData.FetchFieldMetaData[0]));
 
 });

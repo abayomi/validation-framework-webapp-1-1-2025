@@ -72,7 +72,9 @@ const ViewFieldMaster = () => {
   };
 
   const onRowClicked = (row, event) => {
+    console.log("==============================================onRowClicked==1===");
     dispatch(rulesDataChange(row));
+    console.log("==============================================onRowClicked=====");
     setRulesTable(true);
     setRulesData(row.rules);
   };
@@ -86,10 +88,9 @@ const ViewFieldMaster = () => {
         onChange={e => setFilterText(e.target.value)} 
       />
       <Button size="sm" className="ms-3" onClick={() => refetch()}>Refresh</Button>
-      {loading ? (
-        <p>Loading data...</p>
-      ) : (
-        <DataTable 
+      {loading 
+       ? <p>Loading data...</p>
+       : <DataTable
           columns={columns} 
           data={filteredItems} 
           onRowClicked={onRowClicked} 
@@ -100,9 +101,9 @@ const ViewFieldMaster = () => {
           pagination
           highlightOnHover
           pointerOnHover
-          rowProps={(row) => ({ 'data-testid': `row-${row.id}` })}
+          keyField="fieldMasterId"
         />
-      )}
+      }
       {error && (
         <p>Error data:{error}</p>
       )}
