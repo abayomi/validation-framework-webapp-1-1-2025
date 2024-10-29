@@ -113,34 +113,30 @@ it('calls rowUpdate when Edit button is clicked', async () => {
   expect(mockNavigate).toHaveBeenCalledWith('/updatemasterobject/field', { state: { fieldData: mockData.FetchFieldMetaData[0] } });
 });
 
-it.only('calls onRowClicked and updates state when a row is clicked', async () => {
+it('calls onRowClicked and updates state when a row is clicked', async () => {
 
   useQuery.mockReturnValue({
     loading: false,
-    error: false,
-    data: false,
+    error: null,
+    data: mockData,
   });
 
   const mockReturn = jest.fn();
   const setRulesDataMock = jest.fn();
+  const setFilterTextMock = jest.fn();
   useDispatch.mockReturnValue(mockReturn);
-  useSelector.mockReturnValue(mockReturn);
-  rulesDataChange.mockReturnValue(mockReturn);
 
-  jest.spyOn(React, 'useEffect')
-    .mockImplementationOnce(() => ['', setRulesTableMock]);
   jest.spyOn(React, 'useState')
     .mockImplementationOnce(() => [[], setRulesDataMock]) // rulesData
-    .mockImplementationOnce(() => [mockData, setFilterTextMock]);
+    .mockImplementationOnce(() => ['', setFilterTextMock]);
 
   render(<ViewFieldMaster />);
-  screen.debug();
-  // const rowElement = screen.getByRole('row', { name: /row-123/i });
 
-  // expect(rowElement).not.toBeNull();
-  // fireEvent.click(rowElement);
-  // expect(useDispatch).toHaveBeenCalled();
-  // expect(setRulesTableMock).toHaveBeenCalledWith(true);
-  // expect(mockDispatch).toHaveBeenCalledWith(rulesDataChange(mockData.FetchFieldMetaData[0]));
-
+  const cellElements = screen.getAllByRole('cell');
+  const targetCell = cellElements.find(cell => cell.id === 'cell-1-undefined');
+  screen.debug(targetCell);
+  expect(targetCell).not.toBeNull();
+  fireEvent.click(targetCell);
+  expect(useDispatch).toHaveBeenCalled();
+  expect(setRulesDataMock).toHaveBeenCalled();
 });

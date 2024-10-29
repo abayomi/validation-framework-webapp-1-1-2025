@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { loadFetchFieldMetaData } from '../../graphql/queries'
 import RulesObject from './RulesObject';
+import { compileString } from "sass";
 
 const ViewFieldMaster = () => {
   
@@ -57,7 +58,7 @@ const ViewFieldMaster = () => {
     navigate(`/updatemasterobject/field`, { state: { fieldData } });
   };
 
-  const onRowClicked = (row, event) => {
+  const onRowClicked = (row) => {
     dispatch(rulesDataChange(row));
     setRulesData(row.rules);
   };
@@ -76,7 +77,7 @@ const ViewFieldMaster = () => {
         : data && <DataTable 
           columns={columns} 
           data={filteredItems} 
-          onRowClicked={onRowClicked} 
+          onRowClicked={(row, event)=>onRowClicked(row)} 
           selectableRows={true}
           selectableRowsSingle
           selectableRowSelected={row => row.isSelected}
@@ -84,7 +85,7 @@ const ViewFieldMaster = () => {
           pagination
           highlightOnHover
           pointerOnHover
-          rowProps={row => ({ 'data-testid': `row-${row.id}` })}
+          keyField={'123'}
         />
       }
       {error && (
