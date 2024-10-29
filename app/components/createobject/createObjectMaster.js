@@ -1,23 +1,11 @@
 "use client";
 import { useState } from "react";
-import withAuth from "../withAuth";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import { useAccordionButton } from 'react-bootstrap/AccordionButton';
-import Card from 'react-bootstrap/Card';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 
-import Accordion from 'react-bootstrap/Accordion';
 import CreateObjectFields from "./createObjectFields";
-
-function CustomToggle({ children, eventKey }) {
-  return (
-      "Field - " + eventKey
-  );
-}
-
-
 
 const CreateObjectMaster = ( props ) => {
   const { location } = props

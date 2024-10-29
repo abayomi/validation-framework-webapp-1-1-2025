@@ -1,10 +1,8 @@
 "use client";
 import { useState } from "react";
-import withAuth from "../withAuth";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { useAccordionButton } from 'react-bootstrap/AccordionButton';
-import Card from 'react-bootstrap/Card';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 
@@ -33,7 +31,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item }) 
             ...item,
             conditions: item?.conditions || []
     });
-    const [conditionCounter, setConditionCounter] = useState(0);    
+    const [conditionCounter, setConditionCounter] = useState(0);
     const [conditionItems, setConditionItems] = useState(item?.conditions || []);
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -49,7 +47,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item }) 
         const updatedRule = { ...rule, conditions: updatedConditions };
         setRule(updatedRule);
         onRuleChange(eventkey - 1, updatedRule);
-      };
+    };
 
     const onAddCondition = (event) => {
         let updatedConditionCounter = conditionCounter + 1

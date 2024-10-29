@@ -19,7 +19,7 @@ const CreateConditions = (props) => {
     };
 
     return (
-        <div>
+        <div data-testid={`create-conditions-${eventkey}`}>
             <Row eventkey={ eventkey }>
             <Form.Group as={Col} className="mb-3 col-3" controlId="type">
                 <Form.Select aria-label="Type" name="type" value={condition.type} onChange={handleConditionChange} disabled={disabled}>

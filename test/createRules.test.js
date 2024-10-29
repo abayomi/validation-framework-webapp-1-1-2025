@@ -90,4 +90,64 @@ describe('CreateRules Component', () => {
     deleteConditionButtonArray = screen.queryAllByRole('button', { name: /Delete Condition/i });
     expect(deleteConditionButtonArray).toHaveLength(0);
   });
+
+  test('handleConditionChange updates rule and calls onRuleChange', () => {
+    const mockSetRule = jest.fn();
+    const mockOnRuleChange = jest.fn();
+    const mockRule = {
+      conditions: [{ value: 'condition2' }]
+    };
+
+    jest.spyOn(React, 'useState')
+    .mockImplementationOnce((initial) => [initial, mockSetRule])
+  
+    render(
+      <CreateRules 
+        eventkey={1} 
+        isUpdate={false} 
+        deleteOnClick={jest.fn()} 
+        onRuleChange={mockOnRuleChange} 
+        item={mockRule} 
+      />
+    );
+  
+    const createConditionsElement = screen.getByTestId('create-conditions-1');
+    const textarea = createConditionsElement.querySelector('textarea');
+  
+    fireEvent.change(textarea, { target: { value: 'updatedCondition2' } });
+  
+    expect(mockSetRule).toHaveBeenCalledWith({
+      "conditions":  [{ value: 'updatedCondition2' }]
+    });
+  
+    // // 验证 onRuleChange 是否被正确调用
+    // expect(mockOnRuleChange).toHaveBeenCalledWith(0, {
+    //   ...mockRule,
+    //   conditions: ['condition1', 'updatedCondition2']
+    // });
+  });
+
+  test('increments conditionCounter', () => {
+    render(
+      <CreateRules 
+        eventkey={1} 
+        isUpdate={false} 
+        deleteOnClick={jest.fn()} 
+        onRuleChange={mockOnRuleChange} 
+        item={mockRule} 
+      />
+    );
+  
+    const counter = screen.getByTestId('counter');
+    const button = screen.getByText('Increment');
+  
+    // Initial state
+    expect(counter.textContent).toBe('0');
+  
+    // Simulate button click
+    fireEvent.click(button);
+  
+    // Updated state
+    expect(counter.textContent).toBe('1');
+  });
 });
