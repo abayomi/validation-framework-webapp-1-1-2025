@@ -12,7 +12,7 @@ const FieldsObject = ( props ) => {
     const [isRulesShown, setIsRulesShown] = useState(false);
     const [rulesData, setRulesData] = useState([]);
 
-    const tableColumns = [
+    const dataTableColumns = [
       {
         name: 'Object Name',
         selector: row => row.fieldName,
@@ -56,7 +56,7 @@ const FieldsObject = ( props ) => {
               highlightOnHover
               pointerOnHover
               pagination 
-              columns={tableColumns} 
+              columns={dataTableColumns} 
               data={selectedRow.fields}
               onRowClicked={clickRow}
             />

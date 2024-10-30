@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from '@apollo/client';
 import { useNavigate } from "react-router-dom";
-import { loadFetchFieldMetaData } from '../../graphql/queries'
+import { loadFetchFieldMetaData } from '../../graphql/objectMasterQueries'
 import withAuth from "../withAuth";
 import Button from 'react-bootstrap/Button';
 import DataTable from 'react-data-table-component';
@@ -44,12 +44,7 @@ const ViewObjectMaster = () => {
   const [rawRowList, setRawRowList] = useState([...mockData.data.FetchObjectMetaData]);
   const [currSelectedRow, setCurrSelectedRow] = useState(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-
-  }, []);
-
-  const tableColumns = [
+  const dataTableColumns = [
     {
       name: 'Object Name',
       selector: row => row.objectName,
@@ -96,7 +91,7 @@ const ViewObjectMaster = () => {
         selectableRowSelected={(row) => row.isSelected}
         selectableRows={true}
         checkbox={false}
-        columns={tableColumns}
+        columns={dataTableColumns}
         data={addPropertiesToRowList(rawRowList)}
         onRowClicked={clickRow}
       />
