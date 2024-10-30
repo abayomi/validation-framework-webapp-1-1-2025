@@ -1,13 +1,13 @@
 "use client";
 import { useState } from "react";
-import { useDispatch } from 'react-redux'
+import { useDispatch } from "react-redux";
 import { rulesDataChange } from "./formHomeSlice";
-import DataTable from 'react-data-table-component';
+import DataTable from "react-data-table-component";
 import RulesObject from "./RulesObject";
-import Button from 'react-bootstrap/Button';
+import Button from "react-bootstrap/Button";
 
 const FieldsObject = ( props ) => {
-    const { dataComeFrom, selectedRow } = props;
+    const { dataComeFrom, objectFieldsData } = props;
     const dispatch = useDispatch();
     const [isRulesShown, setIsRulesShown] = useState(false);
     const [rulesData, setRulesData] = useState([]);
@@ -57,7 +57,7 @@ const FieldsObject = ( props ) => {
               pointerOnHover
               pagination 
               columns={dataTableColumns} 
-              data={selectedRow.fields}
+              data={objectFieldsData}
               onRowClicked={clickRow}
             />
           </div>

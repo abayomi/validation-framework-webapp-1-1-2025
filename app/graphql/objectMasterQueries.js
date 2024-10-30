@@ -1,42 +1,52 @@
 import {gql} from '@apollo/client'
 
-// GraphQL Reference
-//   * Pagination https://graphql.org/learn/pagination/
-
-export const loadFetchObjectMasterList = gql`
-query MyQuery {
-  FetchObjectMasterList(dialectCode: us_en) {
-    objectMasterId
-    objectName
-  }
-}
-`;
-
-export const loadFetchFieldMetaData = gql`
-query MyQuery {
-  FetchFieldMetaData(dialectCode: us_en) {
-    fieldName
-    fieldMasterId
-    fieldMasterInUseInd
-    fieldDefinition
-    enterpriseFieldInd
-    rules {
-      id
-      isMandatory
-      longDescription
-      shortDescription
-      type
-      errorMessage
-      errorCode
-      conditions {
-        id
-        longDescription
-        shortDescription
-        type
-        value
+const graphqlForObjectMaster = {
+  FetchObjectMasterList: gql`
+    query MyQuery($dialectCode: DialectCodes!) {
+      FetchObjectMasterList(dialectCode: $dialectCode) {
+        cliRelRequiredInd
+        objMasterInUseInd
+        objectLabelName
+        objectMasterId
+        objectName
       }
     }
-  }
-}
-`;
+  `,
 
+  FetchObjectMetaDataByLabel: gql`
+    query MyQuery($dialectCode: DialectCodes!, $objectLabelName: String!) {
+      FetchObjectMetaDataByLabel(objectLabelName: $objectLabelName, dialectCode: $dialectCode) {
+        fields {
+          fieldXrefId
+          fieldName
+          fieldMasterName
+          fieldMasterId
+          fieldMasterDefinition
+          enterpriseFieldInd
+          rules {
+            conditions {
+              id
+              longDescription
+              shortDescription
+              type
+              value
+            }
+            errorCode
+            errorMessage
+            id
+            isMandatory
+            longDescription
+            shortDescription
+            type
+          }
+        }
+        objMasterInUseInd
+        objectLabelName
+        objectMasterId
+        objectName
+      }
+    }
+  `
+};
+
+export default graphqlForObjectMaster;
