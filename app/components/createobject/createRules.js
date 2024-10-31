@@ -35,7 +35,15 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item }) 
     const [conditionItems, setConditionItems] = useState(item?.conditions || []);
     const handleChange = (e) => {
         const { name, value } = e.target;
-        const updatedRule = { ...rule, [name]: value };
+        let updatedRule = { ...rule, [name]: value };
+
+        if (name === 'errorCode') {
+            const newErrorMessage = getErrorMessage(value);
+            updatedRule = { ...updatedRule, errorMessage: newErrorMessage };
+        }
+        if (name === 'type') {
+            updatedRule = { ...updatedRule, errorMessage: '' };
+        }
         setRule(updatedRule);
         onRuleChange(eventkey - 1, updatedRule);
     };
@@ -64,6 +72,42 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item }) 
         onRuleChange(eventkey - 1, updatedRule);
     }
 
+    const getErrorCodeOptions = (validationCode) => {
+        switch (validationCode) {
+            case '1':
+                return ['1', '6'];
+            case '2':
+                return ['2'];
+            case '3':
+                return ['3'];
+            case '4':
+                return ['4'];
+            case '5':
+                return ['5'];
+            default:
+                return [];
+        }
+    };
+
+    const getErrorMessage = (errorCode) => {
+        switch (errorCode) {
+            case '1':
+                return '%f: Value is invalid, based on the regular expression.';
+            case '2':
+                return '%f: Value is invalid, based on the API lookup.';
+            case '3':
+                return '%f: Value is invalid, based on the function code validation.';
+            case '4':
+                return '%f: Value can be blank.';
+            case '5':
+                return '%f: Value can be NULL.';
+            case '6':
+                return '%f: Century date must be 19 or 20.';
+            default:
+                return '';
+        }
+    };
+
     return (
         <div>
             <Accordion.Item eventkey={ eventkey }>
@@ -89,15 +133,13 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item }) 
                         <Form.Label>Validation error code</Form.Label>
                         <Form.Select aria-label="Validation error code" name="errorCode" value={rule.errorCode} onChange={handleChange} disabled={disabled}>
                             <option></option>
-                            <option value="1">One</option>
-                            <option value="2">Two</option>
-                            <option value="3">Three</option>
-                            <option value="4">Four</option>
-                            <option value="5">Five</option>
+                            {getErrorCodeOptions(rule.type).map(option => (
+                                <option key={option} value={option}>{option}</option>
+                            ))}
                         </Form.Select>
                     </Form.Group>   
 
-                    <Form.Group as={Col} className="mb-3" controlId="errorMessage">
+                    <Form.Group as={Col} className="mb-3" xs={5} controlId="errorMessage">
                         <Form.Label>Error message</Form.Label>
                         <Form.Control type="text" value={rule.errorMessage} placeholder="" disabled/>
                     </Form.Group>
@@ -106,14 +148,13 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item }) 
                         <Form.Label>Rule group Number</Form.Label>
                         <Form.Control type="text" name="ruleGroupNumber" value={rule.ruleGroupNumber} placeholder="" onChange={handleChange} disabled={disabled}/>
                     </Form.Group>
-
-                    <Form.Group as={Col} className="mb-3" controlId="errorMessage">
+                </Row>
+                <Row>
+                    <Form.Group as={Col} className="mb-3" xs={2} controlId="errorMessage">
                         <Form.Label>Mandatory rule indicator</Form.Label>
                         <center><Form.Check className="mb-3 col-3" type="checkbox" id="checkbox" name="mandatoryRuleInd" label="" onChange={handleChange} disabled={disabled}/></center>
                     </Form.Group>
-                </Row>
-                <Row>
-                    <Form.Group as={Col} className="mb-3" controlId="shortDescription0">
+                    <Form.Group as={Col} className="mb-3" xs={4} controlId="shortDescription0">
                         <Form.Label>Short Description</Form.Label>
                         <Form.Control type="text" name="shortDescription0" value={rule.shortDescription0} placeholder="" onChange={handleChange} disabled={disabled}/>
                     </Form.Group>
