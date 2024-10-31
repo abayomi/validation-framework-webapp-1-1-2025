@@ -15,7 +15,7 @@ const CREATE_ENTERPRISE_FIELD = gql`
     $dialectCode: DialectCodes!
     $fieldMasterInUseInd: Boolean!
     $enterpriseFieldInd: Boolean!
-    $rules: [FieldMasterRule]
+    $rule: FieldMasterRule
   ) {
     CreateEnterpriseField(field: {
       dialectCode: $dialectCode, 
@@ -23,7 +23,7 @@ const CREATE_ENTERPRISE_FIELD = gql`
       fieldDefinition: $fieldDefinition, 
       fieldMasterInUseInd: $fieldMasterInUseInd, 
       fieldName: $fieldName
-      rules: $rules
+      rule: $rule
     }) {
       fieldMasterId
       fieldName
@@ -126,7 +126,7 @@ const CreateFieldMasterObject = ( props ) => {
 
           return rule;
         });
-        variables.rules = rules;
+        variables.rule = rules[0];
       }
       console.log(variables);
       await createEnterpriseField({
