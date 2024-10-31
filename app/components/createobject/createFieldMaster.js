@@ -8,11 +8,6 @@ import CreateRules from "./createRules";
 
 import {gql, useMutation} from '@apollo/client';
 
-function CustomToggle({ children, eventKey }) {
-  return (
-      "Field - " + eventKey
-  );
-}
 const CREATE_ENTERPRISE_FIELD = gql`
   mutation CreateEnterpriseField(
     $fieldName: String!
@@ -20,7 +15,7 @@ const CREATE_ENTERPRISE_FIELD = gql`
     $dialectCode: DialectCodes!
     $fieldMasterInUseInd: Boolean!
     $enterpriseFieldInd: Boolean!
-    $rule: FieldMasterRule
+    $rules: [FieldMasterRule]
   ) {
     CreateEnterpriseField(field: {
       dialectCode: $dialectCode, 
@@ -28,7 +23,7 @@ const CREATE_ENTERPRISE_FIELD = gql`
       fieldDefinition: $fieldDefinition, 
       fieldMasterInUseInd: $fieldMasterInUseInd, 
       fieldName: $fieldName
-      rule: $rule
+      rules: $rules
     }) {
       fieldMasterId
       fieldName
@@ -120,7 +115,7 @@ const CreateFieldMasterObject = ( props ) => {
             ruleGroupNumber: item.ruleGroupNumber
           };
 
-          if (item.condition && item.condition.length > 0) {
+          if (item.conditions && item.conditions.length > 0) {
               rule.condition = item.conditions.map(condition => {
                   return {
                     ruleConditionTypeCode: condition.type,
@@ -131,7 +126,7 @@ const CreateFieldMasterObject = ( props ) => {
 
           return rule;
         });
-        variables.rule = rules[0];
+        variables.rules = rules;
       }
       console.log(variables);
       await createEnterpriseField({
