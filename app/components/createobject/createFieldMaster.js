@@ -5,7 +5,7 @@ import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
 import Accordion from 'react-bootstrap/Accordion';
 import CreateRules from "./createRules";
-
+import { useNavigate } from 'react-router-dom';
 import {gql, useMutation} from '@apollo/client';
 
 const CREATE_ENTERPRISE_FIELD = gql`
@@ -27,6 +27,7 @@ const CREATE_ENTERPRISE_FIELD = gql`
     }) {
       fieldMasterId
       fieldName
+      fieldDefinition
     }
   }
 `;
@@ -35,7 +36,7 @@ const CreateFieldMasterObject = ( props ) => {
   
   const { location } = props
   const isUpdate = Boolean(location.pathname === "/updatemasterobject/object" || location.pathname === "/updatemasterobject/field");
-
+  const navigate = useNavigate();
   const emptyFormData = {
     enterpriseFieldInd: false,
     fieldMasterInUseInd: false,
@@ -48,6 +49,9 @@ const CreateFieldMasterObject = ( props ) => {
   useEffect(() => {
     if (isUpdate && location.state) {
       const fieldData = location.state.fieldData;
+      if (!fieldData) {
+        return ;
+      }
       console.log(fieldData);
       setFormData(fieldData);
       if (fieldData.rules) {
@@ -64,8 +68,7 @@ const CreateFieldMasterObject = ( props ) => {
 
   const onAddBtnClick = (event) => {
     setRuleItems((prev) => [...prev, []]);
-    setRuleCounter(ruleCounter + 1)
-    console.log(ruleCounter);    
+    setRuleCounter(ruleCounter + 1);  
     console.log(ruleItems);
   };
 
@@ -129,10 +132,19 @@ const CreateFieldMasterObject = ( props ) => {
         variables.rule = rules[0];
       }
       console.log(variables);
-      await createEnterpriseField({
+      const response = await createEnterpriseField({
         variables,
       });
-      console.log('Form submitted successfully');
+      const newData = response.data['CreateEnterpriseField'][0];
+      const newFieldMaster = { 
+        'fieldMasterId': newData.fieldMasterId,
+        'fieldName': newData.fieldName,
+        'enterpriseFieldInd': variables.enterpriseFieldInd,
+        'fieldMasterInUseInd': variables.fieldMasterInUseInd,
+        'fieldDefinition': newData.fieldDefinition,
+        'rules':[],
+      };
+      navigate(`/updatemasterobject/field`, { state: { fieldData: newFieldMaster } });
     } catch (error) {
       console.error('Error submitting form:', error);
     }
@@ -147,9 +159,13 @@ const CreateFieldMasterObject = ( props ) => {
         )}
       
       <Form onSubmit={handleSubmit}>
+        <Form.Group className="mb-3 col-3" as={Col} controlId="fieldMasterId">
+          <Form.Label>Field Master ID</Form.Label>
+          <Form.Control type="text" placeholder="" value={formData.fieldMasterId} disabled/>
+        </Form.Group>
         <Form.Group className="mb-3 col-3" as={Col} controlId="dialectCode">
           <Form.Label>Dialect code</Form.Label>
-          <Form.Select aria-label="Dialect code" value={formData.dialectCode} onChange={handleInputChange} disabled={isUpdate} >
+          <Form.Select aria-label="Dialect code" value={formData.dialectCode} onChange={handleInputChange} disabled={isUpdate} required>
             <option value=""></option>
             <option value="us_en">us_en</option>
             <option value="ca_en">ca_en</option>
@@ -160,11 +176,11 @@ const CreateFieldMasterObject = ( props ) => {
         </Form.Group>
         <Form.Group className="mb-3 col-3" as={Col} controlId="fieldName">
           <Form.Label>Field Name</Form.Label>
-          <Form.Control type="text" placeholder="" value={formData.fieldName} onChange={handleInputChange} disabled={isUpdate} />
+          <Form.Control type="text" placeholder="" value={formData.fieldName} onChange={handleInputChange} disabled={isUpdate} required/>
         </Form.Group>
         <Form.Group className="mb-3 col-3" as={Col} controlId="fieldDefinition">
           <Form.Label>Field Definition</Form.Label>
-          <Form.Control type="text" placeholder="" value={formData.fieldDefinition} onChange={handleInputChange} disabled={isUpdate} />
+          <Form.Control type="text" placeholder="" value={formData.fieldDefinition} onChange={handleInputChange} disabled={isUpdate} required/>
         </Form.Group>
         <Form.Check className="mb-3 col-3" 
           type="checkbox"
@@ -182,7 +198,7 @@ const CreateFieldMasterObject = ( props ) => {
           onChange={handleInputChange}
           disabled={isUpdate}
         />
-        <Button className="mb-3" variant="info" size="sm" onClick={onAddBtnClick}>Add Rules</Button>
+        {isUpdate && <Button className="mb-3" variant="info" size="sm" onClick={onAddBtnClick}>Add Rules</Button>}
         <Accordion className="mb-3" defaultActiveKey="0" flush>
         {ruleItems.map((item, index) => {
             return (
@@ -196,9 +212,9 @@ const CreateFieldMasterObject = ( props ) => {
           })}
         </Accordion>
 
-        <Button variant="primary" type="submit">
+        {!isUpdate && <Button variant="primary" type="submit">
           Submit
-        </Button>
+        </Button>}
       </Form>
       {loading && <p>Submitting...</p>}
       {error && <p>Error: {error.message}</p>}
