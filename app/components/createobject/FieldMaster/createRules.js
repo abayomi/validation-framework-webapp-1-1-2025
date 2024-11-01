@@ -10,31 +10,62 @@ import Accordion from 'react-bootstrap/Accordion';
 import CreateConditions from './createConditions';
 import {validationCodeOptions, getErrorCodeOptions, errorMessageOptions} from './ruleValidationCodeMap';
 
+import {gql, useMutation} from '@apollo/client';
 
-function CustomToggle({ eventkey, deleteOnClick }) {
-    const decoratedOnClick = useAccordionButton(eventkey);
-  
-    return (
-      <div className="d-flex justify-content-between align-items-center w-100 p-2">
-        <span onClick={decoratedOnClick} style={{ cursor: 'pointer' }}>
-          Rule - {eventkey}
-        </span>
-        <Button variant="danger" size="sm" onClick={(e) => deleteOnClick(e, eventkey)}>
-          Delete
-        </Button>
-      </div>
-    );
+const ADD_RULE_TO_ENTERPRISE_FIELD = gql`
+  mutation AddRuleToEnterpriseField(
+    $fieldMasterId: ID!
+    $dialectCode: DialectCodes!
+    $validationRuleCode: ID!
+    $validationErrorCode: ID!
+    $mandatoryRuleInd: Boolean!
+    $description: FieldMasterRuleDescription!
+    $ruleGroupNumber: Int!
+  ) {
+    AddRuleToEnterpriseField(rule: {
+      fieldMasterId: $fieldMasterId, 
+      dialectCode: $dialectCode, 
+      validationRuleCode: $validationRuleCode, 
+      validationErrorCode: $validationErrorCode, 
+      mandatoryRuleInd: $mandatoryRuleInd
+      description: $description
+      ruleGroupNumber: $ruleGroupNumber
+    }) {
+      fieldMasterId
+    }
   }
+`;
 
-const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item }) => {
+function CustomToggle({ id, eventkey, hidden, deleteOnClick, submitOnClick }) {
+    const decoratedOnClick = useAccordionButton(eventkey);
 
-    const disabled = isUpdate && item.length > 0;
+    return (
+        <div className="d-flex justify-content-between align-items-center w-100 p-2">
+            <div className="d-flex align-items-center">
+                <span onClick={decoratedOnClick} style={{ cursor: 'pointer' }}>
+                    Rule - {id ? id : 0}
+                </span>
+                <Button variant="success" size="sm" onClick={(e) => submitOnClick(e, eventkey)} className="ms-3" hidden={hidden}>
+                    Submit
+                </Button>
+            </div>
+            <Button variant="danger" size="sm" onClick={(e) => deleteOnClick(e, eventkey)}>
+                Delete
+            </Button>
+        </div>
+    );
+}
+
+const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fieldMasterId = 0 }) => {
+    console.log("============================CreateRules====", item);
+    const disabled = isUpdate && item.id > 0;
     const [rule, setRule] = useState({
             ...item,
             conditions: item?.conditions || []
     });
     const [conditionCounter, setConditionCounter] = useState(0);
     const [conditionItems, setConditionItems] = useState(item?.conditions || []);
+    const [addRuleToEnterpriseField, { data, loading, error }] = useMutation(ADD_RULE_TO_ENTERPRISE_FIELD);
     const handleChange = (e) => {
         const { name, value } = e.target;
         let updatedRule = { ...rule, [name]: value };
@@ -46,6 +77,34 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item }) 
         setRule(updatedRule);
         onRuleChange(eventkey - 1, updatedRule);
     };
+
+    const handleSubmit = async (e) => {
+        console.log("==========================handleSubmit===="), e;
+        e.preventDefault();
+        try {
+          const variables = {
+            fieldMasterId: fieldMasterId,
+            dialectCode: "us_en",
+            validationRuleCode: rule.type,
+            validationErrorCode: rule.errorCode,
+            mandatoryRuleInd: rule.mandatoryRuleInd,
+            description: {
+                shortDescription: rule.shortDescription || 'test',
+                longDescription: rule.longDescription || '',
+              },
+            ruleGroupNumber: rule.ruleGroupNumber,
+          };
+    
+          console.log(variables);
+          const response = await addRuleToEnterpriseField({
+            variables,
+          });
+          console.log("==============================response=========", response);
+
+        } catch (error) {
+          console.error('Error submitting form:', error);
+        }
+      };
 
     const handleConditionChange = (index, updatedCondition) => {
         const updatedConditions = [...rule.conditions];
@@ -74,7 +133,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item }) 
     return (
         <div>
             <Accordion.Item eventkey={ eventkey }>
-            <CustomToggle eventkey={eventkey} deleteOnClick={deleteOnClick} />
+            <CustomToggle id={rule.id} eventkey={eventkey} hidden={disabled} deleteOnClick={deleteOnClick} submitOnClick={handleSubmit}/>
             <Accordion.Collapse eventKey={eventkey}>  
             <div className="p-2">
                 <Row>
@@ -109,15 +168,18 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item }) 
                 <Row>
                     <Form.Group as={Col} className="mb-3" xs={2} controlId="errorMessage">
                         <Form.Label>Mandatory Rule Indicator</Form.Label>
-                        <center><Form.Check className="mb-3 col-3" type="checkbox" id="checkbox" name="mandatoryRuleInd" label="" onChange={handleChange} disabled={disabled}/></center>
+                        <center>
+                            <Form.Check className="mb-3 col-3" type="checkbox" id="mandatoryRuleInd" 
+                            name="mandatoryRuleInd" label="" onChange={handleChange} value={rule.mandatoryRuleInd} disabled={disabled}/>
+                        </center>
                     </Form.Group>
-                    <Form.Group as={Col} className="mb-3" xs={4} controlId="shortDescription0">
+                    <Form.Group as={Col} className="mb-3" xs={4} controlId="shortDescription">
                         <Form.Label>Short Description</Form.Label>
-                        <Form.Control type="text" name="shortDescription0" value={rule.shortDescription0} placeholder="" onChange={handleChange} disabled={disabled} required/>
+                        <Form.Control type="text" name="shortDescription" value={rule.shortDescription} placeholder="" onChange={handleChange} disabled={disabled} required/>
                     </Form.Group>
-                    <Form.Group as={Col} className="mb-3" controlId="longDescription0">
+                    <Form.Group as={Col} className="mb-3" controlId="longDescription">
                         <Form.Label>Long Description</Form.Label>
-                        <Form.Control type="text" name="longDescription0" value={rule.longDescription0} placeholder="" onChange={handleChange} disabled={disabled}/>
+                        <Form.Control type="text" name="longDescription" value={rule.longDescription} placeholder="" onChange={handleChange} disabled={disabled}/>
                     </Form.Group>
                 </Row>
                 <h4 className="title is-1">Conditions

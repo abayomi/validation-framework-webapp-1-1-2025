@@ -207,7 +207,8 @@ const CreateFieldMasterObject = ( props ) => {
                 isUpdate={isUpdate} 
                 deleteOnClick={deleteOnClick}
                 onRuleChange={handleRuleChange}
-                item={item} />
+                item={item} 
+                fieldMasterId={formData.fieldMasterId}/>
             );
           })}
         </Accordion>
