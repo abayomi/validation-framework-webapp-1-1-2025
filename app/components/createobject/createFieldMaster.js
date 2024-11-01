@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
 import Accordion from 'react-bootstrap/Accordion';
-import CreateRules from "./createRules";
+import CreateRules from "./FieldMaster/createRules";
 import { useNavigate } from 'react-router-dom';
 import {gql, useMutation} from '@apollo/client';
 

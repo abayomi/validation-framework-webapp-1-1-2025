@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import configureMockStore from 'redux-mock-store';
-import CreateConditions from '../app/components/createobject/createConditions';
+import CreateConditions from '../app/components/createobject/FieldMaster/createConditions';
 
 describe('CreateConditions Component', () => {
   const mockPropsCreate = {
