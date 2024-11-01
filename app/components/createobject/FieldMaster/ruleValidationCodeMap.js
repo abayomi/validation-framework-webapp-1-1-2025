@@ -16,6 +16,15 @@ export const errorMessageOptions = {
     '6': '6 - %f: Century date must be 19 or 20.'
 };
 
+export const conditionTypeOptions = {
+    '1': '1 - Regex',
+    '2': '2 - API Parameters',
+    '3': '3 - API Id',
+    '4': '4 - Function Body',
+    '5': '5 - ARG Names',
+    '6': '6 - ARG Params'
+};
+
 export const getErrorCodeOptions = (validationCode) => {
     switch (validationCode) {
         case '1':
