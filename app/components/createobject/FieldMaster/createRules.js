@@ -82,7 +82,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item }) 
                 
                     <Form.Group as={Col} xs={3} className="mb-3" controlId="validationRuleCode">
                         <Form.Label>Validation Code</Form.Label>
-                            <Form.Select aria-label="Validation code" name="type" value={rule.type} onChange={handleChange} disabled={disabled}>
+                            <Form.Select aria-label="Validation code" name="type" value={rule.type} onChange={handleChange} disabled={disabled} required>
                                 <option></option>
                                 {Object.entries(validationCodeOptions).map(([key, value]) => (
                                     <option key={key} value={key}>{value}</option>
@@ -92,7 +92,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item }) 
 
                     <Form.Group as={Col} className="mb-3" xs={6} controlId="errorCode">
                         <Form.Label>Validation Error Code</Form.Label>
-                        <Form.Select aria-label="Validation errorMessage" name="type" value={rule.errorCode} onChange={handleChange} disabled={disabled}>
+                        <Form.Select aria-label="Validation errorMessage" name="type" value={rule.errorCode} onChange={handleChange} disabled={disabled} required>
                         {getErrorCodeOptions(rule.type).map((key) => (
                         <option key={key} value={key}>
                             {errorMessageOptions[key]}
@@ -103,7 +103,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item }) 
                     
                     <Form.Group as={Col} className="mb-3" controlId="ruleGroupNumber">
                         <Form.Label>Rule Group Number</Form.Label>
-                        <Form.Control type="text" name="ruleGroupNumber" value={rule.ruleGroupNumber} placeholder="" onChange={handleChange} disabled={disabled}/>
+                        <Form.Control type="text" name="ruleGroupNumber" value={rule.ruleGroupNumber} placeholder="" onChange={handleChange} disabled={disabled} required/>
                     </Form.Group>
                 </Row>
                 <Row>
@@ -113,7 +113,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item }) 
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" xs={4} controlId="shortDescription0">
                         <Form.Label>Short Description</Form.Label>
-                        <Form.Control type="text" name="shortDescription0" value={rule.shortDescription0} placeholder="" onChange={handleChange} disabled={disabled}/>
+                        <Form.Control type="text" name="shortDescription0" value={rule.shortDescription0} placeholder="" onChange={handleChange} disabled={disabled} required/>
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" controlId="longDescription0">
                         <Form.Label>Long Description</Form.Label>

@@ -23,7 +23,7 @@ const CreateConditions = (props) => {
         <div data-testid={`create-conditions-${eventkey}`}>
             <Row eventkey={ eventkey }>
             <Form.Group as={Col} className="mb-3 col-3" controlId="type">
-                <Form.Select aria-label="Type" name="type" value={condition.type} onChange={handleConditionChange} disabled={disabled}>
+                <Form.Select aria-label="Type" name="type" value={condition.type} onChange={handleConditionChange} disabled={disabled} required>
                 <option></option>
                 {Object.entries(conditionTypeOptions).map(([key, value]) => (
                     <option key={key} value={key}>{value}</option>
@@ -39,6 +39,7 @@ const CreateConditions = (props) => {
                 style={{ height: '100px' }}
                 onChange={handleConditionChange}
                 disabled={disabled}
+                required
                 />
             </Form.Group>
             <Form.Group as={Col} className="mb-3 col-3" controlId="">
