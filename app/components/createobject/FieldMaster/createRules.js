@@ -32,6 +32,7 @@ const ADD_RULE_TO_ENTERPRISE_FIELD = gql`
       ruleGroupNumber: $ruleGroupNumber
     }) {
       fieldMasterId
+      rules
     }
   }
 `;
