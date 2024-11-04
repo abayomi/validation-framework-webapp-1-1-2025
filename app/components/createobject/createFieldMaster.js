@@ -33,7 +33,6 @@ const CREATE_ENTERPRISE_FIELD = gql`
 `;
 
 const CreateFieldMasterObject = ( props ) => {
-  
   const { location } = props
   const isUpdate = Boolean(location.pathname === "/updatemasterobject/object" || location.pathname === "/updatemasterobject/field");
   const navigate = useNavigate();
@@ -52,7 +51,6 @@ const CreateFieldMasterObject = ( props ) => {
       if (!fieldData) {
         return ;
       }
-      console.log(fieldData);
       setFormData(fieldData);
       if (fieldData.rules) {
         setRuleItems(fieldData.rules);

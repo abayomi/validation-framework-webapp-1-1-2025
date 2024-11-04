@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { useAccordionButton } from 'react-bootstrap/AccordionButton';
@@ -10,32 +11,9 @@ import Accordion from 'react-bootstrap/Accordion';
 import CreateConditions from './createConditions';
 import {validationCodeOptions, getErrorCodeOptions, errorMessageOptions} from './ruleValidationCodeMap';
 
-import {gql, useMutation} from '@apollo/client';
+import {useMutation} from '@apollo/client';
 
-const ADD_RULE_TO_ENTERPRISE_FIELD = gql`
-  mutation AddRuleToEnterpriseField(
-    $fieldMasterId: ID!
-    $dialectCode: DialectCodes!
-    $validationRuleCode: ID!
-    $validationErrorCode: ID!
-    $mandatoryRuleInd: Boolean!
-    $description: FieldMasterRuleDescription!
-    $ruleGroupNumber: Int!
-  ) {
-    AddRuleToEnterpriseField(rule: {
-      fieldMasterId: $fieldMasterId, 
-      dialectCode: $dialectCode, 
-      validationRuleCode: $validationRuleCode, 
-      validationErrorCode: $validationErrorCode, 
-      mandatoryRuleInd: $mandatoryRuleInd
-      description: $description
-      ruleGroupNumber: $ruleGroupNumber
-    }) {
-      fieldMasterId
-      rules
-    }
-  }
-`;
+import {ADD_RULE_TO_ENTERPRISE_FIELD} from '../../../graphql/addRuleToEnterpriseField';
 
 function CustomToggle({ id, eventkey, hidden, deleteOnClick, submitOnClick }) {
     const decoratedOnClick = useAccordionButton(eventkey);
@@ -58,8 +36,8 @@ function CustomToggle({ id, eventkey, hidden, deleteOnClick, submitOnClick }) {
 }
 
 const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fieldMasterId = 0 }) => {
-    console.log("============================CreateRules====", item);
     const disabled = isUpdate && item.id > 0;
+    const navigate = useNavigate();
     const [rule, setRule] = useState({
             ...item,
             conditions: item?.conditions || []
@@ -67,6 +45,15 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
     const [conditionCounter, setConditionCounter] = useState(0);
     const [conditionItems, setConditionItems] = useState(item?.conditions || []);
     const [addRuleToEnterpriseField, { data, loading, error }] = useMutation(ADD_RULE_TO_ENTERPRISE_FIELD);
+
+    useEffect(() => {
+        setRule({
+            ...item,
+            id: item?.id,
+            conditions: item?.conditions || []
+        });
+    }, [item]);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         let updatedRule = { ...rule, [name]: value };
@@ -80,7 +67,6 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
     };
 
     const handleSubmit = async (e) => {
-        console.log("==========================handleSubmit===="), e;
         e.preventDefault();
         try {
           const variables = {
@@ -88,20 +74,24 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
             dialectCode: "us_en",
             validationRuleCode: rule.type,
             validationErrorCode: rule.errorCode,
-            mandatoryRuleInd: rule.mandatoryRuleInd,
+            mandatoryRuleInd: rule.mandatoryRuleInd ?? false,
             description: {
                 shortDescription: rule.shortDescription || 'test',
                 longDescription: rule.longDescription || '',
               },
-            ruleGroupNumber: rule.ruleGroupNumber,
+            ruleGroupNumber: 10
           };
     
           console.log(variables);
           const response = await addRuleToEnterpriseField({
             variables,
           });
-          console.log("==============================response=========", response);
-
+          if (response.data) {
+            const newFieldMaster = response['data']['AddRuleToEnterpriseField'][0];
+            navigate(`/updatemasterobject/field`, { state: { fieldData: newFieldMaster } });
+          } else if (response.errors) {
+            console.error('Mutation failed:', response.errors);
+          }
         } catch (error) {
           console.error('Error submitting form:', error);
         }
@@ -163,7 +153,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
                     
                     <Form.Group as={Col} className="mb-3" controlId="ruleGroupNumber">
                         <Form.Label>Rule Group Number</Form.Label>
-                        <Form.Control type="text" name="ruleGroupNumber" value={rule.ruleGroupNumber} placeholder="" onChange={handleChange} disabled={disabled} required/>
+                        <Form.Control type="text" name="ruleGroupNumber" value={rule.ruleGroupNumber ?? 0} placeholder="" onChange={handleChange} disabled={disabled} required/>
                     </Form.Group>
                 </Row>
                 <Row>
@@ -171,7 +161,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
                         <Form.Label>Mandatory Rule Indicator</Form.Label>
                         <center>
                             <Form.Check className="mb-3 col-3" type="checkbox" id="mandatoryRuleInd" 
-                            name="mandatoryRuleInd" label="" onChange={handleChange} value={rule.mandatoryRuleInd} disabled={disabled}/>
+                            name="mandatoryRuleInd" label="" onChange={handleChange} value={rule.mandatoryRuleInd ?? false} disabled={disabled}/>
                         </center>
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" xs={4} controlId="shortDescription">
