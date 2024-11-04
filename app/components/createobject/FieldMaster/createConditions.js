@@ -9,7 +9,7 @@ import {conditionTypeOptions} from './ruleValidationCodeMap';
 const CreateConditions = (props) => {
     const {deleteRow, eventkey, isUpdate, onConditionChange, item } = props
 
-    const disabled = isUpdate && item.length > 0;
+    const disabled = isUpdate && item;
     const [condition, setCondition] = useState( item || []);
     const handleConditionChange = (e) => {
         const { name, value } = e.target;

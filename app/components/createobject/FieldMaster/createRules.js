@@ -53,6 +53,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
             id: item?.id,
             conditions: item?.conditions || []
         });
+        setConditionItems(item.conditions || []);
     }, [item]);
 
     const handleChange = (e) => {
