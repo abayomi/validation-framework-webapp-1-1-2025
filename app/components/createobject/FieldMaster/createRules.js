@@ -165,7 +165,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
 
                     <Form.Group as={Col} className="mb-3" xs={6} controlId="errorCode">
                         <Form.Label>Validation Error Code</Form.Label>
-                        <Form.Select aria-label="Validation errorMessage" name="type" value={rule.errorCode} onChange={handleChange} disabled={disabled} required>
+                        <Form.Select aria-label="Validation errorMessage" name="errorCode" value={rule.errorCode} onChange={handleChange} disabled={disabled} required>
                         {getErrorCodeOptions(rule.type).map((key) => (
                         <option key={key} value={key}>
                             {errorMessageOptions[key]}
