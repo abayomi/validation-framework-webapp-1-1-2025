@@ -42,3 +42,40 @@ export const getErrorCodeOptions = (validationCode) => {
     }
 };
 
+export const getConditions = (validationCode) => {
+    switch (validationCode) {
+        case '1':
+            return [{
+                type: '1',
+                value: null
+            }];
+        case '2':
+            return [
+                {
+                    type: '2',
+                    value: null
+                },
+                {
+                    type: '3',
+                    value: null
+                }];
+        case '3':
+            return [
+                {
+                    type: '4',
+                    value: null
+                },
+                {
+                    type: '5',
+                    value: null
+                },
+                {
+                    type: '6',
+                    value: null
+                }];
+        default:
+            return [];
+    }
+};
+
+

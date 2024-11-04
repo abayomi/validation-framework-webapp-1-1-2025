@@ -9,7 +9,7 @@ import Col from 'react-bootstrap/Col';
 
 import Accordion from 'react-bootstrap/Accordion';
 import CreateConditions from './createConditions';
-import {validationCodeOptions, getErrorCodeOptions, errorMessageOptions} from './ruleValidationCodeMap';
+import {validationCodeOptions, getErrorCodeOptions, errorMessageOptions, getConditions} from './ruleValidationCodeMap';
 
 import {useMutation} from '@apollo/client';
 
@@ -53,12 +53,14 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
             id: item?.id,
             conditions: item?.conditions || []
         });
-        const valid_conditions = item.conditions.filter(condition => {
-            if (condition.id) {
-                return condition;
-            }
-        });
-        setConditionItems(valid_conditions || []);
+        if (item?.conditions) {
+            const valid_conditions = item.conditions.filter(condition => {
+                if (condition.id) {
+                    return condition;
+                }
+            });
+            setConditionItems(valid_conditions || []);
+        }
     }, [item]);
 
     const handleChange = (e) => {
@@ -67,10 +69,15 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
 
         if (name === 'type') {
             const errorCodes = getErrorCodeOptions(value);
-            updatedRule = { ...updatedRule, errorCode: errorCodes[0] };
+            const conditions = getConditions(value);
+            updatedRule = { ...updatedRule, errorCode: errorCodes[0], conditions: conditions };
+            console.log('handleChange======================', updatedRule);
+            setRule(updatedRule);
+            setConditionItems(conditions);
+            
+        } else {
+            setRule(updatedRule);
         }
-        setRule(updatedRule);
-        onRuleChange(eventkey - 1, updatedRule);
     };
 
     const handleSubmit = async (e) => {
@@ -191,9 +198,17 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
                 </Row>
                 {conditionItems.length > 0 && <h4 className="title is-1">Conditions</h4>}
 
-                {conditionItems.map((condition, key) => (
-                    <CreateConditions isUpdate={isUpdate} id={key} eventkey={key + 1} deleteRow={deleteRow} onConditionChange={handleConditionChange} item={condition}/>
-                ))}
+                {conditionItems.map((condition, key) => {
+                    console.log('Condition Items:===============================', condition);
+                    return (
+                        <CreateConditions 
+                            isUpdate={isUpdate} 
+                            eventkey={key} 
+                            onConditionChange={handleConditionChange} 
+                            item={condition}
+                        />
+                    );
+                })}
             </div>
             </Accordion.Collapse>
             </Accordion.Item>
