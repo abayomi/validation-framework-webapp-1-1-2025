@@ -16,6 +16,7 @@ import {useMutation} from '@apollo/client';
 import {ADD_RULE_TO_ENTERPRISE_FIELD} from '../../../graphql/addRuleToEnterpriseField';
 
 function CustomToggle({ eventkey, hidden, deleteOnClick, submitOnClick }) {
+
     const decoratedOnClick = useAccordionButton(eventkey);
 
     return (
@@ -69,31 +70,42 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-          const variables = {
-            fieldMasterId: fieldMasterId,
-            dialectCode: "us_en",
-            validationRuleCode: rule.type,
-            validationErrorCode: rule.errorCode,
-            mandatoryRuleInd: rule.mandatoryRuleInd ?? false,
-            description: {
-                shortDescription: rule.shortDescription || 'test',
-                longDescription: rule.longDescription || '',
-              },
-            ruleGroupNumber: rule.ruleGroupNumber
-          };
-    
-          console.log(variables);
-          const response = await addRuleToEnterpriseField({
-            variables,
-          });
+            const variables = {
+                fieldMasterId: fieldMasterId,
+                dialectCode: "us_en",
+                validationRuleCode: rule.type,
+                validationErrorCode: rule.errorCode,
+                mandatoryRuleInd: rule.mandatoryRuleInd ?? false,
+                description: {
+                    shortDescription: rule.shortDescription || 'test',
+                    longDescription: rule.longDescription || '',
+                },
+                ruleGroupNumber: rule.ruleGroupNumber
+            };
+
+            if (rule.conditions && rule.conditions.length > 0) {
+                variables.condition = rule.conditions.map(condition => {
+                    return {
+                        ruleConditionTypeCode: condition.type,
+                        ruleConditionValue: condition.value,
+                    }
+                });
+            }
+
+            console.log(variables);
+            const response = await addRuleToEnterpriseField({
+                variables,
+            });
           if (response.data) {
             const newFieldMaster = response['data']['AddRuleToEnterpriseField'][0];
             navigate(`/updatemasterobject/field`, { state: { fieldData: newFieldMaster } });
           } else if (response.errors) {
+            alert(response.errors);
             console.error('Mutation failed:', response.errors);
           }
         } catch (error) {
-          console.error('Error submitting form:', error);
+            alert(error);
+            console.error('Error submitting form:', error);
         }
       };
 

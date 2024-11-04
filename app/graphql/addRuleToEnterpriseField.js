@@ -9,6 +9,7 @@ mutation AddRuleToEnterpriseField(
   $mandatoryRuleInd: Boolean!
   $description: FieldMasterRuleDescription!
   $ruleGroupNumber: Int!
+  $condition: [FieldMasterRuleCondition!]
 ) {
   AddRuleToEnterpriseField(rule: {
     fieldMasterId: $fieldMasterId, 
@@ -18,6 +19,7 @@ mutation AddRuleToEnterpriseField(
     mandatoryRuleInd: $mandatoryRuleInd
     description: $description
     ruleGroupNumber: $ruleGroupNumber
+    condition: $condition
   }) {
     fieldMasterId
     fieldName
