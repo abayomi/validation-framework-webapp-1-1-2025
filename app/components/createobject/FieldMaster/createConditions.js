@@ -10,6 +10,11 @@ const CreateConditions = (props) => {
     const {eventkey, isUpdate, onConditionChange, item } = props
     const disabled = isUpdate && item.id;
     const [condition, setCondition] = useState( item || []);
+
+    useEffect(() => {
+        setCondition(item || {});
+    }, [item]);
+
     const handleConditionChange = (e) => {
         const { name, value } = e.target;
 
