@@ -37,6 +37,7 @@ const CreateFieldMasterObject = ( props ) => {
   const isUpdate = Boolean(location.pathname === "/updatemasterobject/object" || location.pathname === "/updatemasterobject/field");
   const navigate = useNavigate();
   const emptyFormData = {
+    fieldMasterId: '',
     enterpriseFieldInd: false,
     fieldMasterInUseInd: false,
     fieldName:'',
@@ -176,9 +177,9 @@ const CreateFieldMasterObject = ( props ) => {
           <Form.Label>Field Name</Form.Label>
           <Form.Control type="text" placeholder="" value={formData.fieldName} onChange={handleInputChange} disabled={isUpdate} required/>
         </Form.Group>
-        <Form.Group className="mb-3 col-3" as={Col} controlId="fieldDefinition">
+        <Form.Group className="mb-3 col-10" as={Col} controlId="fieldDefinition">
           <Form.Label>Field Definition</Form.Label>
-          <Form.Control type="text" placeholder="" value={formData.fieldDefinition} onChange={handleInputChange} disabled={isUpdate} required/>
+          <Form.Control as="textarea" rows={2} placeholder="" value={formData.fieldDefinition} onChange={handleInputChange} disabled={isUpdate} required/>
         </Form.Group>
         <Form.Check className="mb-3 col-3" 
           type="checkbox"
