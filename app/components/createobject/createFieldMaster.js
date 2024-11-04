@@ -201,7 +201,7 @@ const CreateFieldMasterObject = ( props ) => {
         {ruleItems.map((item, index) => {
             return (
               <CreateRules
-                eventkey={index + 1} 
+                eventkey={item.id ?? '0'} 
                 isUpdate={isUpdate} 
                 deleteOnClick={deleteOnClick}
                 onRuleChange={handleRuleChange}

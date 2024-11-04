@@ -15,14 +15,14 @@ import {useMutation} from '@apollo/client';
 
 import {ADD_RULE_TO_ENTERPRISE_FIELD} from '../../../graphql/addRuleToEnterpriseField';
 
-function CustomToggle({ id, eventkey, hidden, deleteOnClick, submitOnClick }) {
+function CustomToggle({ eventkey, hidden, deleteOnClick, submitOnClick }) {
     const decoratedOnClick = useAccordionButton(eventkey);
 
     return (
         <div className="d-flex justify-content-between align-items-center w-100 p-2">
             <div className="d-flex align-items-center">
                 <span onClick={decoratedOnClick} style={{ cursor: 'pointer' }}>
-                    Rule - {id ? id : 0}
+                    Rule - {eventkey == '0' ? 'new' : eventkey}
                 </span>
                 <Button variant="success" size="sm" onClick={(e) => submitOnClick(e, eventkey)} className="ms-3" hidden={hidden}>
                     Submit
@@ -79,7 +79,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
                 shortDescription: rule.shortDescription || 'test',
                 longDescription: rule.longDescription || '',
               },
-            ruleGroupNumber: 10
+            ruleGroupNumber: rule.ruleGroupNumber
           };
     
           console.log(variables);
@@ -124,7 +124,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
     return (
         <div>
             <Accordion.Item eventkey={ eventkey }>
-            <CustomToggle id={rule.id} eventkey={eventkey} hidden={disabled} deleteOnClick={deleteOnClick} submitOnClick={handleSubmit}/>
+            <CustomToggle eventkey={eventkey} hidden={disabled} deleteOnClick={deleteOnClick} submitOnClick={handleSubmit}/>
             <Accordion.Collapse eventKey={eventkey}>  
             <div className="p-2">
                 <Row>
@@ -153,7 +153,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
                     
                     <Form.Group as={Col} className="mb-3" controlId="ruleGroupNumber">
                         <Form.Label>Rule Group Number</Form.Label>
-                        <Form.Control type="text" name="ruleGroupNumber" value={rule.ruleGroupNumber ?? 0} placeholder="" onChange={handleChange} disabled={disabled} required/>
+                        <Form.Control type="text" name="ruleGroupNumber" value={rule.ruleGroupNumber} placeholder="" onChange={handleChange} disabled={disabled} required/>
                     </Form.Group>
                 </Row>
                 <Row>
