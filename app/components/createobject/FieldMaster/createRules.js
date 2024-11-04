@@ -53,7 +53,12 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
             id: item?.id,
             conditions: item?.conditions || []
         });
-        setConditionItems(item.conditions || []);
+        const valid_conditions = item.conditions.filter(condition => {
+            if (condition.id) {
+                return condition;
+            }
+        });
+        setConditionItems(valid_conditions || []);
     }, [item]);
 
     const handleChange = (e) => {
@@ -141,8 +146,6 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
             <Accordion.Collapse eventKey={eventkey}>  
             <div className="p-2">
                 <Row>
-                    {/* <h4 className="title is-1">Rules</h4> */}
-                
                     <Form.Group as={Col} xs={3} className="mb-3" controlId="validationRuleCode">
                         <Form.Label>Validation Code</Form.Label>
                             <Form.Select aria-label="Validation code" name="type" value={rule.type} onChange={handleChange} disabled={disabled} required>
@@ -186,9 +189,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
                         <Form.Control type="text" name="longDescription" value={rule.longDescription} placeholder="" onChange={handleChange} disabled={disabled}/>
                     </Form.Group>
                 </Row>
-                <h4 className="title is-1">Conditions
-                    <Button className="ms-3" variant="info" size="sm" onClick={onAddCondition} disabled={disabled}>Add Conditions</Button>
-                </h4>
+                {conditionItems.length > 0 && <h4 className="title is-1">Conditions</h4>}
 
                 {conditionItems.map((condition, key) => (
                     <CreateConditions isUpdate={isUpdate} id={key} eventkey={key + 1} deleteRow={deleteRow} onConditionChange={handleConditionChange} item={condition}/>
