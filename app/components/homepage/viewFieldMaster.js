@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import withAuth from "../withAuth";
 import Button from 'react-bootstrap/Button';
 import DataTable from 'react-data-table-component';
@@ -50,7 +50,6 @@ const ViewFieldMaster = () => {
 
   const rowUpdate = (fieldData) => {
     navigate(`/updatemasterobject/field`, { state: { fieldData } });
-    useNavigate
   };
 
   const onRowClicked = (row) => {
@@ -92,10 +91,8 @@ const ViewFieldMaster = () => {
           pointerOnHover
         />
       }
-      {error && (
-        <p>Error data:{error}</p>
-      )}
-      {rulesData.length > 0 ? <RulesObject data={rulesData} /> : ""}
+      {error && <p>Error data:{error}</p>}
+      {rulesData.length > 0 && <RulesObject data={rulesData} />}
     </div>
   );
 };

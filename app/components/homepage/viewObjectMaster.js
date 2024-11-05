@@ -128,11 +128,11 @@ const ViewObjectMaster = () => {
         pointerOnHover
         selectableRowsSingle
         selectableRowsHighlight
-        selectableRowSelected={(row) => row.isSelected}
         selectableRows={true}
         checkbox={false}
         columns={dataTableColumns}
         data={objectMasterList}
+        selectableRowSelected={(row) => row.isSelected}
         onRowClicked={(row) => {
           loadObjectFieldsData(row.objectLabelName);
 

@@ -5,25 +5,6 @@ import Conditions from "./Conditions";
 import Button from 'react-bootstrap/Button';
 
 const RulesObject = ({data}) => {
-
-    const transformData = (data) => {
-        return data && (
-            <div>
-            <h2 className="title is-1">Rules</h2>
-            <DataTable 
-              columns={columns} 
-              data={data} 
-              expandableRows
-              expandableRowsComponent={({ data }) => <Conditions conditionData={data.conditions} />}
-              expandableRowExpanded={() => true}
-              highlightOnHover
-              pointerOnHover
-              pagination 
-            />
-            </div>     
-        ); 
-    }
-
     const columns = [
         {
           name: 'Id',
@@ -53,11 +34,25 @@ const RulesObject = ({data}) => {
         }
     ];
 
-    return (
+    if (data) {
+      return (
         <div>
-            {transformData(data)}
-        </div>
-    )
+          <h2 className="title is-1">Rules</h2>
+          <DataTable 
+            columns={columns} 
+            data={data} 
+            expandableRows
+            expandableRowsComponent={({ data }) => <Conditions conditionData={data.conditions} />}
+            expandableRowExpanded={() => true}
+            highlightOnHover
+            pointerOnHover
+            pagination 
+          />
+        </div>     
+      );
+    } else {
+      return '<></>';
+    }
 }
 
 export default withAuth(RulesObject);
