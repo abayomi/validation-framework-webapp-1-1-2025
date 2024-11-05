@@ -1,22 +1,16 @@
 "use client";
 import { useState, useEffect } from "react";
 import withAuth from "../withAuth";
-import { nameChange, emailChange, fieldsDataChange, rulesDataChange } from "./formHomeSlice";
 import Button from 'react-bootstrap/Button';
 import DataTable from 'react-data-table-component';
-import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { loadFetchFieldMetaData } from '../../graphql/queries'
 import RulesObject from './RulesObject';
-import { compileString } from "sass";
 
 const ViewFieldMaster = () => {
-  
-  const dispatch = useDispatch();
   const [rulesData, setRulesData] = useState([]);
   const navigate = useNavigate();
-
   const { error, loading, data, refetch } = useQuery(loadFetchFieldMetaData);
   const [filterText, setFilterText] = useState('');
 
@@ -56,11 +50,22 @@ const ViewFieldMaster = () => {
 
   const rowUpdate = (fieldData) => {
     navigate(`/updatemasterobject/field`, { state: { fieldData } });
+    useNavigate
   };
 
   const onRowClicked = (row) => {
-    dispatch(rulesDataChange(row));
-    setRulesData(row.rules);
+    const uniqueRules = row.rules.reduce((acc, current) => {
+        if (!current.id) {
+          return acc;
+        }
+        const x = acc.find(item => item.id === current.id);
+        if (!x) {
+            return acc.concat([current]);
+        } else {
+            return acc;
+        }
+    }, []);
+    setRulesData(uniqueRules);
   };
 
   return (
@@ -90,7 +95,7 @@ const ViewFieldMaster = () => {
       {error && (
         <p>Error data:{error}</p>
       )}
-      <RulesObject data={rulesData} />
+      {rulesData.length > 0 ? <RulesObject data={rulesData} /> : ""}
     </div>
   );
 };

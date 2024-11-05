@@ -1,13 +1,10 @@
 "use client";
 import withAuth from "../withAuth";
-import { useSelector, useDispatch } from 'react-redux'
 import DataTable from 'react-data-table-component';
 import Conditions from "./Conditions";
 import Button from 'react-bootstrap/Button';
 
-const RulesObject = () => {
-    const dispatch = useDispatch()
-    const rulesData = useSelector(state => state.user.rulesData)
+const RulesObject = ({data}) => {
 
     const transformData = (data) => {
         return data && (
@@ -17,8 +14,8 @@ const RulesObject = () => {
               columns={columns} 
               data={data} 
               expandableRows
-              expandableRowsComponent={Conditions} 
-              expandableRowExpanded={row => true} 
+              expandableRowsComponent={({ data }) => <Conditions conditionData={data.conditions} />}
+              expandableRowExpanded={() => true}
               highlightOnHover
               pointerOnHover
               pagination 
@@ -58,7 +55,7 @@ const RulesObject = () => {
 
     return (
         <div>
-            {transformData(rulesData)}
+            {transformData(data)}
         </div>
     )
 }

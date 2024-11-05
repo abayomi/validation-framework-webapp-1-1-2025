@@ -46,7 +46,7 @@ export default function Home() {
   const [isBrowser, setIsBrowser] = useState(false);
   useEffect(() => {    
     setIsBrowser(typeof window !== "undefined");
-  }, []);
+  }, [window]);
 
   const browserRouter = (
     <BrowserRouter>

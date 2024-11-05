@@ -71,7 +71,6 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
             const errorCodes = getErrorCodeOptions(value);
             const conditions = getConditions(value);
             updatedRule = { ...updatedRule, errorCode: errorCodes[0], conditions: conditions };
-            console.log('handleChange======================', updatedRule);
             setRule(updatedRule);
             setConditionItems(conditions);
             
@@ -199,7 +198,6 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
                 {conditionItems.length > 0 && <h4 className="title is-1">Conditions</h4>}
 
                 {conditionItems.map((condition, key) => {
-                    console.log('Condition Items:===============================', condition);
                     return (
                         <CreateConditions 
                             isUpdate={isUpdate} 

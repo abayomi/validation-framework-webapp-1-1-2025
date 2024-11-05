@@ -1,17 +1,13 @@
 "use client";
 import withAuth from "../withAuth";
-import { useSelector, useDispatch } from 'react-redux'
 
-const Conditions = () => {
-    const dispatch = useDispatch()
-    const conditions = useSelector(state => state.user.rulesData[0].conditions)
-    
+const Conditions = ({conditionData}) => {    
     const transformData = (data) => {
         return (
             
             <div>
                 {data.map(item => (
-                    <div>
+                    <div key={item.id}>
                         <br />
                         <li>Id: <b>{item.id}</b></li>
                         <li>Type: <b>{item.type}</b></li>
@@ -27,7 +23,7 @@ const Conditions = () => {
 
     return (
         <div>
-            {transformData(conditions)}
+            {transformData(conditionData)}
         </div>
     )
 }
