@@ -44,9 +44,12 @@ const client = new ApolloClient({
 
 export default function Home() {
   const [isBrowser, setIsBrowser] = useState(false);
+
+  // Do not put window object in the dependencies array. This means that every time window changes, useEffect will re-run. However, the window object is a 
+  // global object in the browser environment and it does not change, so putting it in the dependencies array does not make sense and may cause unnecessary warnings or errors.
   useEffect(() => {    
     setIsBrowser(typeof window !== "undefined");
-  }, [window]);
+  }, []);
 
   const browserRouter = (
     <BrowserRouter>

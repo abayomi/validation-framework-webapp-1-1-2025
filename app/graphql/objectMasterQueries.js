@@ -17,12 +17,6 @@ const graphqlForObjectMaster = {
     query MyQuery($dialectCode: DialectCodes!, $objectLabelName: String!) {
       FetchObjectMetaDataByLabel(objectLabelName: $objectLabelName, dialectCode: $dialectCode) {
         fields {
-          fieldXrefId
-          fieldName
-          fieldMasterName
-          fieldMasterId
-          fieldMasterDefinition
-          enterpriseFieldInd
           rules {
             conditions {
               id
@@ -39,6 +33,12 @@ const graphqlForObjectMaster = {
             shortDescription
             type
           }
+          enterpriseFieldInd
+          fieldMasterDefinition
+          fieldMasterId
+          fieldMasterName
+          fieldName
+          fieldXrefId
         }
         objMasterInUseInd
         objectLabelName

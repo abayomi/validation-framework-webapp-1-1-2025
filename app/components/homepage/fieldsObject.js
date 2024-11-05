@@ -1,16 +1,15 @@
 "use client";
-import { useState } from "react";
+
 import { useDispatch } from "react-redux";
-import { rulesDataChange } from "./formHomeSlice";
 import DataTable from "react-data-table-component";
-import RulesObject from "./RulesObject";
 import Button from "react-bootstrap/Button";
+import { rulesDataChange } from "./formHomeSlice";
+import { propertyGet } from "../../lib/arrayHelper";
+import RulesObject from "./RulesObject";
 
 const FieldsObject = ( props ) => {
     const { dataComeFrom, objectFieldsData } = props;
     const dispatch = useDispatch();
-    const [isRulesShown, setIsRulesShown] = useState(false);
-    const [rulesData, setRulesData] = useState([]);
 
     const dataTableColumns = [
       {
@@ -48,6 +47,19 @@ const FieldsObject = ( props ) => {
       }
     };
 
+    // About custom styles, refer to
+    //    1. https://react-data-table-component.netlify.app/?path=/docs/api-custom-styles--docs
+    //    2. https://github.com/jbetancur/react-data-table-component/blob/master/src/DataTable/styles.ts
+    const customStyles = {
+      expanderRow: {
+        style: {
+          width: '90%',
+          margin: '1.5rem auto'
+        },
+      }
+    };
+
+    // About expandableRows, refer to https://react-data-table-component.netlify.app/?path=/docs/api-props--docs#row-expander
     return (
       <div>
           <h2 className="title is-1">Object Fields</h2>
@@ -58,10 +70,12 @@ const FieldsObject = ( props ) => {
               pagination 
               columns={dataTableColumns} 
               data={objectFieldsData}
+              expandableRows={true}
+              customStyles={customStyles}
+              expandableRowsComponent={(fieldData) => <RulesObject ruleList={ propertyGet(fieldData, 'data.rules', []) } />}
               onRowClicked={clickRow}
             />
           </div>
-          { isRulesShown && <RulesObject data={rulesData} /> }
       </div>
     );
 }

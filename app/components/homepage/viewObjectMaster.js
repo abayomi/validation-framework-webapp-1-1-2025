@@ -1,11 +1,13 @@
 "use client";
+
 import { useState, useEffect } from "react";
-import { useQuery, useLazyQuery } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
-import graphqlForObjectMaster from "../../graphql/objectMasterQueries";
-import withAuth from "../withAuth";
 import Button from "react-bootstrap/Button";
 import DataTable from "react-data-table-component";
+import { useQuery, useLazyQuery } from "@apollo/client";
+import { arrayGet, propertyGet } from "../../lib/arrayHelper";
+import graphqlForObjectMaster from "../../graphql/objectMasterQueries";
+import withAuth from "../withAuth";
 import FieldsObject from "./fieldsObject";
 
 const removeSelectedMark = function (rowList) {
@@ -32,7 +34,7 @@ const formatObjectMasterList = function(apiResponseData) {
 };
 
 const formatObjectFieldList = function(apiResponseData) {
-  const fieldList = apiResponseData[0].fields;
+  const fieldList = propertyGet(arrayGet(apiResponseData, 0), 'fields', []);
   return fieldList.map(function(item) {
     return {
       enterpriseFieldInd: true,
@@ -41,7 +43,7 @@ const formatObjectFieldList = function(apiResponseData) {
       fieldName: item.fieldName,
       fieldXrefId: item.fieldXrefId,
       fieldMasterDefinition: item.fieldMasterDefinition,
-      rules: []
+      rules: item.rules
     };
   });
 }; 

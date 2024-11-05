@@ -1,10 +1,12 @@
 "use client";
-import withAuth from "../withAuth";
-import DataTable from 'react-data-table-component';
-import Conditions from "./Conditions";
-import Button from 'react-bootstrap/Button';
 
-const RulesObject = ({data}) => {
+import DataTable from "react-data-table-component";
+import Button from "react-bootstrap/Button";
+import { propertyGet } from "../../lib/arrayHelper";
+import withAuth from "../withAuth";
+import Conditions from "./Conditions";
+
+const RulesObject = ({ruleList}) => {
     const columns = [
         {
           name: 'Id',
@@ -34,25 +36,25 @@ const RulesObject = ({data}) => {
         }
     ];
 
-    if (data) {
-      return (
-        <div>
-          <h2 className="title is-1">Rules</h2>
-          <DataTable 
-            columns={columns} 
-            data={data} 
-            expandableRows
-            expandableRowsComponent={({ data }) => <Conditions conditionData={data.conditions} />}
-            expandableRowExpanded={() => true}
-            highlightOnHover
-            pointerOnHover
-            pagination 
-          />
-        </div>     
-      );
-    } else {
-      return '<></>';
+    if (!ruleList) {
+      return <></>;
     }
+
+    return (
+      <div>
+        <h2 className="title is-1">Rules</h2>
+        <DataTable
+          highlightOnHover
+          pointerOnHover
+          pagination
+          expandableRows
+          columns={columns}
+          data={ruleList}
+          expandableRowExpanded={() => true}
+          expandableRowsComponent={({data}) => <Conditions conditionData={ propertyGet(data, 'conditions', []) } />}
+        />
+      </div>
+    );
 }
 
 export default withAuth(RulesObject);
