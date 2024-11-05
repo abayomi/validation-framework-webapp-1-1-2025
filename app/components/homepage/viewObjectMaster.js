@@ -115,7 +115,7 @@ const ViewObjectMaster = () => {
       const objectFieldList = formatObjectFieldList(rawObjectFieldsData.data.FetchObjectMetaDataByLabel);
       setObjectFieldsOfSelectedRow(objectFieldList);
 
-      highLightSelectedRow(selectedRow); // setObjectFieldsOfSelectedRow() will cause the component first, then the corresponding row can be marked as selected.
+      highLightSelectedRow(selectedRow); // setObjectFieldsOfSelectedRow() causes the component be rendered first, then the row can be marked as selected.
     }
   }, [rawObjectMasterList, rawObjectFieldsData]);
 
