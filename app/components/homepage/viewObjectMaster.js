@@ -6,6 +6,7 @@ import Button from "react-bootstrap/Button";
 import DataTable from "react-data-table-component";
 import { useQuery, useLazyQuery } from "@apollo/client";
 import { arrayGet, propertyGet } from "../../lib/arrayHelper";
+import { defaultDialectCode } from "../config/dialectCodeMap";
 import graphqlForObjectMaster from "../../graphql/objectMasterQueries";
 import withAuth from "../withAuth";
 import FieldsObject from "./fieldsObject";
@@ -49,7 +50,6 @@ const formatObjectFieldList = function(apiResponseData) {
 }; 
 
 const ViewObjectMaster = () => {
-  const validDialectCode = "us_en"; // Currently, only us_en is enabled in our system.
   const [objectMasterList, setObjectMasterList] = useState([]);
   const [objectFieldsOfSelectedRow, setObjectFieldsOfSelectedRow] = useState(null);
   const [selectedRow, setSelectedRow] = useState(null);
@@ -90,13 +90,13 @@ const ViewObjectMaster = () => {
     lazyLoadQuery({
       variables: { 
         objectLabelName: objectLabelName,
-        dialectCode: validDialectCode
+        dialectCode: defaultDialectCode
       }
     });
   };
 
   const rawObjectMasterList = useQuery(graphqlForObjectMaster.FetchObjectMasterList, {
-    variables: { dialectCode: validDialectCode }
+    variables: { dialectCode: defaultDialectCode }
   });
 
   useEffect(() => {

@@ -7,12 +7,12 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { loadFetchFieldMetaData } from '../../graphql/fieldMasterQueries'
 import RulesObject from './RulesObject';
-import { dialectCodeOptions } from "../config/dialectCodeMap";
+import { dialectCodeOptions, defaultDialectCode } from "../config/dialectCodeMap";
 import { uniqueRecords } from "../../lib/arrayHelper";
 
 const ViewFieldMaster = () => {
   const [rulesData, setRulesData] = useState([]);
-  const [dialectCode, setDialectCode] = useState("us_en");
+  const [dialectCode, setDialectCode] = useState(defaultDialectCode);
   const navigate = useNavigate();
   const {error, loading, data, refetch} = useQuery(loadFetchFieldMetaData, {
     variables: { dialectCode: dialectCode },
@@ -77,7 +77,7 @@ const ViewFieldMaster = () => {
       </select>
       <input 
         type="text" 
-        placeholder="Filter By Name" 
+        placeholder="Filter By Name"
         value={filterText} 
         onChange={e => setFilterText(e.target.value)} 
       />

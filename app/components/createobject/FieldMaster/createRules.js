@@ -8,6 +8,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Accordion from 'react-bootstrap/Accordion';
 import {useMutation} from '@apollo/client';
+import { defaultDialectCode } from "../config/dialectCodeMap";
 
 import CreateConditions from './createConditions';
 import {validationCodeOptions, getErrorCodeOptions, errorMessageOptions, getConditions} from './ruleValidationCodeMap';
@@ -91,7 +92,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
             }
             const variables = {
                 fieldMasterId: fieldMasterId,
-                dialectCode: "us_en",
+                dialectCode: defaultDialectCode,
                 validationRuleCode: rule.type,
                 validationErrorCode: rule.errorCode,
                 mandatoryRuleInd: rule.mandatoryRuleInd ?? false,

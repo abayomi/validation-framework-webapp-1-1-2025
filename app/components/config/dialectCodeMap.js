@@ -7,4 +7,4 @@ export const dialectCodeOptions = {
     "mx_es": "Mexican Spanish",
 };
 
-
+export const defaultDialectCode = "us_en"; // Currently, only us_en is enabled in our system.
