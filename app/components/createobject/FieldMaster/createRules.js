@@ -12,7 +12,7 @@ import {useMutation} from '@apollo/client';
 import CreateConditions from './createConditions';
 import {validationCodeOptions, getErrorCodeOptions, errorMessageOptions, getConditions} from './ruleValidationCodeMap';
 import {ADD_RULE_TO_ENTERPRISE_FIELD} from '../../../graphql/addRuleToEnterpriseField';
-
+import { dialectCodeOptions } from "../../config/dialectCodeMap";
 function CustomToggle({ eventkey, hidden, deleteOnClick, submitOnClick }) {
 
     const decoratedOnClick = useAccordionButton(eventkey);
@@ -42,7 +42,6 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
             ...item,
             conditions: item?.conditions || []
     });
-    const [conditionCounter, setConditionCounter] = useState(0);
     const [conditionItems, setConditionItems] = useState(item?.conditions || []);
     const [addRuleToEnterpriseField, { data, loading, error }] = useMutation(ADD_RULE_TO_ENTERPRISE_FIELD);
 
@@ -81,6 +80,15 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            if (!rule.type) {
+                throw new Error('Validation Code is not met');
+            }
+            if (!rule.ruleGroupNumber) {
+                throw new Error('Rule Group Number is not met');
+            }
+            if (!rule.shortDescription) {
+                throw new Error('shortDescription value is not met');
+            }
             const variables = {
                 fieldMasterId: fieldMasterId,
                 dialectCode: "us_en",
@@ -96,6 +104,9 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
 
             if (rule.conditions && rule.conditions.length > 0) {
                 variables.condition = rule.conditions.map(condition => {
+                    if (!condition.value) {
+                        throw new Error('Condition value is not met');
+                    }
                     return {
                         ruleConditionTypeCode: condition.type,
                         ruleConditionValue: condition.value,
@@ -116,7 +127,6 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
           }
         } catch (error) {
             alert(error);
-            console.error('Error submitting form:', error);
         }
       };
 
@@ -128,21 +138,6 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
         setRule(updatedRule);
         onRuleChange(eventkey - 1, updatedRule);
     };
-
-    const onAddCondition = (event) => {
-        let updatedConditionCounter = conditionCounter + 1
-        setConditionCounter(updatedConditionCounter)
-        setConditionItems((prev) => [...prev, {}]);
-    };
-
-    const deleteRow = (index) => {
-        const newConditions = [...conditionItems];
-        newConditions.splice(index - 1, 1);
-        setConditionItems(newConditions);
-        const updatedRule = { ...rule, conditions: newConditions };
-        setRule(updatedRule);
-        onRuleChange(eventkey - 1, updatedRule);
-    }
 
     return (
         <div key={eventkey}>
@@ -178,18 +173,27 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
                     </Form.Group>
                 </Row>
                 <Row>
+                    <Form.Group className="mb-3 col-2" as={Col} controlId="dialectCode">
+                        <Form.Label>Dialect code</Form.Label>
+                        <Form.Select aria-label="Dialect code" value={rule.dialectCode} onChange={handleChange} disabled={disabled} required>
+                            <option value=""></option>
+                            {Object.entries(dialectCodeOptions).map(([key, value]) => (
+                                <option key={key} value={key}>{value}</option>
+                            ))}
+                        </Form.Select>
+                    </Form.Group>
                     <Form.Group as={Col} className="mb-3" xs={2} controlId="errorMessage">
                         <Form.Label>Mandatory Rule Indicator</Form.Label>
                         <center>
                             <Form.Check type="checkbox" id="mandatoryRuleInd" >
-                                <Form.Check.Input type="checkbox" name="mandatoryRuleInd"  className="custom-check-border"
-                                onChange={handleChange} value={rule.mandatoryRuleInd ?? false} disabled={disabled} />
+                                <Form.Check.Input type="checkbox" name="mandatoryRuleInd" className="custom-check-border"
+                                    onChange={handleChange} value={rule.mandatoryRuleInd ?? false} disabled={disabled} />
                             </Form.Check>
                         </center>
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" xs={4} controlId="shortDescription">
                         <Form.Label>Short Description</Form.Label>
-                        <Form.Control type="text" name="shortDescription" value={rule.shortDescription} placeholder="" onChange={handleChange} disabled={disabled} required/>
+                        <Form.Control type="text" name="shortDescription" value={rule.shortDescription} placeholder="" onChange={handleChange} disabled={disabled} required />
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" controlId="longDescription">
                         <Form.Label>Long Description</Form.Label>

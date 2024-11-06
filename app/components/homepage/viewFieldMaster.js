@@ -8,6 +8,7 @@ import { useQuery } from '@apollo/client';
 import { loadFetchFieldMetaData } from '../../graphql/fieldMasterQueries'
 import RulesObject from './RulesObject';
 import { dialectCodeOptions } from "../config/dialectCodeMap";
+import { uniqueRecords } from "../../lib/arrayHelper";
 
 const ViewFieldMaster = () => {
   const [rulesData, setRulesData] = useState([]);
@@ -19,7 +20,7 @@ const ViewFieldMaster = () => {
   const [filterText, setFilterText] = useState('');
 
   const filteredItems = data ? data.FetchFieldMetaData.filter(item => 
-    item.fieldMasterId && item.fieldMasterId.toLowerCase().includes(filterText.toLowerCase())
+    item.fieldName && item.fieldName.toLowerCase().includes(filterText.toLowerCase())
   ):[];
 
   const columns = [
@@ -57,17 +58,7 @@ const ViewFieldMaster = () => {
   };
 
   const onRowClicked = (row) => {
-    const uniqueRules = row.rules.reduce((acc, current) => {
-        if (!current.id) {
-          return acc;
-        }
-        const x = acc.find(item => item.id === current.id);
-        if (!x) {
-            return acc.concat([current]);
-        } else {
-            return acc;
-        }
-    }, []);
+    const uniqueRules = uniqueRecords(row.rules);
     setRulesData(uniqueRules);
   };
 
@@ -80,14 +71,13 @@ const ViewFieldMaster = () => {
   return (
     <div>
       <select className="mx-3 px-2 py-1" aria-label="Dialect code" value={dialectCode} onChange={handleDialectCodeChange}>
-        <option value=""></option>
         {Object.entries(dialectCodeOptions).map(([key, value]) => (
-            <option key={value} value={value}>{value}</option>
+            <option key={key} value={key}>{value}</option>
         ))}
       </select>
       <input 
         type="text" 
-        placeholder="Filter By Id" 
+        placeholder="Filter By Name" 
         value={filterText} 
         onChange={e => setFilterText(e.target.value)} 
       />
@@ -109,7 +99,7 @@ const ViewFieldMaster = () => {
       }
       {error && <p>Error data:{error}</p>}
       {rulesData.length > 0
-        ? <RulesObject data={rulesData} />
+        ? <RulesObject ruleList={rulesData}  />
         : <h4 className="title is-1">No Rules</h4>
       }
     </div>

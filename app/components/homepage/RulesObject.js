@@ -28,12 +28,12 @@ const RulesObject = ({ruleList}) => {
           selector: row => row.errorMessage,
           reorder: true,
         },
-        {
-          name: 'Action',
-          cell: () => <Button variant="info" size="sm" >Edit</Button>,
-          sortable: false,
-          reorder: false
-        }
+        // {
+        //   name: 'Action',
+        //   cell: () => <Button variant="info" size="sm" >Edit</Button>,
+        //   sortable: false,
+        //   reorder: false
+        // }
     ];
 
     if (!ruleList) {

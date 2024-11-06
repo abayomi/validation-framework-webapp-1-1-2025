@@ -8,30 +8,8 @@ import CreateRules from "./FieldMaster/createRules";
 import { useNavigate } from 'react-router-dom';
 import {gql, useMutation} from '@apollo/client';
 import { dialectCodeOptions } from "../config/dialectCodeMap";
-
-const CREATE_ENTERPRISE_FIELD = gql`
-  mutation CreateEnterpriseField(
-    $fieldName: String!
-    $fieldDefinition: String!
-    $dialectCode: DialectCodes!
-    $fieldMasterInUseInd: Boolean!
-    $enterpriseFieldInd: Boolean!
-    $rule: FieldMasterRule
-  ) {
-    CreateEnterpriseField(field: {
-      dialectCode: $dialectCode, 
-      enterpriseFieldInd: $enterpriseFieldInd, 
-      fieldDefinition: $fieldDefinition, 
-      fieldMasterInUseInd: $fieldMasterInUseInd, 
-      fieldName: $fieldName
-      rule: $rule
-    }) {
-      fieldMasterId
-      fieldName
-      fieldDefinition
-    }
-  }
-`;
+import { uniqueRecords } from "../../lib/arrayHelper";
+import {CREATE_ENTERPRISE_FIELD, REMOVE_RULE_FROM_ENTERPRISE_FIELD} from "../../graphql/filedmasterMutations";
 
 const CreateFieldMasterObject = ( props ) => {
   const { location } = props
@@ -40,13 +18,16 @@ const CreateFieldMasterObject = ( props ) => {
   const emptyFormData = {
     fieldMasterId: '',
     enterpriseFieldInd: false,
-    fieldMasterInUseInd: false,
+    fieldMasterInUseInd: true,
     fieldName:'',
     fieldDefinition:'',
-    dialectCode:'',
+    dialectCode:'us_en',
   };
   const [formData, setFormData] = useState(emptyFormData); 
   const [ruleItems, setRuleItems] = useState([]);
+  const [deleteId, setDeleteId] = useState(null);
+  const [createEnterpriseField, { data: createData, loading: createLoading, error: createError }] = useMutation(CREATE_ENTERPRISE_FIELD);
+  const [removeRuleFromEnterpriseField, { data: removeData, loading: removeLoading, error: removeError }] = useMutation(REMOVE_RULE_FROM_ENTERPRISE_FIELD);
 
   useEffect(() => {
     if (isUpdate && location.state) {
@@ -57,11 +38,7 @@ const CreateFieldMasterObject = ( props ) => {
       setFormData(fieldData);
 
       if (fieldData.rules) {
-        const valid_rules = fieldData.rules.filter(rule => {
-          if (rule.id) {
-              return rule;
-          }
-        });
+        const valid_rules = uniqueRecords(fieldData.rules);
         setRuleItems(valid_rules);
       }
     }
@@ -70,21 +47,52 @@ const CreateFieldMasterObject = ( props ) => {
       setRuleItems([]);
     }
   }, [isUpdate, location.state]);
-  const [ruleCounter, setRuleCounter] = useState(0);
-  const [createEnterpriseField, { data, loading, error }] = useMutation(CREATE_ENTERPRISE_FIELD);
+
+  useEffect(() => {
+    if (removeData) {
+      const { RemoveRuleFromEnterpriseField } = removeData;
+      if (RemoveRuleFromEnterpriseField.status && deleteId) {
+          alert(`Deleted successfully: ${deleteId}`);
+          const newArr = ruleItems.filter(item => item.id !== deleteId);
+          setRuleItems(newArr);
+          setDeleteId(null);
+      }
+    }
+  }, [removeData, removeError]);
+  
 
   const onAddBtnClick = (event) => {
-    setRuleItems((prev) => [...prev, []]);
-    setRuleCounter(ruleCounter + 1);  
+    setRuleItems((prev) => [...prev, {'id':0}]);  
     console.log(ruleItems);
   };
 
-  const deleteOnClick = (e, index) => {
-    console.log(e);
+  const deleteOnClick = async (e, index) => {
+    console.log(index);
     e.stopPropagation();
-    const newArr = [...ruleItems];
-        newArr.splice(index - 1, 1);
-        setRuleItems(newArr);
+    if (index > 0) {
+      const userConfirmed = window.confirm("Are you sure you want to delete this rule?");
+    
+      if (!userConfirmed) {
+        return;
+      }
+
+      const variables = {
+        field_valid_rule_id: index,
+      };
+  
+      console.log(variables);
+      setDeleteId(index);
+      const response = await removeRuleFromEnterpriseField({
+        variables,
+      });
+      if (!response['data']) {
+        alert(response);
+      }
+      return ;
+    }
+
+    const newArr = ruleItems.filter(item => item.id !== index);
+    setRuleItems(newArr);
   };
 
   const handleRuleChange = (index, newRule) => {
@@ -116,6 +124,7 @@ const CreateFieldMasterObject = ( props ) => {
       const response = await createEnterpriseField({
         variables,
       });
+      alert("Added successfully");
       const newData = response.data['CreateEnterpriseField'][0];
       const newFieldMaster = { 
         'fieldMasterId': newData.fieldMasterId,
@@ -145,15 +154,15 @@ const CreateFieldMasterObject = ( props ) => {
           <Form.Control type="text" placeholder="" value={formData.fieldMasterId} disabled/>
         </Form.Group>
         <Form.Group className="mb-3 col-3" as={Col} controlId="dialectCode">
-          <Form.Label>Dialect code</Form.Label>
+          <Form.Label>Dialect Code</Form.Label>
           <Form.Select aria-label="Dialect code" value={formData.dialectCode} onChange={handleInputChange} disabled={isUpdate} required>
             <option value=""></option>
             {Object.entries(dialectCodeOptions).map(([key, value]) => (
-                <option key={value} value={value}>{value}</option>
+                <option key={key} value={key}>{value}</option>
             ))}
           </Form.Select>
         </Form.Group>
-        <Form.Group className="mb-3 col-3" as={Col} controlId="fieldName">
+        <Form.Group className="mb-3 col-10" as={Col} controlId="fieldName">
           <Form.Label>Field Name</Form.Label>
           <Form.Control type="text" placeholder="" value={formData.fieldName} onChange={handleInputChange} disabled={isUpdate} required/>
         </Form.Group>
@@ -163,11 +172,11 @@ const CreateFieldMasterObject = ( props ) => {
         </Form.Group>
         <Form.Check className="mb-3 col-10" id="enterpriseFieldInd">
           <Form.Check.Input type="checkbox" className="custom-check-border" checked={formData.enterpriseFieldInd} onChange={handleInputChange} disabled={isUpdate}/>
-          <Form.Check.Label>Enterprise field indicator</Form.Check.Label>
+          <Form.Check.Label>Enterprise Field Indicator</Form.Check.Label>
         </Form.Check>
         <Form.Check className="mb-3 col-10" id="fieldMasterInUseInd">
           <Form.Check.Input type="checkbox" className="custom-check-border" checked={formData.fieldMasterInUseInd} onChange={handleInputChange} disabled={isUpdate}/>
-          <Form.Check.Label>Field Master InUse indicator</Form.Check.Label>
+          <Form.Check.Label>Field Master In-Use Indicator</Form.Check.Label>
         </Form.Check>
         {isUpdate && <Button className="mb-3" variant="info" size="sm" onClick={onAddBtnClick}>Add Rules</Button>}
         <Accordion className="mb-3" defaultActiveKey="0" flush>
@@ -188,9 +197,9 @@ const CreateFieldMasterObject = ( props ) => {
           Submit
         </Button>}
       </Form>
-      {loading && <p>Submitting...</p>}
-      {error && <p>Error: {error.message}</p>}
-      {data && <><p>Field Master added successfully!</p></>}
+      {createLoading && <p>Submitting...</p>}
+      {createError && <p>Error: {createError.message}</p>}
+      {createData && <><p>Field Master added successfully!</p></>}
     </div>
   )
 };
