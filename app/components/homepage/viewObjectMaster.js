@@ -10,6 +10,7 @@ import { defaultDialectCode } from "../config/dialectCodeMap";
 import graphqlForObjectMaster from "../../graphql/objectMasterQueries";
 import withAuth from "../withAuth";
 import FieldsObject from "./fieldsObject";
+import FilterList, { doFilterList } from "./filterList";
 
 const removeSelectedMark = function (rowList) {
   return rowList.map(function (item) {
@@ -53,6 +54,8 @@ const ViewObjectMaster = () => {
   const [objectMasterList, setObjectMasterList] = useState([]);
   const [objectFieldsOfSelectedRow, setObjectFieldsOfSelectedRow] = useState(null);
   const [selectedRow, setSelectedRow] = useState(null);
+  const [dialectCode, setDialectCode] = useState(defaultDialectCode);
+  const [filterText, setFilterText] = useState('');
   const navigate = useNavigate();
   const dataTableColumns = [
     {
@@ -90,13 +93,13 @@ const ViewObjectMaster = () => {
     lazyLoadQuery({
       variables: { 
         objectLabelName: objectLabelName,
-        dialectCode: defaultDialectCode
+        dialectCode: dialectCode
       }
     });
   };
 
   const rawObjectMasterList = useQuery(graphqlForObjectMaster.FetchObjectMasterList, {
-    variables: { dialectCode: defaultDialectCode }
+    variables: { dialectCode: dialectCode }
   });
 
   useEffect(() => {
@@ -123,7 +126,19 @@ const ViewObjectMaster = () => {
 
   // DataTable's doc: https://react-data-table-component.netlify.app/?path=/docs/api-props--docs
   return (
-    <div>
+    <>
+      <FilterList
+        dialectCode={dialectCode}
+        filterText={filterText}
+        inputPlaceHolder="Filter By Object Name"
+        onRefreshClicked={() => true}
+        onFilterTextChanged={(e) => setFilterText(e.target.value)}
+        onDialectCodeChanged={(e) => {
+          setFilterText('');
+          setDialectCode(e.target.value);
+        }}
+      />
+
       <DataTable
         pagination
         highlightOnHover
@@ -133,17 +148,17 @@ const ViewObjectMaster = () => {
         selectableRows={true}
         checkbox={false}
         columns={dataTableColumns}
-        data={objectMasterList}
+        data={ doFilterList(objectMasterList, 'objectName', filterText) }
         selectableRowSelected={(row) => row.isSelected}
         onRowClicked={(row) => {
           loadObjectFieldsData(row.objectLabelName);
 
-          setSelectedRow(row); // Store the selected row so that it can be re-rendered in useEffect to mark it as selected.
+          setSelectedRow(row); // Store the selected row so that it can be re-rendered in useEffect to mark it as selected. Otherwise it won't work.
         }}
       />
 
       {objectFieldsOfSelectedRow && <FieldsObject dataComeFrom={'objectMaster'} objectFieldsData={objectFieldsOfSelectedRow} />}
-    </div>
+    </>
   );
 }
 

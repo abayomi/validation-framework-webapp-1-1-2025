@@ -7,8 +7,9 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { loadFetchFieldMetaData } from '../../graphql/fieldMasterQueries'
 import RulesObject from './RulesObject';
-import { dialectCodeOptions, defaultDialectCode } from "../config/dialectCodeMap";
+import { defaultDialectCode } from "../config/dialectCodeMap";
 import { uniqueRecords } from "../../lib/arrayHelper";
+import FilterList, { doFilterList } from "./filterList";
 
 const ViewFieldMaster = () => {
   const [rulesData, setRulesData] = useState([]);
@@ -18,10 +19,6 @@ const ViewFieldMaster = () => {
     variables: { dialectCode: dialectCode },
   });
   const [filterText, setFilterText] = useState('');
-
-  const filteredItems = data ? data.FetchFieldMetaData.filter(item => 
-    item.fieldName && item.fieldName.toLowerCase().includes(filterText.toLowerCase())
-  ):[];
 
   const columns = [
     {
@@ -62,31 +59,27 @@ const ViewFieldMaster = () => {
     setRulesData(uniqueRules);
   };
 
-  const handleDialectCodeChange = (e) => {
-    const { name, value } = e.target;
-    setFilterText('');
-    setDialectCode(value);
-  };
+  const fieldMasterList = data ? doFilterList(data.FetchFieldMetaData, 'fieldName', filterText) : [];
 
   return (
-    <div>
-      <select className="mx-3 px-2 py-1" aria-label="Dialect code" value={dialectCode} onChange={handleDialectCodeChange}>
-        {Object.entries(dialectCodeOptions).map(([key, value]) => (
-            <option key={key} value={key}>{value}</option>
-        ))}
-      </select>
-      <input 
-        type="text" 
-        placeholder="Filter By Name"
-        value={filterText} 
-        onChange={e => setFilterText(e.target.value)} 
+    <>
+      <FilterList
+        dialectCode={dialectCode}
+        filterText={filterText}
+        inputPlaceHolder="Filter By Field Master Name"
+        onRefreshClicked={() => refetch()}
+        onFilterTextChanged={(e) => setFilterText(e.target.value)}
+        onDialectCodeChanged={(e) => {
+          setFilterText('');
+          setDialectCode(e.target.value);
+        }}
       />
-      <Button size="sm" className="ms-3" onClick={() => refetch()}>Refresh</Button>
+
       {loading 
         ? <p>Loading data...</p> 
         : data && <DataTable 
           columns={columns} 
-          data={filteredItems} 
+          data={fieldMasterList} 
           onRowClicked={onRowClicked}
           selectableRows={true}
           selectableRowsSingle
@@ -102,7 +95,7 @@ const ViewFieldMaster = () => {
         ? <RulesObject ruleList={rulesData}  />
         : <h4 className="title is-1">No Rules</h4>
       }
-    </div>
+    </>
   );
 };
 
