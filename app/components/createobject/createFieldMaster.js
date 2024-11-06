@@ -7,6 +7,7 @@ import Accordion from 'react-bootstrap/Accordion';
 import CreateRules from "./FieldMaster/createRules";
 import { useNavigate } from 'react-router-dom';
 import {gql, useMutation} from '@apollo/client';
+import { dialectCodeOptions } from "../config/dialectCodeMap";
 
 const CREATE_ENTERPRISE_FIELD = gql`
   mutation CreateEnterpriseField(
@@ -42,6 +43,7 @@ const CreateFieldMasterObject = ( props ) => {
     fieldMasterInUseInd: false,
     fieldName:'',
     fieldDefinition:'',
+    dialectCode:'',
   };
   const [formData, setFormData] = useState(emptyFormData); 
   const [ruleItems, setRuleItems] = useState([]);
@@ -53,8 +55,14 @@ const CreateFieldMasterObject = ( props ) => {
         return ;
       }
       setFormData(fieldData);
+
       if (fieldData.rules) {
-        setRuleItems(fieldData.rules);
+        const valid_rules = fieldData.rules.filter(rule => {
+          if (rule.id) {
+              return rule;
+          }
+        });
+        setRuleItems(valid_rules);
       }
     }
     if (!isUpdate) {
@@ -104,32 +112,6 @@ const CreateFieldMasterObject = ( props ) => {
         fieldMasterInUseInd: formData.fieldMasterInUseInd,
       };
 
-      if (ruleItems.length > 0) {
-        const rules = ruleItems.map(item => {
-          const rule = {
-            validationRuleCode: item.type,
-            validationErrorCode: item.errorCode,
-            mandatoryRuleInd: 'true',
-            description: {
-              shortDescription: item.shortDescription0,
-              longDescription: item.longDescription0 || '',
-            },
-            ruleGroupNumber: item.ruleGroupNumber
-          };
-
-          if (item.conditions && item.conditions.length > 0) {
-              rule.condition = item.conditions.map(condition => {
-                  return {
-                    ruleConditionTypeCode: condition.type,
-                    ruleConditionValue: condition.value,
-                  }
-              });
-          }
-
-          return rule;
-        });
-        variables.rule = rules[0];
-      }
       console.log(variables);
       const response = await createEnterpriseField({
         variables,
@@ -166,11 +148,9 @@ const CreateFieldMasterObject = ( props ) => {
           <Form.Label>Dialect code</Form.Label>
           <Form.Select aria-label="Dialect code" value={formData.dialectCode} onChange={handleInputChange} disabled={isUpdate} required>
             <option value=""></option>
-            <option value="us_en">us_en</option>
-            <option value="ca_en">ca_en</option>
-            <option value="ca_fr">ca_fr</option>
-            <option value="gb_en">gb_en</option>
-            <option value="mx_es">mx_es</option>
+            {Object.entries(dialectCodeOptions).map(([key, value]) => (
+                <option key={value} value={value}>{value}</option>
+            ))}
           </Form.Select>
         </Form.Group>
         <Form.Group className="mb-3 col-3" as={Col} controlId="fieldName">
@@ -181,22 +161,14 @@ const CreateFieldMasterObject = ( props ) => {
           <Form.Label>Field Definition</Form.Label>
           <Form.Control as="textarea" rows={2} placeholder="" value={formData.fieldDefinition} onChange={handleInputChange} disabled={isUpdate} required/>
         </Form.Group>
-        <Form.Check className="mb-3 col-3" 
-          type="checkbox"
-          id="enterpriseFieldInd"
-          label="Enterprise field indicator"
-          checked={formData.enterpriseFieldInd}
-          onChange={handleInputChange}
-          disabled={isUpdate}
-        />
-        <Form.Check className="mb-3 col-3" 
-          type="checkbox"
-          id="fieldMasterInUseInd"
-          label="Field Master InUse indicator"
-          checked={formData.fieldMasterInUseInd}
-          onChange={handleInputChange}
-          disabled={isUpdate}
-        />
+        <Form.Check className="mb-3 col-10" id="enterpriseFieldInd">
+          <Form.Check.Input type="checkbox" className="custom-check-border" checked={formData.enterpriseFieldInd} onChange={handleInputChange} disabled={isUpdate}/>
+          <Form.Check.Label>Enterprise field indicator</Form.Check.Label>
+        </Form.Check>
+        <Form.Check className="mb-3 col-10" id="fieldMasterInUseInd">
+          <Form.Check.Input type="checkbox" className="custom-check-border" checked={formData.fieldMasterInUseInd} onChange={handleInputChange} disabled={isUpdate}/>
+          <Form.Check.Label>Field Master InUse indicator</Form.Check.Label>
+        </Form.Check>
         {isUpdate && <Button className="mb-3" variant="info" size="sm" onClick={onAddBtnClick}>Add Rules</Button>}
         <Accordion className="mb-3" defaultActiveKey="0" flush>
         {ruleItems.map((item, index) => {
@@ -218,7 +190,7 @@ const CreateFieldMasterObject = ( props ) => {
       </Form>
       {loading && <p>Submitting...</p>}
       {error && <p>Error: {error.message}</p>}
-      {data && <><p>Field Master added successfully!</p><p>{JSON.stringify(data)}</p></>}
+      {data && <><p>Field Master added successfully!</p></>}
     </div>
   )
 };

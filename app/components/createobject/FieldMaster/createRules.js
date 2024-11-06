@@ -6,13 +6,11 @@ import Form from 'react-bootstrap/Form';
 import { useAccordionButton } from 'react-bootstrap/AccordionButton';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-
 import Accordion from 'react-bootstrap/Accordion';
-import CreateConditions from './createConditions';
-import {validationCodeOptions, getErrorCodeOptions, errorMessageOptions, getConditions} from './ruleValidationCodeMap';
-
 import {useMutation} from '@apollo/client';
 
+import CreateConditions from './createConditions';
+import {validationCodeOptions, getErrorCodeOptions, errorMessageOptions, getConditions} from './ruleValidationCodeMap';
 import {ADD_RULE_TO_ENTERPRISE_FIELD} from '../../../graphql/addRuleToEnterpriseField';
 
 function CustomToggle({ eventkey, hidden, deleteOnClick, submitOnClick }) {
@@ -37,6 +35,7 @@ function CustomToggle({ eventkey, hidden, deleteOnClick, submitOnClick }) {
 }
 
 const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fieldMasterId = 0 }) => {
+
     const disabled = isUpdate && item.id > 0;
     const navigate = useNavigate();
     const [rule, setRule] = useState({
@@ -146,7 +145,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
     }
 
     return (
-        <div>
+        <div key={eventkey}>
             <Accordion.Item eventkey={ eventkey }>
             <CustomToggle eventkey={eventkey} hidden={disabled} deleteOnClick={deleteOnClick} submitOnClick={handleSubmit}/>
             <Accordion.Collapse eventKey={eventkey}>  
@@ -182,8 +181,10 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
                     <Form.Group as={Col} className="mb-3" xs={2} controlId="errorMessage">
                         <Form.Label>Mandatory Rule Indicator</Form.Label>
                         <center>
-                            <Form.Check className="mb-3 col-3" type="checkbox" id="mandatoryRuleInd" 
-                            name="mandatoryRuleInd" label="" onChange={handleChange} value={rule.mandatoryRuleInd ?? false} disabled={disabled}/>
+                            <Form.Check type="checkbox" id="mandatoryRuleInd" >
+                                <Form.Check.Input type="checkbox" name="mandatoryRuleInd"  className="custom-check-border"
+                                onChange={handleChange} value={rule.mandatoryRuleInd ?? false} disabled={disabled} />
+                            </Form.Check>
                         </center>
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" xs={4} controlId="shortDescription">

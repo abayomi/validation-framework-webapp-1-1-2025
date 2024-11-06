@@ -17,17 +17,16 @@ const CreateConditions = (props) => {
 
     const handleConditionChange = (e) => {
         const { name, value } = e.target;
-
-        const updatedCondition = { ...condition, [name]: value };
+        const updatedCondition = { ...condition, ['value']: value };
         setCondition(updatedCondition);
-        onConditionChange(eventkey - 1, updatedCondition);
+        onConditionChange(eventkey, updatedCondition);
     };
 
     return (
-        <div data-testid={`create-conditions-${eventkey}`}>
+        <div key={eventkey}>
             <Row eventkey={ eventkey }>
             <Form.Group as={Col} className="mb-3 col-3" controlId="condition_type">
-                <Form.Select aria-label="Type" name="condition_type" value={condition.type} onChange={handleConditionChange} disabled required>
+                <Form.Select aria-label="Type" name="condition_type" value={condition.type} onChange={handleConditionChange} disabled>
                 {Object.entries(conditionTypeOptions).map(([key, value]) => (
                     <option key={key} value={key}>{value}</option>
                 ))}

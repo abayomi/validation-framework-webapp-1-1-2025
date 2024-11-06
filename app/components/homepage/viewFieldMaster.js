@@ -5,13 +5,17 @@ import Button from 'react-bootstrap/Button';
 import DataTable from 'react-data-table-component';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
-import { loadFetchFieldMetaData } from '../../graphql/queries'
+import { loadFetchFieldMetaData } from '../../graphql/fieldMasterQueries'
 import RulesObject from './RulesObject';
+import { dialectCodeOptions } from "../config/dialectCodeMap";
 
 const ViewFieldMaster = () => {
   const [rulesData, setRulesData] = useState([]);
+  const [dialectCode, setDialectCode] = useState("us_en");
   const navigate = useNavigate();
-  const { error, loading, data, refetch } = useQuery(loadFetchFieldMetaData);
+  const {error, loading, data, refetch} = useQuery(loadFetchFieldMetaData, {
+    variables: { dialectCode: dialectCode },
+  });
   const [filterText, setFilterText] = useState('');
 
   const filteredItems = data ? data.FetchFieldMetaData.filter(item => 
@@ -67,8 +71,20 @@ const ViewFieldMaster = () => {
     setRulesData(uniqueRules);
   };
 
+  const handleDialectCodeChange = (e) => {
+    const { name, value } = e.target;
+    setFilterText('');
+    setDialectCode(value);
+  };
+
   return (
     <div>
+      <select className="mx-3 px-2 py-1" aria-label="Dialect code" value={dialectCode} onChange={handleDialectCodeChange}>
+        <option value=""></option>
+        {Object.entries(dialectCodeOptions).map(([key, value]) => (
+            <option key={value} value={value}>{value}</option>
+        ))}
+      </select>
       <input 
         type="text" 
         placeholder="Filter By Id" 
@@ -92,7 +108,10 @@ const ViewFieldMaster = () => {
         />
       }
       {error && <p>Error data:{error}</p>}
-      {rulesData.length > 0 && <RulesObject data={rulesData} />}
+      {rulesData.length > 0
+        ? <RulesObject data={rulesData} />
+        : <h4 className="title is-1">No Rules</h4>
+      }
     </div>
   );
 };

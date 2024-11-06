@@ -1,17 +1,8 @@
 import {gql} from '@apollo/client'
 
-export const loadFetchObjectMasterList = gql`
-query MyQuery {
-  FetchObjectMasterList(dialectCode: us_en) {
-    objectMasterId
-    objectName
-  }
-}
-`;
-
 export const loadFetchFieldMetaData = gql`
-query MyQuery {
-  FetchFieldMetaData(dialectCode: us_en) {
+query MyQuery($dialectCode: DialectCodes!) {
+  FetchFieldMetaData(dialectCode: $dialectCode) {
     fieldName
     fieldMasterId
     fieldMasterInUseInd
