@@ -60,6 +60,13 @@ const FieldsObject = ( props ) => {
     };
 
     // About expandableRows, refer to https://react-data-table-component.netlify.app/?path=/docs/api-props--docs#row-expander
+    const rowExpander = (fieldData) => (
+      <RulesObject
+        ruleList={ propertyGet(fieldData, 'data.rules', []) } 
+        isRowExpanded={false}
+      />
+    );
+
     return (
       <div>
           <h2 className="title is-1">Object Fields</h2>
@@ -67,12 +74,12 @@ const FieldsObject = ( props ) => {
             <DataTable 
               highlightOnHover
               pointerOnHover
-              pagination 
-              columns={dataTableColumns} 
+              pagination
+              columns={dataTableColumns}
               data={objectFieldsData}
               expandableRows={true}
               customStyles={customStyles}
-              expandableRowsComponent={(fieldData) => <RulesObject ruleList={ propertyGet(fieldData, 'data.rules', []) } />}
+              expandableRowsComponent={rowExpander}
               onRowClicked={clickRow}
             />
           </div>

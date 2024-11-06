@@ -8,7 +8,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Accordion from 'react-bootstrap/Accordion';
 import {useMutation} from '@apollo/client';
-import { defaultDialectCode } from "../config/dialectCodeMap";
+import { defaultDialectCode } from "../../config/dialectCodeMap";
 
 import CreateConditions from './createConditions';
 import {validationCodeOptions, getErrorCodeOptions, errorMessageOptions, getConditions} from './ruleValidationCodeMap';

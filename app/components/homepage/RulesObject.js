@@ -6,7 +6,7 @@ import { propertyGet } from "../../lib/arrayHelper";
 import withAuth from "../withAuth";
 import Conditions from "./Conditions";
 
-const RulesObject = ({ruleList}) => {
+const RulesObject = ({ruleList, isRowExpanded = true}) => {
     const columns = [
         {
           name: 'Id',
@@ -50,7 +50,7 @@ const RulesObject = ({ruleList}) => {
           expandableRows
           columns={columns}
           data={ruleList}
-          expandableRowExpanded={() => true}
+          expandableRowExpanded={() => isRowExpanded}
           expandableRowsComponent={({data}) => <Conditions conditionData={ propertyGet(data, 'conditions', []) } />}
         />
       </div>
