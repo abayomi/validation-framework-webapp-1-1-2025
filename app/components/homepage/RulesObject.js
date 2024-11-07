@@ -2,7 +2,7 @@
 
 import DataTable from "react-data-table-component";
 import Button from "react-bootstrap/Button";
-import { propertyGet } from "../../lib/arrayHelper";
+import { propertyGet, uniqueRecords } from "../../lib/arrayHelper";
 import withAuth from "../withAuth";
 import Conditions from "./Conditions";
 
@@ -51,7 +51,7 @@ const RulesObject = ({ruleList, isRowExpanded = true}) => {
           columns={columns}
           data={ruleList}
           expandableRowExpanded={() => isRowExpanded}
-          expandableRowsComponent={({data}) => <Conditions conditionData={ propertyGet(data, 'conditions', []) } />}
+          expandableRowsComponent={({data}) => <Conditions conditionData={ uniqueRecords(propertyGet(data, 'conditions', [])) } />}
         />
       </div>
     );
