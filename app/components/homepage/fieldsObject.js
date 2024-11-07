@@ -32,9 +32,9 @@ const FieldsObject = ( props ) => {
       },
       {
         name: 'Action',
-        cell: () => <Button variant="info" size="sm">Edit</Button>,
         sortable: false,
-        reorder: false
+        reorder: false,
+        cell: () => <Button variant="info" size="sm" onClick={() => alert('This feature is temporarily unavailable.')}>Edit</Button>,
       }
     ];
 
