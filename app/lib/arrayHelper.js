@@ -47,16 +47,16 @@ export function propertyGet(obj, property, defaultValue = null) {
 
 export function uniqueRecords(data) {
     const uniqueData = data.reduce((acc, current) => {
-      if (!current.id) {
-        return acc;
-      }
-      const x = acc.find(item => item.id === current.id);
-      if (!x) {
-        return acc.concat([current]);
-      } else {
-        return acc;
-      }
+        if (!current.id) {
+            return acc;
+        }
+        const x = acc.find(item => item.id === current.id);
+        if (!x) {
+            return acc.concat([current]);
+        } else {
+            return acc;
+        }
     }, []);
 
     return uniqueData.sort((a, b) => b.id - a.id);
-  }
+}

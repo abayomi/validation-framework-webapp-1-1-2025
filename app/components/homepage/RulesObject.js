@@ -51,7 +51,7 @@ const RulesObject = ({ruleList, isRowExpanded = true}) => {
           columns={columns}
           data={ruleList}
           expandableRowExpanded={() => isRowExpanded}
-          expandableRowsComponent={({data}) => <Conditions conditionData={ uniqueRecords(propertyGet(data, 'conditions', [])) } />}
+          expandableRowsComponent={({data}) => <Conditions conditionData={ propertyGet(data, 'conditions', []) } />}
         />
       </div>
     );
