@@ -1,8 +1,7 @@
 "use client";
 
 import DataTable from "react-data-table-component";
-import Button from "react-bootstrap/Button";
-import { propertyGet, uniqueRecords } from "../../lib/arrayHelper";
+import { propertyGet } from "../../lib/arrayHelper";
 import withAuth from "../withAuth";
 import Conditions from "./Conditions";
 
