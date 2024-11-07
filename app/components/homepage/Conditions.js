@@ -4,7 +4,7 @@ import withAuth from "../withAuth";
 const Conditions = ({ conditionData }) => {
     const isAllowBlankRule = (0 === conditionData.length) || !conditionData[0].id;
     if (isAllowBlankRule) {
-        return <p>No conditions for a rule that allows blank.</p>;
+        return <p>No conditions</p>;
     }
 
     return conditionData.map(item => (
