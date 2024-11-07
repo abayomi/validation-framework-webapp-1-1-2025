@@ -1,13 +1,15 @@
 "use client";
+
+import { uniqueRecords } from "../../lib/arrayHelper";
 import withAuth from "../withAuth";
 
 const Conditions = ({ conditionData }) => {
-    const isAllowBlankRule = (0 === conditionData.length) || !conditionData[0].id;
-    if (isAllowBlankRule) {
+    const filteredConditionData = uniqueRecords(conditionData);
+    if (0 === filteredConditionData.length) {
         return <p>No conditions</p>;
     }
 
-    return conditionData.map(item => (
+    return filteredConditionData.map(item => (
         <ul key={item.id}>
             <li>Id: <b>{item.id}</b></li>
             <li>Type: <b>{item.type}</b></li>
