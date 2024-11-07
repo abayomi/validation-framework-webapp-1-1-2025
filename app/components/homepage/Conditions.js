@@ -3,7 +3,7 @@ import withAuth from "../withAuth";
 
 const Conditions = ({ conditionData }) => {
     return (
-        <div>
+        <>
             {conditionData.map(item => (
                 <ul key={item.id}>
                     <li>Id: <b>{item.id}</b></li>
@@ -13,7 +13,7 @@ const Conditions = ({ conditionData }) => {
                     <li>Long Description: <b>{item.longDescription}</b></li>
                 </ul>
             ))}
-        </div>
+        </>
     );
 }
 
