@@ -14,7 +14,7 @@ import CreateConditions from './createConditions';
 import {validationCodeOptions, getErrorCodeOptions, errorMessageOptions, getConditions} from './ruleValidationCodeMap';
 import {ADD_RULE_TO_ENTERPRISE_FIELD} from '../../../graphql/addRuleToEnterpriseField';
 import { dialectCodeOptions } from "../../config/dialectCodeMap";
-function CustomToggle({ eventkey, hidden, deleteOnClick, submitOnClick }) {
+function CustomToggle({ eventkey, deleteOnClick }) {
 
     const decoratedOnClick = useAccordionButton(eventkey);
 
@@ -24,9 +24,6 @@ function CustomToggle({ eventkey, hidden, deleteOnClick, submitOnClick }) {
                 <span onClick={decoratedOnClick} style={{ cursor: 'pointer' }}>
                     Rule - {eventkey == '0' ? 'new' : eventkey}
                 </span>
-                <Button variant="success" size="sm" onClick={(e) => submitOnClick(e, eventkey)} className="ms-3" hidden={hidden}>
-                    Submit
-                </Button>
             </div>
             <Button variant="danger" size="sm" onClick={(e) => deleteOnClick(e, eventkey)}>
                 Delete
@@ -92,15 +89,6 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            if (!rule.type) {
-                throw new Error('Validation Code is not met');
-            }
-            if (!rule.ruleGroupNumber) {
-                throw new Error('Rule Group Number is not met');
-            }
-            if (!rule.shortDescription) {
-                throw new Error('shortDescription value is not met');
-            }
             const variables = {
                 fieldMasterId: fieldMasterId,
                 dialectCode: dialectCode,
@@ -108,17 +96,14 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
                 validationErrorCode: rule.errorCode,
                 mandatoryRuleInd: rule.mandatoryRuleInd ?? false,
                 description: {
-                    shortDescription: rule.shortDescription || 'test',
-                    longDescription: rule.longDescription || '',
+                    shortDescription: rule.shortDescription,
+                    longDescription: rule.longDescription,
                 },
                 ruleGroupNumber: rule.ruleGroupNumber
             };
 
             if (rule.conditions && rule.conditions.length > 0) {
                 variables.condition = rule.conditions.map(condition => {
-                    if (!condition.value) {
-                        throw new Error('Condition value is not met');
-                    }
                     return {
                         ruleConditionTypeCode: condition.type,
                         ruleConditionValue: condition.value,
@@ -148,9 +133,10 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
     return (
         <div key={eventkey}>
             <Accordion.Item eventkey={ eventkey }>
-            <CustomToggle eventkey={eventkey} hidden={disabled} deleteOnClick={deleteOnClick} submitOnClick={handleSubmit}/>
+            <CustomToggle eventkey={eventkey} deleteOnClick={deleteOnClick}/>
             <Accordion.Collapse eventKey={eventkey}>  
             <div className="p-2">
+            <Form onSubmit={handleSubmit}>
                 <Row>
                     <Form.Group as={Col} xs={3} className="mb-3" controlId="validationRuleCode">
                         <Form.Label>Validation Code</Form.Label>
@@ -217,6 +203,10 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
                         />
                     );
                 })}
+                <div className="d-flex justify-content-center">
+                    <Button type="submit" className="ms-3 col-2" hidden={disabled}>Submit</Button>
+                </div>
+            </Form>
             </div>
             </Accordion.Collapse>
             </Accordion.Item>

@@ -53,6 +53,23 @@ const CreateFieldMasterObject = ( props ) => {
   }, [isUpdate, location.state]);
 
   useEffect(() => {
+    if (createData) {
+      alert("Field Master added successfully!");
+      const newData = createData['CreateEnterpriseField'][0];
+      const newFieldMaster = { 
+        'fieldMasterId': newData.fieldMasterId,
+        'fieldName': newData.fieldName,
+        'enterpriseFieldInd': formData.enterpriseFieldInd,
+        'fieldMasterInUseInd': formData.fieldMasterInUseInd,
+        'fieldDefinition': newData.fieldDefinition,
+        'dialectCode': dialectCode,
+        'rules':[],
+      };
+      navigate(`/updatemasterobject/field`, { state: { updateFieldData: newFieldMaster } });
+    }
+  }, [createData]);
+
+  useEffect(() => {
     if (removeData) {
       const { RemoveRuleFromEnterpriseField } = removeData;
       if (RemoveRuleFromEnterpriseField.status && deleteId) {
@@ -128,18 +145,7 @@ const CreateFieldMasterObject = ( props ) => {
       const response = await createEnterpriseField({
         variables,
       });
-      alert("Added successfully");
-      const newData = response.data['CreateEnterpriseField'][0];
-      const newFieldMaster = { 
-        'fieldMasterId': newData.fieldMasterId,
-        'fieldName': newData.fieldName,
-        'enterpriseFieldInd': variables.enterpriseFieldInd,
-        'fieldMasterInUseInd': variables.fieldMasterInUseInd,
-        'fieldDefinition': newData.fieldDefinition,
-        'dialectCode': dialectCode,
-        'rules':[],
-      };
-      navigate(`/updatemasterobject/field`, { state: { fieldData: newFieldMaster } });
+      console.log(response);
     } catch (error) {
       console.error('Error submitting form:', error);
     }
@@ -176,14 +182,18 @@ const CreateFieldMasterObject = ( props ) => {
           <Form.Control as="textarea" rows={2} placeholder="" value={formData.fieldDefinition} onChange={handleInputChange} disabled={isUpdate} required/>
         </Form.Group>
         <Form.Check className="mb-3 col-10" id="enterpriseFieldInd">
-          <Form.Check.Input type="checkbox" className="custom-check-border" checked={formData.enterpriseFieldInd} onChange={handleInputChange} disabled={isUpdate}/>
+          <Form.Check.Input type="checkbox" className="custom-check-border" defaultChecked={formData.enterpriseFieldInd} onChange={handleInputChange} disabled={isUpdate}/>
           <Form.Check.Label>Enterprise Field Indicator</Form.Check.Label>
         </Form.Check>
         <Form.Check className="mb-3 col-10" id="fieldMasterInUseInd">
-          <Form.Check.Input type="checkbox" className="custom-check-border" checked={formData.fieldMasterInUseInd} onChange={handleInputChange} disabled={isUpdate}/>
+          <Form.Check.Input type="checkbox" className="custom-check-border" defaultChecked={formData.fieldMasterInUseInd} onChange={handleInputChange} disabled={isUpdate}/>
           <Form.Check.Label>Field Master In-Use Indicator</Form.Check.Label>
         </Form.Check>
-        {isUpdate && <Button className="mb-3" variant="info" size="sm" onClick={onAddBtnClick} disabled={adding}>Add Rules</Button>}
+        {!isUpdate && <Button variant="primary" type="submit">
+          Submit
+        </Button>}
+      </Form>
+      {isUpdate && <Button className="mb-3" variant="info" size="sm" onClick={onAddBtnClick} disabled={adding}>Add Rules</Button>}
         <Accordion className="mb-3" defaultActiveKey="0" flush>
         {ruleItems.map((item, index) => {
             return (
@@ -199,14 +209,8 @@ const CreateFieldMasterObject = ( props ) => {
             );
           })}
         </Accordion>
-
-        {!isUpdate && <Button variant="primary" type="submit">
-          Submit
-        </Button>}
-      </Form>
       {createLoading && <p>Submitting...</p>}
       {createError && <p>Error: {createError.message}</p>}
-      {createData && <><p>Field Master added successfully!</p></>}
     </div>
   )
 };

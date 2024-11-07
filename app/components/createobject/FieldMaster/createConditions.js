@@ -1,5 +1,4 @@
 "use client";
-import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { useState, useEffect } from "react";
 import Row from 'react-bootstrap/Row';
@@ -37,7 +36,7 @@ const CreateConditions = (props) => {
                 as="textarea"
                 name="condition_value"
                 rows={1}
-                value={condition.value}
+                defaultValue={condition.value}
                 placeholder=""
                 onChange={handleConditionChange}
                 disabled={disabled}
