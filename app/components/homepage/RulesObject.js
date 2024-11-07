@@ -11,28 +11,27 @@ const RulesObject = ({ruleList, isRowExpanded = true}) => {
           name: 'Id',
           selector: row => row.id,
           reorder: true,
+          width: '10%'
         },
         {
           name: 'Short Description',
           selector: row => row.shortDescription,
           reorder: true,
+          width: '20%'
         },
         {
           name: 'Long Description',
           selector: row => row.longDescription,
           reorder: true,
+          width: '30%'
         },
         {
           name: 'Error Message',
           selector: row => row.errorMessage,
           reorder: true,
-        },
-        // {
-        //   name: 'Action',
-        //   cell: () => <Button variant="info" size="sm" >Edit</Button>,
-        //   sortable: false,
-        //   reorder: false
-        // }
+          // width: '40%', // There is no need to set the width of this column to make it more adaptive.
+          wrap: true
+        }
     ];
 
     if (!ruleList) {
