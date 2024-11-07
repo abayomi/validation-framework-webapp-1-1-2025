@@ -6,6 +6,7 @@ import withAuth from "../withAuth";
 import Conditions from "./Conditions";
 
 const RulesObject = ({ruleList, isRowExpanded = true}) => {
+    // About DataTable's column, refer to https://react-data-table-component.netlify.app/?path=/docs/api-columns--docs
     const columns = [
         {
           name: 'Id',
@@ -26,10 +27,11 @@ const RulesObject = ({ruleList, isRowExpanded = true}) => {
           width: '30%'
         },
         {
+          // There is no need to set the width of this column to make it more adaptive. 
+          // Allow the content to wrap, because some messages can be long.
           name: 'Error Message',
           selector: row => row.errorMessage,
           reorder: true,
-          // width: '40%', // There is no need to set the width of this column to make it more adaptive.
           wrap: true
         }
     ];
