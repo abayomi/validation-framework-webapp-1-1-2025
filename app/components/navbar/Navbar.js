@@ -37,7 +37,7 @@ const Navbars = () => {
           >
             <Nav.Link as={Link} to="/">Home</Nav.Link>
             <Nav.Link as={Link} to="/profile/Vijit">Profile</Nav.Link>
-            <Nav.Link as={Link} to="/createmasterobject">Create Master Object</Nav.Link>
+            <Nav.Link as={Link} to="/createmasterobject">Create Object Or Field Master</Nav.Link>
           </Nav>
         </Navbar.Collapse>
         <div className="buttons">

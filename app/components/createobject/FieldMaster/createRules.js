@@ -35,7 +35,7 @@ function CustomToggle({ eventkey, hidden, deleteOnClick, submitOnClick }) {
     );
 }
 
-const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fieldMasterId = 0 }) => {
+const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fieldMasterId = 0, dialectCode}) => {
 
     const disabled = isUpdate && item.id > 0;
     const navigate = useNavigate();
@@ -44,7 +44,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
             conditions: item?.conditions || []
     });
     const [conditionItems, setConditionItems] = useState(item?.conditions || []);
-    const [addRuleToEnterpriseField, { data, loading, error }] = useMutation(ADD_RULE_TO_ENTERPRISE_FIELD);
+    const [addRuleToEnterpriseField, { data: addData, loading, error:addError }] = useMutation(ADD_RULE_TO_ENTERPRISE_FIELD);
 
     useEffect(() => {
         setRule({
@@ -61,6 +61,17 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
             setConditionItems(valid_conditions || []);
         }
     }, [item]);
+
+    useEffect(() => {
+        if (addData) {
+            let newFieldMaster = addData.AddRuleToEnterpriseField[0];
+            newFieldMaster['dialectCode'] = dialectCode;
+            navigate(`/updatemasterobject/field`, { state: { updateFieldData: newFieldMaster } });
+        }
+        if (addError) {
+            alert(addError);
+        }
+    }, [addData, addError]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -92,7 +103,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
             }
             const variables = {
                 fieldMasterId: fieldMasterId,
-                dialectCode: defaultDialectCode,
+                dialectCode: dialectCode,
                 validationRuleCode: rule.type,
                 validationErrorCode: rule.errorCode,
                 mandatoryRuleInd: rule.mandatoryRuleInd ?? false,
@@ -119,13 +130,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
             const response = await addRuleToEnterpriseField({
                 variables,
             });
-          if (response.data) {
-            const newFieldMaster = response['data']['AddRuleToEnterpriseField'][0];
-            navigate(`/updatemasterobject/field`, { state: { fieldData: newFieldMaster } });
-          } else if (response.errors) {
-            alert(response.errors);
-            console.error('Mutation failed:', response.errors);
-          }
+            console.log(response);
         } catch (error) {
             alert(error);
         }
@@ -174,16 +179,15 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
                     </Form.Group>
                 </Row>
                 <Row>
-                    <Form.Group className="mb-3 col-2" as={Col} controlId="dialectCode">
+                    <Form.Group className="mb-3 col-3" as={Col} controlId="dialectCode">
                         <Form.Label>Dialect code</Form.Label>
-                        <Form.Select aria-label="Dialect code" value={rule.dialectCode} onChange={handleChange} disabled={disabled} required>
-                            <option value=""></option>
+                        <Form.Select aria-label="Dialect code" value={rule.dialectCode ?? dialectCode} disabled required>
                             {Object.entries(dialectCodeOptions).map(([key, value]) => (
                                 <option key={key} value={key}>{value}</option>
                             ))}
                         </Form.Select>
                     </Form.Group>
-                    <Form.Group as={Col} className="mb-3" xs={2} controlId="errorMessage">
+                    <Form.Group as={Col} className="mb-3 col-2" controlId="errorMessage">
                         <Form.Label>Mandatory Rule Indicator</Form.Label>
                         <center>
                             <Form.Check type="checkbox" id="mandatoryRuleInd" >
@@ -192,7 +196,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
                             </Form.Check>
                         </center>
                     </Form.Group>
-                    <Form.Group as={Col} className="mb-3" xs={4} controlId="shortDescription">
+                    <Form.Group as={Col} className="mb-3" xs={3} controlId="shortDescription">
                         <Form.Label>Short Description</Form.Label>
                         <Form.Control type="text" name="shortDescription" value={rule.shortDescription} placeholder="" onChange={handleChange} disabled={disabled} required />
                     </Form.Group>

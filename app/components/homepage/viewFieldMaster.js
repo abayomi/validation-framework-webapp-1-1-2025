@@ -51,7 +51,9 @@ const ViewFieldMaster = () => {
   ];
 
   const rowUpdate = (fieldData) => {
-    navigate(`/updatemasterobject/field`, { state: { fieldData } });
+    // bring the dialectcode value to the update page
+    const updateFieldData = { ...fieldData, dialectCode };
+    navigate(`/updatemasterobject/field`, { state: { updateFieldData } });
   };
 
   const onRowClicked = (row) => {

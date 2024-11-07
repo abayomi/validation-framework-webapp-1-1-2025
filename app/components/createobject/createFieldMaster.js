@@ -6,43 +6,47 @@ import Col from 'react-bootstrap/Col';
 import Accordion from 'react-bootstrap/Accordion';
 import CreateRules from "./FieldMaster/createRules";
 import { useNavigate } from 'react-router-dom';
-import {gql, useMutation} from '@apollo/client';
-import { dialectCodeOptions } from "../config/dialectCodeMap";
+import { useMutation } from '@apollo/client';
+import { dialectCodeOptions, defaultDialectCode } from "../config/dialectCodeMap";
 import { uniqueRecords } from "../../lib/arrayHelper";
-import {CREATE_ENTERPRISE_FIELD, REMOVE_RULE_FROM_ENTERPRISE_FIELD} from "../../graphql/filedmasterMutations";
+import { CREATE_ENTERPRISE_FIELD, REMOVE_RULE_FROM_ENTERPRISE_FIELD } from "../../graphql/filedmasterMutations";
 
 const CreateFieldMasterObject = ( props ) => {
   const { location } = props
   const isUpdate = Boolean(location.pathname === "/updatemasterobject/object" || location.pathname === "/updatemasterobject/field");
   const navigate = useNavigate();
+  const [dialectCode, setDialectCode] = useState(defaultDialectCode);
   const emptyFormData = {
     fieldMasterId: '',
     enterpriseFieldInd: false,
     fieldMasterInUseInd: true,
     fieldName:'',
     fieldDefinition:'',
-    dialectCode:'us_en',
+    dialectCode:defaultDialectCode,
   };
   const [formData, setFormData] = useState(emptyFormData); 
   const [ruleItems, setRuleItems] = useState([]);
+  const [adding, setAdding] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [createEnterpriseField, { data: createData, loading: createLoading, error: createError }] = useMutation(CREATE_ENTERPRISE_FIELD);
   const [removeRuleFromEnterpriseField, { data: removeData, loading: removeLoading, error: removeError }] = useMutation(REMOVE_RULE_FROM_ENTERPRISE_FIELD);
 
   useEffect(() => {
     if (isUpdate && location.state) {
-      const fieldData = location.state.fieldData;
+      setAdding(false);
+      const fieldData = location.state.updateFieldData;
       if (!fieldData) {
         return ;
       }
       setFormData(fieldData);
-
+      setDialectCode(fieldData.dialectCode);
       if (fieldData.rules) {
         const valid_rules = uniqueRecords(fieldData.rules);
         setRuleItems(valid_rules);
       }
     }
     if (!isUpdate) {
+      setDialectCode(defaultDialectCode);
       setFormData(emptyFormData);
       setRuleItems([]);
     }
@@ -59,11 +63,10 @@ const CreateFieldMasterObject = ( props ) => {
       }
     }
   }, [removeData, removeError]);
-  
 
   const onAddBtnClick = (event) => {
+    setAdding(true);
     setRuleItems((prev) => [...prev, {'id':0}]);  
-    console.log(ruleItems);
   };
 
   const deleteOnClick = async (e, index) => {
@@ -93,6 +96,7 @@ const CreateFieldMasterObject = ( props ) => {
 
     const newArr = ruleItems.filter(item => item.id !== index);
     setRuleItems(newArr);
+    setAdding(false);
   };
 
   const handleRuleChange = (index, newRule) => {
@@ -132,6 +136,7 @@ const CreateFieldMasterObject = ( props ) => {
         'enterpriseFieldInd': variables.enterpriseFieldInd,
         'fieldMasterInUseInd': variables.fieldMasterInUseInd,
         'fieldDefinition': newData.fieldDefinition,
+        'dialectCode': dialectCode,
         'rules':[],
       };
       navigate(`/updatemasterobject/field`, { state: { fieldData: newFieldMaster } });
@@ -178,7 +183,7 @@ const CreateFieldMasterObject = ( props ) => {
           <Form.Check.Input type="checkbox" className="custom-check-border" checked={formData.fieldMasterInUseInd} onChange={handleInputChange} disabled={isUpdate}/>
           <Form.Check.Label>Field Master In-Use Indicator</Form.Check.Label>
         </Form.Check>
-        {isUpdate && <Button className="mb-3" variant="info" size="sm" onClick={onAddBtnClick}>Add Rules</Button>}
+        {isUpdate && <Button className="mb-3" variant="info" size="sm" onClick={onAddBtnClick} disabled={adding}>Add Rules</Button>}
         <Accordion className="mb-3" defaultActiveKey="0" flush>
         {ruleItems.map((item, index) => {
             return (
@@ -188,7 +193,9 @@ const CreateFieldMasterObject = ( props ) => {
                 deleteOnClick={deleteOnClick}
                 onRuleChange={handleRuleChange}
                 item={item} 
-                fieldMasterId={formData.fieldMasterId}/>
+                fieldMasterId={formData.fieldMasterId}
+                dialectCode={dialectCode}
+                />
             );
           })}
         </Accordion>
