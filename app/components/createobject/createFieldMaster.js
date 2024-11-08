@@ -84,8 +84,8 @@ const CreateFieldMasterObject = ( props ) => {
       const { RemoveRuleFromEnterpriseField } = removeData;
       if (RemoveRuleFromEnterpriseField.status && deleteId) {
           alert(`Deleted successfully: ${deleteId}`);
-          const newArr = ruleItems.filter(item => item.id !== deleteId);
-          setRuleItems(newArr);
+          const updatedRuleItems = ruleItems.filter(item => item.id !== deleteId);
+          setRuleItems(updatedRuleItems);
           setDeleteId(null);
       }
     }
@@ -122,8 +122,8 @@ const CreateFieldMasterObject = ( props ) => {
       return ;
     }
 
-    const newArr = ruleItems.filter(item => item.id !== index);
-    setRuleItems(newArr);
+    const updatedRuleItems = ruleItems.filter(item => item.id !== index);
+    setRuleItems(updatedRuleItems);
     setAdding(false);
   };
 
