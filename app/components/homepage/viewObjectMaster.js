@@ -74,8 +74,8 @@ const ViewObjectMaster = () => {
       name: 'Action',
       sortable: false,
       reorder: false,
-      cell: () => (
-        <Button variant="info" size="sm" onClick={() => navigate('/updatemasterobject/object')}>
+      cell: (row) => (
+        <Button variant="info" size="sm" onClick={() => navigate(`/updatemasterobject/object/${row.objectMasterId}`)}>
           Edit
         </Button>
       ),
