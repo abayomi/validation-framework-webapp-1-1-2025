@@ -91,10 +91,10 @@ const CreateFieldMasterObject = ( props ) => {
     }
   }, [removeData, removeError]);
 
-  const onAddBtnClick = (event) => {
+  const onAddBtnClick = () => {
     setAdding(true);
     setActiveKey(0);
-    setRuleItems((prev) => [...prev, {'id':0}]);  
+    setRuleItems((prev) => [...prev, {'id':0}]);
   };
 
   const deleteOnClick = async (e, index) => {
@@ -134,10 +134,9 @@ const CreateFieldMasterObject = ( props ) => {
   };
 
   const handleInputChange = (e) => {
-    const { id, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [id]: type === 'checkbox' ? checked : value,
+      [e.target.id]: (e.target.type === 'checkbox') ? e.target.checked : e.target.value,
     });
   };
 
