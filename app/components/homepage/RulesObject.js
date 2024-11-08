@@ -24,7 +24,8 @@ const RulesObject = ({ruleList, isRowExpanded = true}) => {
           name: 'Long Description',
           selector: row => row.longDescription,
           reorder: true,
-          width: '30%'
+          width: '30%',
+          wrap: true
         },
         {
           // There is no need to set the width of this column to make it more adaptive. 
