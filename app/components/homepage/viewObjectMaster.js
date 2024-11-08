@@ -8,6 +8,7 @@ import { useQuery, useLazyQuery } from "@apollo/client";
 import { arrayGet, propertyGet } from "../../lib/arrayHelper";
 import { defaultDialectCode } from "../config/dialectCodeMap";
 import graphqlForObjectMaster from "../../graphql/objectMasterQueries";
+import { eventKeyObjectMaster } from "../createobject/tabMenu";
 import withAuth from "../withAuth";
 import FieldsObject from "./fieldsObject";
 import FilterList, { doFilterList } from "./filterList";
@@ -157,7 +158,7 @@ const ViewObjectMaster = () => {
         }}
       />
 
-      {objectFieldsOfSelectedRow && <FieldsObject dataComeFrom={'objectMaster'} objectFieldsData={objectFieldsOfSelectedRow} />}
+      {objectFieldsOfSelectedRow && <FieldsObject dataComeFrom={eventKeyObjectMaster} objectFieldsData={objectFieldsOfSelectedRow} />}
     </>
   );
 }

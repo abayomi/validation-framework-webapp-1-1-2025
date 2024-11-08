@@ -64,7 +64,7 @@ export default function Home() {
                 <Route path="counter" element={ <Counter /> } />
                 <Route path="profile/:name" element={ <Profile /> }/>              
                 <Route path="createmasterobject" element={ <TabMenu /> } />        
-                <Route path="updatemasterobject/object" element={ <TabMenu /> } /> 
+                <Route path="updatemasterobject/object/:id" element={ <TabMenu /> } />
                 <Route path="updatemasterobject/field" element={ <TabMenu /> } />
                 <Route path="validateRecords" element={ <ValidateRecords />} />
               </Routes>

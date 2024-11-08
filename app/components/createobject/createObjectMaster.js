@@ -9,7 +9,7 @@ import CreateObjectFields from "./createObjectFields";
 
 const CreateObjectMaster = (props) => {
     const { location } = props
-    const isUpdate = (location.pathname === "/updatemasterobject/object") || (location.pathname === "/updatemasterobject/field");
+    const isUpdate = location.pathname.includes("/updatemasterobject/object") || location.pathname.includes("/updatemasterobject/field");
     const [fieldCounter, setFieldCounter] = useState(1);
     const [objectName, updateObjectName] = useState('');
     const [labelName, updateLabelName] = useState('');
@@ -109,7 +109,7 @@ const CreateObjectMaster = (props) => {
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" controlId="onoff">
                         <Form.Label>On/Off</Form.Label>
-                        <Form.Check className="mb-3 col-3 ms-3" type="checkbox" id="checkbox" label="" checked />
+                        <Form.Check className="mb-3 col-3 ms-3" type="checkbox" id="checkbox" label="" checked onChange={() => true} />
                     </Form.Group>
                 </Row>
                 <Row>

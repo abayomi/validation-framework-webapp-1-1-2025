@@ -5,35 +5,39 @@ import CreateFieldMasterObject from './createFieldMaster';
 import CreateObjectMaster from './createObjectMaster'
 import { useLocation } from "react-router-dom";
 
+const eventKeyObjectMaster = 'objectMaster';
+const eventKeyFieldMaster = 'fieldMaster';
+
 const TabMenu = () => {  
   const location = useLocation();
-  let activeKey = "objectMaster";
-  let isUpdate = false;
-  if (location.pathname.includes("updatemasterobject")) {
-    isUpdate = true;
-    activeKey = location.pathname === "/updatemasterobject/object" ? 'objectMaster' : 'fieldMaster';
-  }
-  const [key, setKey] = useState(activeKey);
+  const isUpdate = location.pathname.includes("updatemasterobject");
+  const activeKeyValue = location.pathname.includes("/updatemasterobject/object") ? eventKeyObjectMaster : eventKeyFieldMaster;
+  const [activeKey, setActiveKey] = useState(activeKeyValue);
+
+  const tabObjectMaster = (
+    <Tab eventKey={eventKeyObjectMaster} title="Object Master">
+      <CreateObjectMaster location={location} />
+    </Tab>
+  );
+
+  const tabFieldMaster = (
+    <Tab eventKey={eventKeyFieldMaster} title="Field Master">
+      <CreateFieldMasterObject location={location} />
+    </Tab>
+  );
 
   return (
     <Tabs
       id="create-object-tab"
-      activeKey={key}
-      onSelect={(k) => setKey(k)}
+      activeKey={activeKey}
+      onSelect={(key) => setActiveKey(key)}
       className="mb-3"
     >
-      {(!isUpdate || isUpdate && activeKey === "objectMaster") && (
-        <Tab eventKey="objectMaster" title="Object Master">
-          <CreateObjectMaster location={location} />
-        </Tab>
-      )}
-      {(!isUpdate || isUpdate && activeKey === "fieldMaster") && (
-        <Tab eventKey="fieldMaster" title="Field Master">
-          <CreateFieldMasterObject location={location} />
-        </Tab>
-      )}
+      {(isUpdate && activeKey === eventKeyObjectMaster) && tabObjectMaster}
+      {(isUpdate && activeKey === eventKeyFieldMaster) && tabFieldMaster}
     </Tabs>
   );
 }
 
+export { eventKeyObjectMaster, eventKeyFieldMaster };
 export default TabMenu;
