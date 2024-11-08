@@ -131,7 +131,7 @@ const ViewObjectMaster = () => {
         dialectCode={dialectCode}
         filterText={filterText}
         inputPlaceHolder="Filter By Object Name"
-        onRefreshClicked={() => true}
+        onRefreshClicked={() => rawObjectMasterList.refetch()}
         onFilterTextChanged={(e) => setFilterText(e.target.value)}
         onDialectCodeChanged={(e) => {
           setFilterText('');
