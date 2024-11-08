@@ -145,7 +145,7 @@ const ViewObjectMaster = () => {
         pointerOnHover
         selectableRowsSingle
         selectableRowsHighlight
-        selectableRows={true}
+        selectableRows={false}
         checkbox={false}
         columns={dataTableColumns}
         data={ doFilterList(objectMasterList, 'objectName', filterText) }
