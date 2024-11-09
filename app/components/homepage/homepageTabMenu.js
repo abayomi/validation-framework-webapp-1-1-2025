@@ -5,7 +5,7 @@ import ViewObjectMaster from './viewObjectMaster';
 import ViewFieldMaster from './viewFieldMaster'
 import { useLocation } from "react-router-dom";
 
-const TabMenu = () => {  
+const HomepageTabMenu = () => {  
   const location = useLocation();
   const [key, setKey] = useState('ViewObjectMaster'); // Set up the default tab. The value is the eventKey of a <Tab>.
 
@@ -28,4 +28,4 @@ const TabMenu = () => {
   );
 }
 
-export default TabMenu;
+export default HomepageTabMenu;

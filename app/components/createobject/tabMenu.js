@@ -33,8 +33,8 @@ const TabMenu = () => {
       onSelect={(key) => setActiveKey(key)}
       className="mb-3"
     >
-      {(isUpdate && activeKey === eventKeyObjectMaster) && tabObjectMaster}
-      {(isUpdate && activeKey === eventKeyFieldMaster) && tabFieldMaster}
+      { (isUpdate && activeKey === eventKeyObjectMaster) && tabObjectMaster }
+      { (isUpdate && activeKey === eventKeyFieldMaster) && tabFieldMaster }
     </Tabs>
   );
 }
