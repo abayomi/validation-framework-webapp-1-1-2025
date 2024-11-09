@@ -13,6 +13,12 @@ const FieldsObject = ( props ) => {
 
     const dataTableColumns = [
       {
+        name: 'Id',
+        selector: row => row.fieldMasterId,
+        sortable: true,
+        reorder: true,
+      },
+      {
         name: 'Object Name',
         selector: row => row.fieldName,
         sortable: true,

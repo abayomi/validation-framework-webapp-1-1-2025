@@ -6,6 +6,7 @@ import Navbar from "./components/navbar/Navbar";
 import Profile from "./components/profile/Profile";
 import TabMenu from "./components/createobject/tabMenu";
 import ViewTabMenu from "./components/homepage/homepageTabMenu";
+import ValidateRecords from "./components/validateRecords/validateRecords"
 import { useState, useEffect } from "react";
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
@@ -69,7 +70,7 @@ export default function Home() {
               </Routes>
             </div>
 
-            <footer className="container bg-light py-4 text-muted mb-0 text-center">Validation Framework</footer>
+            <footer className="container bg-light py-4 text-muted mt-3 mb-0 text-center">Validation Framework</footer>
           </div>
         </Provider>
     </BrowserRouter>

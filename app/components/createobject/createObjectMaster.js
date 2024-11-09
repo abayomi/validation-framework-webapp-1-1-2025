@@ -4,69 +4,56 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import { v4 as uuidv4 } from 'uuid';
 
 import CreateObjectFields from "./createObjectFields";
 
+const newEmptyFieldItem = () => {
+    return { 
+        id: uuidv4(),
+        objectFieldName: '',
+        fieldMasterName: ''
+    };
+};
+
 const CreateObjectMaster = (props) => {
     const { location } = props
-    const [fieldCounter, setFieldCounter] = useState(1);
-    const [objectName, updateObjectName] = useState('');
-    const [labelName, updateLabelName] = useState('');
-    const [fieldItems, setFieldItems] = useState([{ eventKey: 1 }]);
+    const [formData, setFormData] = useState({
+        objectName: '',
+        objectDef: '',
+        labelName: '',
+        fieldItems: [newEmptyFieldItem()]
+    });
+    const isUpdating = location.pathname.includes('/updatemasterobject/object');
 
-    const createObjectFieldsInputBoxList = fieldItems.map((_, key) => (
-        <CreateObjectFields
-            id={key}
-            eventKey={key + 1}
-            deleteRow={(index) => {
-                const updatedObjectFieldList = fieldItems.filter((_, i) => i !== index - 1);
-                setFieldItems(updatedObjectFieldList);
-            }}
-        />
-    ));
+    const showAddMoreObjectFieldsSection = function() {
+        const addOneObjectField = () => {
+            const newFieldItems = [...formData.fieldItems, newEmptyFieldItem()];
+            setFormData({...formData, fieldItems: newFieldItems});
+        };
 
-    return (
-        <div>
-            <h2 className="title is-1">
-                { location.pathname.includes("/updatemasterobject/object") ? 'Update Object Master' : 'Create Object Master' }
-            </h2>
+        const deleteOneRow = (targetRowId) => {
+            const newFieldItems = formData.fieldItems.filter(item => targetRowId !== item.id);
+            setFormData({...formData, fieldItems: newFieldItems});
+        };
 
-            <Form>
-                <Form.Group className="mb-3 col-4" controlId="objectName">
-                    <Form.Label>Object Name</Form.Label>
-                    <Form.Control
-                        type="text"
-                        placeholder=""
-                        value={objectName}
-                        onChange={ (e) => updateObjectName(e.target.value) }
-                    />
-                </Form.Group>
+        const fieldMasterNameData = [{id: 1, name: 'One'}, {id: 2, name: 'Two'}, {id: 3, name: 'Three'}]; // TODO Replace this with real data
 
-                <Form.Group className="mb-3 col-4" controlId="objectDefinition">
-                    <Form.Label>Object Definition</Form.Label>
-                    <Form.Control type="text" placeholder="" />
-                </Form.Group>
+        const createObjectFieldsList = formData.fieldItems.map(item => (
+            <CreateObjectFields
+                key={item.id}
+                name={item.id}
+                fieldMasterNameList={ fieldMasterNameData }
+                onInputChangeHandler={ handleInputChanged }
+                onDeleteHandler={ () => deleteOneRow(item.id) }
+            />
+        ));
 
-                <Form.Group className="mb-3 col-4" controlId="labelName">
-                    <Form.Label>Label Name</Form.Label>
-                    <Form.Control
-                        type="text"
-                        placeholder=""
-                        value={labelName}
-                        onChange={ (e) => updateLabelName(e.target.value) }
-                    />
-                </Form.Group>
-
-                <Button
-                    className="mb-3"
-                    variant="info"
-                    size="sm"
-                    onClick={() => {
-                        const updatedFieldCounter = fieldCounter + 1
-                        setFieldCounter(updatedFieldCounter)
-                        setFieldItems((prev) => [...prev, { eventKey: updatedFieldCounter }]);
-                    }}
-                >Define Object Fields</Button>
+        return (
+            <>
+                <Button className="mb-3" variant="info" size="sm" onClick={ addOneObjectField }>
+                    Add more object fields
+                </Button>
 
                 <Row>
                     <Form.Group as={Col} className="mb-3 col-3" controlId="objectFieldName">
@@ -78,51 +65,149 @@ const CreateObjectMaster = (props) => {
                     </Form.Group>
                 </Row>
 
-                {createObjectFieldsInputBoxList}
+                { createObjectFieldsList }
+            </>
+        );
+    };
 
-                <h4 className="title is-1">Object Field Validation</h4>
-                <Row>
-                    <Form.Group className="mb-3 col-3" controlId="validationCode">
-                        <Form.Label>Validation Code</Form.Label>
-                        <Form.Control type="text" placeholder="" disabled />
-                    </Form.Group>
+    const showObjectFieldValidationSection = () => (
+        <>
+            <h4 className="title is-1">Object Field Validation</h4>
+            <Row>
+                <Form.Group className="mb-3 col-3" controlId="validationCode">
+                    <Form.Label>Validation Code</Form.Label>
+                    <Form.Control type="text" disabled />
+                </Form.Group>
 
-                    <Form.Group className="mb-3 col-3" controlId="ruleConditionTypeCode">
-                        <Form.Label>Rule Condition Type Code</Form.Label>
-                        <Form.Control type="text" placeholder="" disabled />
-                    </Form.Group>
+                <Form.Group className="mb-3 col-3" controlId="ruleConditionTypeCode">
+                    <Form.Label>Rule Condition Type Code</Form.Label>
+                    <Form.Control type="text" disabled />
+                </Form.Group>
 
-                    <Form.Group className="mb-3 col-3" controlId="ruleConditionTypeValue">
-                        <Form.Label>Rule Condition Type Value</Form.Label>
-                        <Form.Control type="text" placeholder="" disabled />
-                    </Form.Group>
-                    <Form.Group as={Col} className="mb-3" controlId="onoff">
-                        <Form.Label>On/Off</Form.Label>
-                        <Form.Check className="mb-3 col-3 ms-3" type="checkbox" id="checkbox" label="" checked onChange={() => true} />
-                    </Form.Group>
-                </Row>
-                <Row>
-                    <Form.Group className="mb-3 col-3" controlId="validationCode">
-                        <Form.Control type="text" placeholder="" disabled />
-                    </Form.Group>
+                <Form.Group className="mb-3 col-3" controlId="ruleConditionTypeValue">
+                    <Form.Label>Rule Condition Type Value</Form.Label>
+                    <Form.Control type="text" disabled />
+                </Form.Group>
+                <Form.Group as={Col} className="mb-3" controlId="onoff">
+                    <Form.Label>On/Off</Form.Label>
+                    <Form.Check className="mb-3 col-3 ms-3" type="checkbox" id="checkbox" checked onChange={() => true} />
+                </Form.Group>
+            </Row>
+            <Row>
+                <Form.Group className="mb-3 col-3" controlId="validationCode">
+                    <Form.Control type="text" disabled />
+                </Form.Group>
 
-                    <Form.Group className="mb-3 col-3" controlId="ruleConditionTypeCode">
-                        <Form.Control type="text" placeholder="" disabled />
-                    </Form.Group>
+                <Form.Group className="mb-3 col-3" controlId="ruleConditionTypeCode">
+                    <Form.Control type="text" disabled />
+                </Form.Group>
 
-                    <Form.Group className="mb-3 col-3" controlId="ruleConditionTypeValue">
-                        <Form.Control type="text" placeholder="" disabled />
-                    </Form.Group>
-                    <Form.Group as={Col} className="mb-3" controlId="onoff">
-                        <Form.Check className="mb-3 col-3 ms-3" type="checkbox" id="checkbox" label="" />
-                    </Form.Group>
-                </Row>
+                <Form.Group className="mb-3 col-3" controlId="ruleConditionTypeValue">
+                    <Form.Control type="text" disabled />
+                </Form.Group>
+                <Form.Group as={Col} className="mb-3" controlId="onoff">
+                    <Form.Check className="mb-3 col-3 ms-3" type="checkbox" id="checkbox" />
+                </Form.Group>
+            </Row>
+        </>
+    );
 
+    const replaceFieldItem = (fieldItems, newItem) => {
+        return fieldItems.map(item => 
+            item.id === newItem.id ? { ...item, ...newItem } : item
+        );
+    }
 
-                <Button variant="primary" type="submit">Submit</Button>
+    const handleInputChanged = (e) => {
+        const name = e.target.name;
+        const value = e.target.value;
+
+        if (name.startsWith('fields-')) {
+            // User changed an item of Object Field Name or Field Master Name
+            let newItemValue = null;
+            if (name.startsWith('fields-objfieldname-')) { 
+                // Object Field Name
+                newItemValue = {
+                    id: name.replace('fields-objfieldname-', ''), // The name's format is "fields-objfieldname-<UUID string>"
+                    objectFieldName: value,
+                };
+            } else { 
+                // Field Master Name
+                newItemValue = {
+                    id: name.replace('fields-fieldmastername-', ''), // The name's format is "fields-fieldmastername-<UUID string>"
+                    fieldMasterName: value
+                };
+            }
+            const newFieldItems = replaceFieldItem(formData.fieldItems, newItemValue);
+            setFormData({...formData, fieldItems: newFieldItems});
+        } else {
+            // User changed other input box: 
+            //   - Object Name
+            //   - Object Definition
+            //   - Label Name
+            setFormData({...formData, [name]: value});
+        }
+    };
+
+    // React Forms, refer to https://www.w3schools.com/react/react_forms.asp
+    return (
+        <>
+            <h2 className="title is-1">
+                { isUpdating ? 'Update Object Master' : 'Create Object Master' }
+            </h2>
+
+            <Form>
+                <Form.Group className="mb-3 col-4" controlId="objectName">
+                    <Form.Label>Object Name</Form.Label>
+                    <Form.Control
+                        type="text"
+                        name="objectName"
+                        value={ formData.objectName }
+                        onChange={ handleInputChanged }
+                    />
+                </Form.Group>
+
+                <Form.Group className="mb-3 col-4" controlId="objectDefinition">
+                    <Form.Label>Object Definition</Form.Label>
+                    <Form.Control 
+                        type="text"
+                        name="objectDef"
+                        value={ formData.objectDef }
+                        onChange={ handleInputChanged }
+                    />
+                </Form.Group>
+
+                <Form.Group className="mb-3 col-4" controlId="labelName">
+                    <Form.Label>Label Name</Form.Label>
+                    <Form.Control
+                        type="text"
+                        name="labelName"
+                        value={ formData.labelName }
+                        onChange={ handleInputChanged }
+                    />
+                </Form.Group>
+
+                { showAddMoreObjectFieldsSection() }
+
+                { isUpdating && showObjectFieldValidationSection() }
+
+                <Button 
+                    variant="primary" 
+                    type="submit"
+                    onClick={ (event) => {
+                        // TODO Disable the button after user's click
+                        event.preventDefault();
+                        console.log('submitted', JSON.stringify(formData));
+                    } }
+                >Submit</Button>
+
+                <div className="mt-4">
+                    <p><b>Debug output:</b></p>
+                    <div>{ JSON.stringify(formData) }</div>
+                </div>
             </Form>
-        </div>
-    )
+        </>
+    );
 };
 
 export default CreateObjectMaster;
