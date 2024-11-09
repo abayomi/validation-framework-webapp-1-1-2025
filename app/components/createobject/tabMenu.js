@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import CreateFieldMasterObject from './createFieldMaster';
@@ -10,31 +9,24 @@ const eventKeyFieldMaster = 'fieldMaster';
 
 const TabMenu = () => {  
   const location = useLocation();
-  const isUpdate = location.pathname.includes("updatemasterobject");
-  const activeKeyValue = location.pathname.includes("/updatemasterobject/object") ? eventKeyObjectMaster : eventKeyFieldMaster;
-  const [activeKey, setActiveKey] = useState(activeKeyValue);
 
-  const tabObjectMaster = (
-    <Tab eventKey={eventKeyObjectMaster} title="Object Master">
-      <CreateObjectMaster location={location} />
-    </Tab>
-  );
+  const isShowTabMenu = location.pathname.includes("updatemasterobject");
+  if (!isShowTabMenu) {
+    return <></>;
+  }
 
-  const tabFieldMaster = (
-    <Tab eventKey={eventKeyFieldMaster} title="Field Master">
-      <CreateFieldMasterObject location={location} />
-    </Tab>
-  );
+  const activeTabKey = location.pathname.includes("/updatemasterobject/object") ? eventKeyObjectMaster : eventKeyFieldMaster;
+  const activeTabTitle = (activeTabKey === eventKeyObjectMaster) ? 'Object Master' : 'Field Master';
 
   return (
-    <Tabs
-      id="create-object-tab"
-      activeKey={activeKey}
-      onSelect={(key) => setActiveKey(key)}
-      className="mb-3"
-    >
-      { (isUpdate && activeKey === eventKeyObjectMaster) && tabObjectMaster }
-      { (isUpdate && activeKey === eventKeyFieldMaster) && tabFieldMaster }
+    <Tabs id="create-object-tab" className="mb-3">
+      <Tab eventKey={activeTabKey} title={activeTabTitle}>
+        { 
+          (activeTabKey === eventKeyObjectMaster) 
+          ? <CreateObjectMaster location={location} /> 
+          : <CreateFieldMasterObject location={location} />
+        }
+      </Tab>
     </Tabs>
   );
 }

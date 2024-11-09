@@ -9,11 +9,9 @@ import CreateObjectFields from "./createObjectFields";
 
 const CreateObjectMaster = (props) => {
     const { location } = props
-    const isUpdate = location.pathname.includes("/updatemasterobject/object") || location.pathname.includes("/updatemasterobject/field");
     const [fieldCounter, setFieldCounter] = useState(1);
     const [objectName, updateObjectName] = useState('');
     const [labelName, updateLabelName] = useState('');
-    const [isLabelNameChanged, setIsLabelNameChanged] = useState(false);
     const [fieldItems, setFieldItems] = useState([{ eventKey: 1 }]);
 
     const createObjectFieldsInputBoxList = fieldItems.map((_, key) => (
@@ -30,7 +28,7 @@ const CreateObjectMaster = (props) => {
     return (
         <div>
             <h2 className="title is-1">
-                {isUpdate ? 'Update Object Master' : 'Create Object Master'}
+                { location.pathname.includes("/updatemasterobject/object") ? 'Update Object Master' : 'Create Object Master' }
             </h2>
 
             <Form>
@@ -40,13 +38,7 @@ const CreateObjectMaster = (props) => {
                         type="text"
                         placeholder=""
                         value={objectName}
-                        onChange={(e) => {
-                            updateObjectName(e.target.value);
-
-                            if (!isLabelNameChanged) {
-                                updateLabelName(e.target.value); // This operation is not necessary, but most of operators tend to set the Object Name and the Label Name to be the same.
-                            }
-                        }}
+                        onChange={ (e) => updateObjectName(e.target.value) }
                     />
                 </Form.Group>
 
@@ -61,10 +53,7 @@ const CreateObjectMaster = (props) => {
                         type="text"
                         placeholder=""
                         value={labelName}
-                        onChange={(e) => {
-                            setIsLabelNameChanged(true)
-                            updateLabelName(e.target.value)
-                        }}
+                        onChange={ (e) => updateLabelName(e.target.value) }
                     />
                 </Form.Group>
 

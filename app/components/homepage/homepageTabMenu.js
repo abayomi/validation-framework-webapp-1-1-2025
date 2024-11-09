@@ -9,8 +9,6 @@ const HomepageTabMenu = () => {
   const location = useLocation();
   const [key, setKey] = useState('ViewObjectMaster'); // Set up the default tab. The value is the eventKey of a <Tab>.
 
-  console.log('TabMenu rendered --->');
-
   return (
     <Tabs
       id="view-object-tab"

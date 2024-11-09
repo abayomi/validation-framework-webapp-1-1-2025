@@ -112,7 +112,9 @@ const ViewObjectMaster = () => {
       const formattedRowList = formatObjectMasterList(rawObjectMasterList.data.FetchObjectMasterList);
       setObjectMasterList(formattedRowList);
     }
+  }, [rawObjectMasterList]);
 
+  useEffect(() => {
     // Show Object Fields section
     if (rawObjectFieldsData.error) {
       return (<div>Error! {rawObjectFieldsData.error.message}</div>);
@@ -123,7 +125,7 @@ const ViewObjectMaster = () => {
 
       highLightSelectedRow(selectedRow); // setObjectFieldsOfSelectedRow() causes the component be rendered first, then the row can be marked as selected.
     }
-  }, [rawObjectMasterList, rawObjectFieldsData]);
+  }, [rawObjectFieldsData]);
 
   // DataTable's doc: https://react-data-table-component.netlify.app/?path=/docs/api-props--docs
   return (
