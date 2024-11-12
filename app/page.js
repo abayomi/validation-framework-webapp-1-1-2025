@@ -6,6 +6,7 @@ import Navbar from "./components/navbar/Navbar";
 import Profile from "./components/profile/Profile";
 import TabMenu from "./components/createobject/tabMenu";
 import ViewTabMenu from "./components/homepage/tabMenu";
+import ValidateRecords from "./components/validateRecords/validateRecords";
 import { useState, useEffect } from "react";
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
@@ -64,7 +65,8 @@ export default function Home() {
                 <Route path="profile/:name" element={ <Profile /> }/>              
                 <Route path="createmasterobject" element={ <TabMenu /> } />        
                 <Route path="updatemasterobject/object" element={ <TabMenu /> } /> 
-                <Route path="updatemasterobject/field" element={ <TabMenu /> } />  
+                <Route path="updatemasterobject/field" element={ <TabMenu /> } />
+                <Route path="validateRecords" element={ <ValidateRecords />} />
               </Routes>
             </div>
 

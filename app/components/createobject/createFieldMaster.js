@@ -26,23 +26,33 @@ const CreateFieldMasterObject = ( props ) => {
   };
   const [formData, setFormData] = useState(emptyFormData); 
   const [ruleItems, setRuleItems] = useState([]);
+  const [ruleGroupNumberList, setRuleGroupNumberList] = useState([]);
   const [adding, setAdding] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [activeKey, setActiveKey] = useState("0");
   const [createEnterpriseField, { data: createData, loading: createLoading, error: createError }] = useMutation(CREATE_ENTERPRISE_FIELD);
   const [removeRuleFromEnterpriseField, { data: removeData, loading: removeLoading, error: removeError }] = useMutation(REMOVE_RULE_FROM_ENTERPRISE_FIELD);
 
   useEffect(() => {
     if (isUpdate && location.state) {
       setAdding(false);
+
       const fieldData = location.state.updateFieldData;
       if (!fieldData) {
-        return ;
+        return;
       }
+
       setFormData(fieldData);
       setDialectCode(fieldData.dialectCode);
+
       if (fieldData.rules) {
         const valid_rules = uniqueRecords(fieldData.rules);
         setRuleItems(valid_rules);
+        const uniqueRuleGroupNumber = uniqueRecords(valid_rules.map(rule => rule.ruleGroupNumber), null);
+        setRuleGroupNumberList(uniqueRuleGroupNumber);
+      } else {
+        setRuleItems([]);
+        setRuleGroupNumberList([]);
       }
     }
     if (!isUpdate) {
@@ -83,6 +93,7 @@ const CreateFieldMasterObject = ( props ) => {
 
   const onAddBtnClick = (event) => {
     setAdding(true);
+    setActiveKey(0);
     setRuleItems((prev) => [...prev, {'id':0}]);  
   };
 
@@ -194,7 +205,7 @@ const CreateFieldMasterObject = ( props ) => {
         </Button>}
       </Form>
       {isUpdate && <Button className="mb-3" variant="info" size="sm" onClick={onAddBtnClick} disabled={adding}>Add Rules</Button>}
-        <Accordion className="mb-3" defaultActiveKey="0" flush>
+        <Accordion className="mb-3" defaultActiveKey={activeKey} alwaysOpen flush>
         {ruleItems.map((item, index) => {
             return (
               <CreateRules
@@ -205,6 +216,7 @@ const CreateFieldMasterObject = ( props ) => {
                 item={item} 
                 fieldMasterId={formData.fieldMasterId}
                 dialectCode={dialectCode}
+                ruleGroupNumberList={ruleGroupNumberList}
                 />
             );
           })}

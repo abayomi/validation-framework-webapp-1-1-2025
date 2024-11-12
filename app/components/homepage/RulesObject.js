@@ -42,7 +42,7 @@ const RulesObject = ({ruleList, isRowExpanded = true}) => {
 
     return (
       <div>
-        <h2 className="title is-1">Rules</h2>
+        <h2 className="title is-1" name="show_rules">Rules</h2>
         <DataTable
           highlightOnHover
           pointerOnHover

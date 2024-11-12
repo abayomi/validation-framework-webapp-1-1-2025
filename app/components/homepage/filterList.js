@@ -9,7 +9,8 @@ const FilterList = ({ dialectCode, filterText, inputPlaceHolder, onFilterTextCha
         <>
             <select className="mx-3 px-2 py-1" 
                     aria-label="Dialect code" 
-                    value={dialectCode} 
+                    value={dialectCode}
+                    name="select_dialectCode"
                     onChange={onDialectCodeChanged}
             >
                 {

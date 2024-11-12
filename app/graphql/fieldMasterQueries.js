@@ -11,6 +11,7 @@ query MyQuery($dialectCode: DialectCodes!) {
     rules {
       id
       isMandatory
+      ruleGroupNumber
       longDescription
       shortDescription
       type

@@ -1,32 +1,18 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MockedProvider } from '@apollo/client/testing';
 import CreateFieldMasterObject from '../app/components/createobject/createFieldMaster';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { MockedProvider } from "@apollo/client/testing";
 import { gql } from '@apollo/client';
+import { CREATE_ENTERPRISE_FIELD } from '../app/graphql/filedmasterMutations';
 
-const CREATE_ENTERPRISE_FIELD = gql`
-  mutation CreateEnterpriseField(
-    $fieldName: String!
-    $fieldDefinition: String!
-    $dialectCode: DialectCodes!
-    $fieldMasterInUseInd: Boolean!
-    $enterpriseFieldInd: Boolean!
-    $rule: FieldMasterRule
-  ) {
-    CreateEnterpriseField(field: {
-      dialectCode: $dialectCode, 
-      enterpriseFieldInd: $enterpriseFieldInd, 
-      fieldDefinition: $fieldDefinition, 
-      fieldMasterInUseInd: $fieldMasterInUseInd, 
-      fieldName: $fieldName
-      rule: $rule
-    }) {
-      fieldMasterId
-      fieldName
-    }
-  }
-`;
+jest.mock('../app/graphql/filedmasterMutations', () => ({
+  CREATE_ENTERPRISE_FIELD: jest.fn(),
+}));
+
+jest.mock('react-router-dom', () => ({
+  useNavigate: jest.fn(),
+}));
 
 const mocks = [
   {
@@ -38,16 +24,6 @@ const mocks = [
         fieldDefinition: 'Test Definition',
         enterpriseFieldInd: false,
         fieldMasterInUseInd: false,
-        rule: {
-          validationRuleCode: 'RULE_CODE',
-          validationErrorCode: 'ERROR_CODE',
-          mandatoryRuleInd: 'true',
-          description: {
-            shortDescription: 'Short Description',
-            longDescription: 'Long Description',
-          },
-          ruleGroupNumber: 1,
-        },
       },
     },
     result: {
@@ -62,24 +38,33 @@ const mocks = [
 ];
 
 test('renders CreateFieldMasterObject and submits form', async () => {
+
+  CREATE_ENTERPRISE_FIELD.mockResolvedValue({ data: { createEnterpriseField: { id: '1' } } });
+
   render(
     <MockedProvider mocks={mocks} addTypename={false}>
-      <Router>
-        <CreateFieldMasterObject location={{ pathname: '/createmasterobject/field', state: null }} />
-      </Router>
+      <CreateFieldMasterObject location={{ pathname: '/createmasterobject/field', state: null }} />
     </MockedProvider>
   );
-
+  screen.debug();
   // Fill out the form
-  fireEvent.change(screen.getByLabelText(/Dialect code/i), { target: { value: 'us_en' } });
+  fireEvent.change(screen.getByLabelText(/Dialect Code/i), { target: { value: 'us_en' } });
   fireEvent.change(screen.getByLabelText(/Field Name/i), { target: { value: 'Test Field' } });
   fireEvent.change(screen.getByLabelText(/Field Definition/i), { target: { value: 'Test Definition' } });
+  fireEvent.click(screen.getByLabelText(/Enterprise Field Indicator/i));
+  fireEvent.click(screen.getByLabelText(/Field Master In-Use Indicator/i));
 
-  // Submit the form
   fireEvent.click(screen.getByText(/Submit/i));
 
-  // Wait for the mutation to complete
-  await waitFor(() => {
-    expect(screen.getByText(/Field Master added successfully!/i)).toBeInTheDocument();
+  await screen.findByText(/Submit/i);
+
+  expect(createEnterpriseField).toHaveBeenCalledWith({
+    variables: {
+      dialectCode: 'us_en',
+      fieldName: 'Test Field',
+      fieldDefinition: 'Test Definition',
+      enterpriseFieldInd: false,
+      fieldMasterInUseInd: false,
+    },
   });
 });

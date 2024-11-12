@@ -45,18 +45,23 @@ export function propertyGet(obj, property, defaultValue = null) {
     return result;
 }
 
-export function uniqueRecords(data) {
+export function uniqueRecords(data, key = 'id') {
     const uniqueData = data.reduce((acc, current) => {
-        if (!current.id) {
-            return acc;
-        }
-        const x = acc.find(item => item.id === current.id);
-        if (!x) {
-            return acc.concat([current]);
+        if (key) {
+            if (!current[key]) {
+                return acc;
+            }
+            const x = acc.find(item => item[key] === current[key]);
+            if (!x) {
+                return acc.concat([current]);
+            }
         } else {
-            return acc;
+            const x = acc.find(item => item === current);
+            if (!x) {
+                return acc.concat([current]);
+            }
         }
+        return acc;
     }, []);
-
-    return uniqueData.sort((a, b) => b.id - a.id);
+    return uniqueData.sort((a, b) => key ? b[key] - a[key] : b - a);
 }
