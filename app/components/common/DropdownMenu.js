@@ -33,7 +33,7 @@ const CustomMenu = React.forwardRef(
   },
 );
 
-const DropdownMenu = ({ list, keyProp, valueProp, setValue, buttonName = '' }) => (
+const DropdownMenu = ({ list, keyProp, valueProp, dropDownMenuOnClick, buttonName = '' }) => (
   <Dropdown className="ps-0">
     <Dropdown.Toggle id="dropdown-custom-components">
       {buttonName}
@@ -43,7 +43,7 @@ const DropdownMenu = ({ list, keyProp, valueProp, setValue, buttonName = '' }) =
         <Dropdown.Item
           key={item[keyProp]}
           eventKey={item[keyProp]}
-          onClick={() => setValue(item[valueProp])}
+          onClick={ dropDownMenuOnClick(item[valueProp]) }
         >
           {item[valueProp]}
         </Dropdown.Item>

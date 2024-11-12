@@ -119,7 +119,12 @@ const ValidateRecords = () => {
               />
             </Col>
             <Col className="ps-0">
-              <DropdownMenu list={objectList} keyProp='objectMasterId' valueProp='objectName' setValue={setObjectName}/>
+              <DropdownMenu 
+                  list={objectList} 
+                  keyProp='objectMasterId' 
+                  valueProp='objectName'
+                  dropDownMenuOnClick={(val) => setObjectName(val)}
+              />
             </Col>
           </Row>
         </Form.Group>
