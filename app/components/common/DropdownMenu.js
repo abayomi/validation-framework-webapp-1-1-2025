@@ -3,7 +3,13 @@ import { Dropdown, Form } from 'react-bootstrap';
 
 const CustomMenu = React.forwardRef(
   ({ children, style, className, 'aria-labelledby': labeledBy }, ref) => {
-    const [value, setValue] = useState('');
+    const [searchKeyword, setSearchKeyword] = useState('');
+
+    const filterByKeyword = (child) => {
+      const noKeywordInput = !searchKeyword;
+      const keywordMatched = child.props.children.toLowerCase().includes(searchKeyword.toLowerCase());
+      return noKeywordInput || keywordMatched;
+    };
 
     return (
       <div
@@ -16,14 +22,11 @@ const CustomMenu = React.forwardRef(
           autoFocus
           className="mx-3 my-2 w-auto"
           placeholder="Type to filter..."
-          onChange={(e) => setValue(e.target.value)}
-          value={value}
+          onChange={(e) => setSearchKeyword(e.target.value)}
+          value={searchKeyword}
         />
         <ul className="list-unstyled">
-          {React.Children.toArray(children).filter(
-            (child) =>
-              !value || child.props.children.toLowerCase().includes(value.toLowerCase()),
-          )}
+          {React.Children.toArray(children).filter(filterByKeyword)}
         </ul>
       </div>
     );
