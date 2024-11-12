@@ -108,7 +108,6 @@ const ValidateRecords = () => {
               <Form.Control
                 type="text"
                 defaultValue="us_en"
-                placeholder=""
               />
             </Col>
             <Col className="pe-0">
@@ -116,12 +115,11 @@ const ValidateRecords = () => {
                 type="text"
                 value={objectName ?? ''}
                 onChange={handleObjectName}
-                placeholder=""
                 required
               />
             </Col>
             <Col className="ps-0">
-              <DropdownMenu list={objectList} buttonName='' keyProp='objectMasterId' valueProp='objectName' setValue={setObjectName}/>
+              <DropdownMenu list={objectList} keyProp='objectMasterId' valueProp='objectName' setValue={setObjectName}/>
             </Col>
           </Row>
         </Form.Group>
