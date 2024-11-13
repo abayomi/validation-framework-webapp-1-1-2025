@@ -11,29 +11,59 @@ import { defaultDialectCode } from "@/app/components/config/dialectCodeMap";
 import { LOAD_VALIDATE_RECORDS } from "@/app/graphql/validationQueries";
 import RecordCard from "./recordCard";
 import DropdownMenu from "../common/DropdownMenu";
+import { propertyGet } from "@/app/lib/arrayHelper";
 
 const ValidateRecords = () => {
 
   const [objectName, setObjectName] = useState("");
-  const [recordItems, setRecordItems] = useState([]);
+  const [recordCurrentId, setRecordCurrentId] = useState(10);
+  const [recordItems, setRecordItems] = useState([ {'recordId': recordCurrentId, 'fields': [{}]}]);
   const [dialectCode, setDialectCode] = useState(defaultDialectCode);
   const [objectList, setObjectList] = useState([]);
+  const [fieldNameList, setFieldNameList] = useState([]);
   const [show, setShow] = useState(false);
   const [modalData, setModalData] = useState('');
   const [loadValidateRecords, { called, loading, data, error }] = useLazyQuery(LOAD_VALIDATE_RECORDS);
   const rawObjectMasterList = useQuery(graphqlForObjectMaster.FetchObjectMasterList, {
     variables: { dialectCode: dialectCode }
   });
+  const [lazyLoadQuery, rawObjectFieldsData] = useLazyQuery(graphqlForObjectMaster.FetchObjectMetaDataByLabel);
 
   useEffect(() => {
     if (rawObjectMasterList.error) {
       console.error(rawObjectMasterList.error);
     }
     if (rawObjectMasterList.data) {
-      const formattedRowList = rawObjectMasterList.data.FetchObjectMasterList;
-      setObjectList(formattedRowList);
+      const rawObjectList = rawObjectMasterList.data.FetchObjectMasterList;
+      setObjectList(rawObjectList);
     }
   }, [rawObjectMasterList]);
+
+  useEffect(() => {
+    if (rawObjectFieldsData.error) {
+      console.error(rawObjectFieldsData.error);
+      setFieldNameList([]);
+    }
+    if (rawObjectFieldsData.data) {
+      const rawObjectList = propertyGet(rawObjectFieldsData, 'data.FetchObjectMetaDataByLabel.0.fields', []);
+      setFieldNameList(rawObjectList.map(obj => obj.fieldName));
+    }
+  }, [rawObjectFieldsData]);
+
+  useEffect(() => {
+    // check if name is in objectList
+    if (objectList.some(object => object.objectName === objectName)) {
+        const fetchData = async (objectName) => {
+          await lazyLoadQuery({ variables: {
+            objectLabelName: objectName,
+            dialectCode: dialectCode
+          } });
+        };
+        fetchData(objectName);
+    } else {
+      setFieldNameList([]);
+    }
+  }, [objectName]);
 
   useEffect(() => {
     if (data) {
@@ -81,8 +111,9 @@ const ValidateRecords = () => {
     handleShow();
   }
 
-  const onAddBtnClick = () => {
-    const updateRecordItems = [...recordItems, {'fields': [{}]}];
+  const onAddBtnClick = (event) => {
+    const updateRecordItems = [...recordItems, {'recordId': recordCurrentId + 1, 'fields': [{}]}];
+    setRecordCurrentId(recordCurrentId + 1);
     setRecordItems(updateRecordItems);
   };
 
@@ -134,7 +165,7 @@ const ValidateRecords = () => {
           </Col>
         </Row>
         {recordItems && recordItems.map((item, key) => (
-           <RecordCard key={key} id={key} item={item} onChange={handleRecordsChange} />
+           <RecordCard key={key} id={key} item={item} fieldNameList={fieldNameList} onChange={handleRecordsChange} />
         ))}
         <Button className="mb-3" variant="info" size="sm" type="submit">Validate</Button>
       </Form>
