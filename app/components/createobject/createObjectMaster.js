@@ -39,7 +39,7 @@ const CreateObjectMaster = (props) => {
 
         const fieldMasterNameData = [{id: 1, name: 'One'}, {id: 2, name: 'Two'}, {id: 3, name: 'Three'}]; // TODO Replace this with real data
 
-        const createObjectFieldsList = formData.fieldItems.map(item => (
+        const objectFieldsList = formData.fieldItems.map(item => (
             <CreateObjectFields
                 key={item.id}
                 name={item.id}
@@ -65,7 +65,7 @@ const CreateObjectMaster = (props) => {
                     </Form.Group>
                 </Row>
 
-                { createObjectFieldsList }
+                { objectFieldsList }
             </>
         );
     };
