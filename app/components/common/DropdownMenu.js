@@ -6,9 +6,8 @@ const CustomMenu = React.forwardRef(
     const [searchKeyword, setSearchKeyword] = useState('');
 
     const filterByKeyword = (child) => {
-      const noKeywordInput = !searchKeyword;
       const keywordMatched = child.props.children.toLowerCase().includes(searchKeyword.toLowerCase());
-      return noKeywordInput || keywordMatched;
+      return ('' === searchKeyword) || keywordMatched;
     };
 
     return (
@@ -33,7 +32,7 @@ const CustomMenu = React.forwardRef(
   },
 );
 
-const DropdownMenu = ({ list, keyProp, valueProp, dropDownMenuOnClick, buttonName = '' }) => (
+const DropdownMenu = ({ list, onDropDownItemClick, buttonName = '' }) => (
   <Dropdown className="ps-0">
     <Dropdown.Toggle id="dropdown-custom-components">
       {buttonName}
@@ -41,11 +40,11 @@ const DropdownMenu = ({ list, keyProp, valueProp, dropDownMenuOnClick, buttonNam
     <Dropdown.Menu as={CustomMenu}>
       {list.map((item) => (
         <Dropdown.Item
-          key={item[keyProp]}
-          eventKey={item[keyProp]}
-          onClick={ dropDownMenuOnClick(item[valueProp]) }
+          key={item.key}
+          eventKey={item.key}
+          onClick={ () => onDropDownItemClick(item.value) }
         >
-          {item[valueProp]}
+          {item.value}
         </Dropdown.Item>
       ))}
     </Dropdown.Menu>

@@ -1,9 +1,10 @@
 "use client";
 import withAuth from "../withAuth";
 import React, { useState, useEffect } from "react";
-import { Modal, Button, Form, Dropdown, Card } from 'react-bootstrap';
+import { Modal, Button, Form } from 'react-bootstrap';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import { v4 as uuidv4 } from 'uuid';
 import { useLazyQuery, useQuery } from "@apollo/client";
 import graphqlForObjectMaster from "@/app/graphql/objectMasterQueries";
 import { defaultDialectCode } from "@/app/components/config/dialectCodeMap";
@@ -54,14 +55,6 @@ const ValidateRecords = () => {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-  }
-
   const handleRecordsChange = (index, currentRecordItem) => {
     const updateRecordItems = [...recordItems];
     updateRecordItems[index] = currentRecordItem;
@@ -71,9 +64,9 @@ const ValidateRecords = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const uuid = generateUUID();
+
     const batch = {
-      batchId: uuid,
+      batchId: uuidv4(),
       objectName: objectName,
     }
     if (recordItems.length > 0) {
@@ -88,14 +81,18 @@ const ValidateRecords = () => {
     handleShow();
   }
 
-  const handleObjectName = (e) => {
-    const { value } = e.target;
-    setObjectName(value);
-  }
-
-  const onAddBtnClick = (event) => {
+  const onAddBtnClick = () => {
     const updateRecordItems = [...recordItems, {'fields': [{}]}];
     setRecordItems(updateRecordItems);
+  };
+
+  const getDropdownMenuDataMapping = (objectList) => {
+    return objectList.map(obj => {
+      return {
+        key: obj.objectMasterId,
+        value: obj.objectName
+      };
+    });
   };
 
   return (
@@ -104,7 +101,7 @@ const ValidateRecords = () => {
         <Form.Group as={Col} className="mb-3 col-10" controlId="objectName">
           <Form.Label>Object Name</Form.Label>
           <Row>
-            <Col xs={2} className="pe-0">
+            <Col xs="2" className="pe-0">
               <Form.Control
                 type="text"
                 defaultValue="us_en"
@@ -113,28 +110,26 @@ const ValidateRecords = () => {
             <Col className="pe-0">
               <Form.Control
                 type="text"
-                value={objectName ?? ''}
-                onChange={handleObjectName}
+                value={objectName}
+                onChange={ (e) => setObjectName(e.target.value) }
                 required
               />
             </Col>
             <Col className="ps-0">
               <DropdownMenu 
-                  list={objectList} 
-                  keyProp='objectMasterId' 
-                  valueProp='objectName'
-                  dropDownMenuOnClick={(val) => setObjectName(val)}
+                  list={ getDropdownMenuDataMapping(objectList) } 
+                  onDropDownItemClick={ (val) => setObjectName(val) }
               />
             </Col>
           </Row>
         </Form.Group>
         <Row className="mb-3">
-          <Col xs={2}>
+          <Col xs="2">
             <Form.Group controlId="batchId">
               <Form.Label>Object Records</Form.Label>
             </Form.Group>
           </Col>
-          <Col xs={10} className="d-flex align-items-end">
+          <Col xs="10" className="d-flex align-items-end">
             <Button variant="info" size="sm" onClick={onAddBtnClick}>Add Record</Button>
           </Col>
         </Row>
