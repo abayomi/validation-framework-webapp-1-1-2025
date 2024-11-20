@@ -55,8 +55,10 @@ function renderRuleList(rules, fieldMasterName, onFieldRuleCheckboxChange) {
         return (<></>);
     }
 
-    const createRuleList = (groupedRules) => {
-        return groupedRules.map(rule => {
+    const groupedRules = groupByGroupId(rules);
+
+    const createRuleList = (rules) => {
+        return rules.map(rule => {
             return (
                 <li key={ `li-${rule.id}` }>
                     <input 
@@ -74,8 +76,7 @@ function renderRuleList(rules, fieldMasterName, onFieldRuleCheckboxChange) {
         });
     }
 
-    const groupedRules = groupByGroupId(rules);
-    const dlItemList = Object.entries(groupedRules).map(([ruleGroupNumber, groupedRules]) => {
+    const dlItemList = Object.entries(groupedRules).map(([ruleGroupNumber, rules]) => {
         return (
             <Row key={ `div-${ruleGroupNumber}` }> {/* There is no need for any HTML tags, such as div, so React.Fragment is used. */}
                 <Col className="col-3">
@@ -83,7 +84,7 @@ function renderRuleList(rules, fieldMasterName, onFieldRuleCheckboxChange) {
                 </Col>
                 <Col className="col-9">
                     <ul className="list-unstyled">
-                        { createRuleList(groupedRules, onFieldRuleCheckboxChange) }
+                        { createRuleList(rules) }
                     </ul>
                 </Col>
             </Row>
