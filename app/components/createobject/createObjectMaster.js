@@ -7,9 +7,9 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { useMutation } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
-import { defaultDialectCode } from "../config/dialectCodeMap";
-import graphqlForObjectMaster from '../../graphql/objectMasterQueries';
-import CreateObjectFields from './createObjectFields';
+import { defaultDialectCode } from "@/app/components/config/dialectCodeMap";
+import graphqlForObjectMaster from '@/app/graphql/objectMasterQueries';
+import CreateObjectFields from '@/app/components/createobject/createObjectFields';
 
 function updateFieldRuleChecked(setFormData, formData, uuid, ruleId) {
     const updatedFieldItems = formData.fieldItems;
