@@ -4,9 +4,9 @@ import CreateFieldMasterObject from '../app/components/createobject/createFieldM
 import { useNavigate } from 'react-router-dom';
 import { MockedProvider } from "@apollo/client/testing";
 import { gql } from '@apollo/client';
-import { CREATE_ENTERPRISE_FIELD } from '../app/graphql/filedmasterMutations';
+import { CREATE_ENTERPRISE_FIELD } from '../app/graphql/fieldmasterMutations';
 
-jest.mock('../app/graphql/filedmasterMutations', () => ({
+jest.mock('../app/graphql/fieldmasterMutations', () => ({
   CREATE_ENTERPRISE_FIELD: jest.fn(),
 }));
 

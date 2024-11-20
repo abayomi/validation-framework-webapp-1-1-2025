@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
 import { dialectCodeOptions, defaultDialectCode } from "../config/dialectCodeMap";
 import { uniqueRecords } from "../../lib/arrayHelper";
-import { CREATE_ENTERPRISE_FIELD, REMOVE_RULE_FROM_ENTERPRISE_FIELD } from "../../graphql/filedmasterMutations";
+import { CREATE_ENTERPRISE_FIELD, REMOVE_RULE_FROM_ENTERPRISE_FIELD } from "../../graphql/fieldmasterMutations";
 
 const CreateFieldMasterObject = ( props ) => {
   const { location } = props
@@ -208,6 +208,7 @@ const CreateFieldMasterObject = ( props ) => {
         {ruleItems.map((item, index) => {
             return (
               <CreateRules
+                key={item.id ?? '0'} 
                 eventkey={item.id ?? '0'} 
                 isUpdate={isUpdate} 
                 deleteOnClick={deleteOnClick}

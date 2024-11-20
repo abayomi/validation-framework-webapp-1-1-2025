@@ -7,13 +7,13 @@ query MyQuery($batch: Batch!) {
         failedCount
         receivedCount
         records {
-        fields {
-            errorMessage
-            name
+            fields {
+                errorMessage
+                name
+                status
+            }
+            recordId
             status
-        }
-        recordId
-        status
         }
         skippedCount
         status

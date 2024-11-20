@@ -14,7 +14,7 @@ import { useMutation } from '@apollo/client';
 
 import CreateConditions from './createConditions';
 import { validationCodeOptions, getErrorCodeOptions, errorMessageOptions, getConditions } from './ruleValidationCodeMap';
-import { ADD_RULE_TO_ENTERPRISE_FIELD } from '../../../graphql/filedmasterMutations';
+import { ADD_RULE_TO_ENTERPRISE_FIELD } from '../../../graphql/fieldmasterMutations';
 import { dialectCodeOptions } from "../../config/dialectCodeMap";
 import { uniqueRecords } from "../../../lib/arrayHelper";
 
@@ -26,7 +26,7 @@ function CustomToggle({ eventkey, deleteOnClick }) {
         <div className="d-flex justify-content-between align-items-center w-100 p-2">
             <div className="d-flex align-items-center col-10">
                 <span onClick={decoratedOnClick} style={{ cursor: 'pointer' }} className="col-8">
-                    Rule - {eventkey == '0' ? 'new' : eventkey}
+                    Rule - {eventkey == '0' ? 'New' : eventkey}
                 </span>
             </div>
             <Button variant="danger" size="sm" onClick={(e) => deleteOnClick(e, eventkey)}>
@@ -80,7 +80,6 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
             updatedRule = { ...updatedRule, errorCode: errorCodes[0], conditions: conditions };
             setRule(updatedRule);
             setConditionItems(conditions);
-            
         } else {
             setRule(updatedRule);
         }
@@ -167,7 +166,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
                                             variant="outline-secondary"
                                             title=""
                                             onSelect={(eventKey) => setRuleGroupNumber(eventKey)}
-                                            id="input-group-dropdown-1"
+                                            data-testid="input-group-dropdown-1"
                                         >
                                             {ruleGroupNumberList.map((key, value) => (
                                                 <Dropdown.Item key={key} eventKey={key}>
@@ -187,20 +186,20 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
                                         ))}
                                     </Form.Select>
                                 </Form.Group>
-                                <Form.Group as={Col} className="mb-3 col-2" controlId="errorMessage">
+                                <Form.Group as={Col} className="mb-3 col-2" controlId="mandatoryRuleInd">
                                     <Form.Label>Mandatory Rule</Form.Label>
-                                    <Form.Check type="checkbox" id="mandatoryRuleInd" >
+                                    <Form.Check type="checkbox" id="mandatoryRuleInd" aria-labelledby="mandatory-rule-label" >
                                         <Form.Check.Input type="checkbox" name="mandatoryRuleInd" className="custom-check-border"
                                             onChange={handleChange} value={rule.mandatoryRuleInd ?? false} disabled={disabled} />
                                     </Form.Check>
                                 </Form.Group>
                                 <Form.Group as={Col} className="mb-3" xs={3} controlId="shortDescription">
                                     <Form.Label>Short Description</Form.Label>
-                                    <Form.Control type="text" name="shortDescription" value={rule.shortDescription} placeholder="" onChange={handleChange} disabled={disabled} required />
+                                    <Form.Control type="text" name="shortDescription" value={rule.shortDescription ?? ""} placeholder="" onChange={handleChange} disabled={disabled} required />
                                 </Form.Group>
                                 <Form.Group as={Col} className="mb-3" controlId="longDescription">
                                     <Form.Label>Long Description</Form.Label>
-                                    <Form.Control type="text" name="longDescription" value={rule.longDescription} placeholder="" onChange={handleChange} disabled={disabled} />
+                                    <Form.Control type="text" name="longDescription" value={rule.longDescription ?? ""} placeholder="" onChange={handleChange} disabled={disabled} />
                                 </Form.Group>
                             </Row>
                             {conditionItems.length > 0 && <h4 className="title is-1">Conditions</h4>}
@@ -208,6 +207,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
                             {conditionItems.map((condition, key) => {
                                 return (
                                     <CreateConditions
+                                        key={key}
                                         isUpdate={isUpdate}
                                         eventkey={key}
                                         onConditionChange={handleConditionChange}

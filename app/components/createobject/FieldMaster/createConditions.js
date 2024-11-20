@@ -25,7 +25,7 @@ const CreateConditions = (props) => {
         <div key={eventkey}>
             <Row eventkey={ eventkey }>
             <Form.Group as={Col} className="mb-3 col-3" controlId="condition_type">
-                <Form.Select aria-label="Type" name="condition_type" value={condition.type} onChange={handleConditionChange} disabled>
+                <Form.Select data-testid="condition-type-input" name="condition_type" value={condition.type} onChange={handleConditionChange} disabled>
                 {Object.entries(conditionTypeOptions).map(([key, value]) => (
                     <option key={key} value={key}>{value}</option>
                 ))}
@@ -36,6 +36,7 @@ const CreateConditions = (props) => {
                 as="textarea"
                 name="condition_value"
                 rows={1}
+                data-testid="condition-type-value"
                 defaultValue={condition.value}
                 placeholder=""
                 onChange={handleConditionChange}
