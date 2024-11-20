@@ -9,6 +9,7 @@ import Accordion from 'react-bootstrap/Accordion';
 import { useQuery } from "@apollo/client";
 import styles from '@/app/page.module.css';
 import stringHelper from '@/app/lib/stringHelper';
+import variableHelper from '@/app/lib/variableHelper';
 import { loadFetchFieldMetaData } from '@/app/graphql/fieldMasterQueries'
 import { defaultDialectCode } from '@/app/components/config/dialectCodeMap';
 import DropdownMenu from '@/app/components/common/DropdownMenu';
@@ -28,7 +29,7 @@ function groupByGroupId(rules) {
     let grouped = {};
 
     Object.entries(rules).forEach(([_, r]) => {
-        if (!(grouped[r.ruleGroupNumber] instanceof Array)) {
+        if (!variableHelper.isArray(grouped[r.ruleGroupNumber])) {
             grouped[r.ruleGroupNumber] = [];
         }
         grouped[r.ruleGroupNumber].push(r);
@@ -50,7 +51,7 @@ function getRuleDesc(rule, defaultValue) {
 };
 
 function renderRuleList(rules, fieldMasterName, onFieldRuleCheckboxChange) {
-    if (!(rules instanceof Object) || 0 === Object.keys(rules).length) {
+    if (variableHelper.isEmptyObject(rules)) {
         return (<></>);
     }
 
