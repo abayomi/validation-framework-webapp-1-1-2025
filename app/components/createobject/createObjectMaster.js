@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
@@ -9,7 +10,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { defaultDialectCode } from "../config/dialectCodeMap";
 import graphqlForObjectMaster from '../../graphql/objectMasterQueries';
 import CreateObjectFields from './createObjectFields';
-
 
 function updateFieldRuleChecked(setFormData, formData, uuid, ruleId) {
     const updatedFieldItems = formData.fieldItems;
@@ -77,7 +77,7 @@ function formatFieldRules(rawRules) {
             longDescription: item.longDescription,
             shortDescription: item.shortDescription,
             isMandatory: item.isMandatory,
-            isChecked: item.isMandatory // Add this field. If a rule is mandatory, the value is true.
+            isChecked: item.isMandatory // Add this field for the UI. If a rule is mandatory, the value is true and users cnnot change it.
         };
     });
 
@@ -154,48 +154,6 @@ const CreateObjectMaster = (props) => {
         );
     };
 
-    const showObjectFieldValidationSection = () => (
-        <>
-            <h4 className="title is-1">Object Field Validation</h4>
-            <Row>
-                <Form.Group className="mb-3 col-3" controlId="validationCode">
-                    <Form.Label>Validation Code</Form.Label>
-                    <Form.Control type="text" disabled />
-                </Form.Group>
-
-                <Form.Group className="mb-3 col-3" controlId="ruleConditionTypeCode">
-                    <Form.Label>Rule Condition Type Code</Form.Label>
-                    <Form.Control type="text" disabled />
-                </Form.Group>
-
-                <Form.Group className="mb-3 col-3" controlId="ruleConditionTypeValue">
-                    <Form.Label>Rule Condition Type Value</Form.Label>
-                    <Form.Control type="text" disabled />
-                </Form.Group>
-                <Form.Group as={Col} className="mb-3" controlId="onoff">
-                    <Form.Label>On/Off</Form.Label>
-                    <Form.Check className="mb-3 col-3 ms-3" type="checkbox" id="checkbox" checked onChange={() => true} />
-                </Form.Group>
-            </Row>
-            <Row>
-                <Form.Group className="mb-3 col-3" controlId="validationCode">
-                    <Form.Control type="text" disabled />
-                </Form.Group>
-
-                <Form.Group className="mb-3 col-3" controlId="ruleConditionTypeCode">
-                    <Form.Control type="text" disabled />
-                </Form.Group>
-
-                <Form.Group className="mb-3 col-3" controlId="ruleConditionTypeValue">
-                    <Form.Control type="text" disabled />
-                </Form.Group>
-                <Form.Group as={Col} className="mb-3" controlId="onoff">
-                    <Form.Check className="mb-3 col-3 ms-3" type="checkbox" id="checkbox" />
-                </Form.Group>
-            </Row>
-        </>
-    );
-
     const handleInputChanged = (e) => {
         const name = e.target.name;
         const value = e.target.value;
@@ -218,18 +176,21 @@ const CreateObjectMaster = (props) => {
     };
 
     const [createValidationObject, createValidationObjectReponse] = useMutation(graphqlForObjectMaster.CreateValidationObject);
+
     const submitHandler = async (event) => {
         // TODO Disable the button after user's click
         event.preventDefault();
 
         const formatFieldValidation = (rules) => {
-            return Object.entries(rules).map(([_, r]) => {
+            const validationList = Object.entries(rules).map(([_, r]) => {
                 if (r.isMandatory || r.isChecked) {
                     return {
                         fieldValidRuleId: r.id
                     };
                 }
             });
+
+            return validationList.filter(v => v instanceof Object);
         };
 
         const submitData = {
@@ -247,14 +208,29 @@ const CreateObjectMaster = (props) => {
         };
 
         try {
-            console.log('Submitted. Variables: ', JSON.stringify(submitData));
-            //const response = await createValidationObject({ variables: submitData });
-            //console.log('response', JSON.stringify(response));
+            //console.log('Submitted. Variables: ', JSON.stringify(submitData));
+            const response = await createValidationObject({ variables: submitData });
+            console.log('response', JSON.stringify(response));
         } catch (error) {
             console.log(error.name, JSON.stringify(error));
             window.alert(`${error.name}: ${error.message}`);
         }
     }
+
+    if (isUpdating) {
+        const { id: objectMasterId } = useParams();
+        console.log('isUpdating. ID: ', objectMasterId);
+    }
+
+    // Submit the form and get the API response
+    useEffect(() => {
+        if (createValidationObjectReponse.error) {
+            console.log('Failed to save Object Master.', createValidationObjectReponse.error.message);
+        }
+        if (createValidationObjectReponse.data) {
+            navigate('/');
+        }
+    }, [createValidationObjectReponse]);
 
     // React Forms, refer to https://www.w3schools.com/react/react_forms.asp
     return (
@@ -304,10 +280,8 @@ const CreateObjectMaster = (props) => {
 
                 { showAddMoreObjectFieldsSection() }
 
-                { isUpdating && showObjectFieldValidationSection() }
-
                 <Button variant="primary" type="submit">
-                    Submit
+                    { isUpdating ? 'Update' : 'Submit' }
                 </Button>
             </Form>
         </>
