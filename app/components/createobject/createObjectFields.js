@@ -128,7 +128,7 @@ const CreateObjectFields = (props) => {
     
     useEffect(() => {
         if (rawFieldMasterList.error) {
-            console.error('Failed to obtain the Object Master list: ', rawObjectMasterList.error);
+            console.error('Failed to obtain the Object Master list: ', rawFieldMasterList.error);
         }
         if (rawFieldMasterList.data) {
             const formattedRowList = rawFieldMasterList.data.FetchFieldMetaData;
