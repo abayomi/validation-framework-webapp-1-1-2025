@@ -126,6 +126,12 @@ const ValidateRecords = () => {
     });
   };
 
+  const onDeleteRecord = (index) => {
+    const updateRecordItems = [...recordItems];
+    updateRecordItems.splice(index - 1, 1);
+    setRecordItems(updateRecordItems);
+}
+
   return (
     <div>
       <Form onSubmit={handleSubmit}>
@@ -165,7 +171,7 @@ const ValidateRecords = () => {
           </Col>
         </Row>
         {recordItems && recordItems.map((item, key) => (
-           <RecordCard key={key} id={key} item={item} fieldNameList={fieldNameList} onChange={handleRecordsChange} />
+           <RecordCard key={key} id={key} item={item} fieldNameList={fieldNameList} onChange={handleRecordsChange} onDelete={onDeleteRecord}/>
         ))}
         <Button className="mb-3" variant="info" size="sm" type="submit">Validate</Button>
       </Form>

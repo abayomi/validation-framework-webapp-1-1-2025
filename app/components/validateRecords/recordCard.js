@@ -3,7 +3,7 @@ import { Card, Row, Col, Form, Button } from 'react-bootstrap';
 import ObjectFields from './objectFields';
 import { useState } from "react";
 
-const RecordCard = ({ id, item, onChange }) => {
+const RecordCard = ({ id, item, onChange, fieldNameList, onDelete }) => {
     const [recordItem, setRecordItem] = useState(item || {});
     const [fieldItems, setFieldItems] = useState(item?.fields ?? []);
 
@@ -40,10 +40,21 @@ const RecordCard = ({ id, item, onChange }) => {
         <Card className="mb-3">
             <Card.Body>
                 <Row>
-                    <Form.Group className="mb-3 col-3" as={Col} controlId="recordId">
-                        <Form.Label>Record ID</Form.Label>
-                        <Form.Control type="text" placeholder="" name="recordId" value={recordItem.recordId ?? ''} onChange={handleRecordChange} required />
-                    </Form.Group>
+                <Form.Group className="mb-3 col-12 d-flex align-items-center" as={Col} controlId="recordId">
+                    <Form.Label className="w-15 me-3">Record ID</Form.Label>
+                    <Form.Control
+                        type="text"
+                        placeholder=""
+                        className="w-25"
+                        name="recordId"
+                        defaultValue={recordItem.recordId ?? ''}
+                        required
+                        disabled
+                    />
+                    <Button variant="danger" size="sm" onClick={() => onDelete(id)} className="ms-auto col-1">
+                        Delete
+                    </Button>
+                </Form.Group>
                 </Row>
                 <Row className="mb-3">
                     <Col xs={3}>
@@ -61,7 +72,7 @@ const RecordCard = ({ id, item, onChange }) => {
                     </Col>
                 </Row>
                 {fieldItems && fieldItems.map((item, key) => (
-                    <ObjectFields key={key} id={key} deleteRow={deleteRow} onChange={handleFieldChange} item={item} />
+                    <ObjectFields key={key} id={key} deleteRow={deleteRow} onChange={handleFieldChange} fieldNameList={fieldNameList} item={item} />
                 ))}
             </Card.Body>
         </Card>
