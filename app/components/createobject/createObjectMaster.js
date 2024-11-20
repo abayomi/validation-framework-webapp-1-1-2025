@@ -4,17 +4,85 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import { useMutation } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
+import { defaultDialectCode } from "../config/dialectCodeMap";
+import graphqlForObjectMaster from '../../graphql/objectMasterQueries';
+import CreateObjectFields from './createObjectFields';
 
-import CreateObjectFields from "./createObjectFields";
 
-const newEmptyFieldItem = () => {
+function updateFieldRuleChecked(setFormData, formData, uuid, ruleId) {
+    const updatedFieldItems = formData.fieldItems;
+    if (!updatedFieldItems) {
+        return formData;
+    }
+
+    let targetFieldIndex = 0;
+
+    const targetField = updatedFieldItems.filter((item, index) => {
+        if (item.id === uuid) {
+            targetFieldIndex = index;
+            return true;
+        }
+        return false;
+    }).pop();
+
+    if (!(targetField instanceof Object)) {
+        return;
+    }
+    if (!targetField.rules[ruleId]) {
+        return;
+    }
+
+    const oldCheckedValue = targetField.rules[ruleId].isChecked;
+    targetField.rules[ruleId].isChecked = !oldCheckedValue;
+    updatedFieldItems[targetFieldIndex] = targetField;
+
+    setFormData({...formData, fieldItems: updatedFieldItems});
+}
+
+function newEmptyFieldItem() {
     return { 
         id: uuidv4(),
         objectFieldName: '',
-        fieldMasterName: ''
+        fieldMasterName: '',
+        fieldMasterId: '0',
+        rules: []
     };
 };
+
+function updateFieldItems(setFormData, formData, newItemValue) {
+    const replaceFieldItem = (fieldItems, newItem) => {
+        return fieldItems.map(item => 
+            item.id === newItem.id ? { ...item, ...newItem } : item
+        );
+    }
+
+    const newFieldItems = replaceFieldItem(formData.fieldItems, newItemValue);
+
+    setFormData({...formData, fieldItems: newFieldItems});
+}
+
+function formatFieldRules(rawRules) {
+    if (!rawRules || 0 === rawRules.length) {
+        return [];
+    }
+
+    let result = {};
+
+    rawRules.forEach(item => {
+        result[item.id] = {
+            id: item.id,
+            ruleGroupNumber: item.ruleGroupNumber,
+            longDescription: item.longDescription,
+            shortDescription: item.shortDescription,
+            isMandatory: item.isMandatory,
+            isChecked: item.isMandatory // Add this field. If a rule is mandatory, the value is true.
+        };
+    });
+
+    return result;
+}
 
 const CreateObjectMaster = (props) => {
     const { location } = props
@@ -37,35 +105,51 @@ const CreateObjectMaster = (props) => {
             setFormData({...formData, fieldItems: newFieldItems});
         };
 
-        const fieldMasterNameData = [{id: 1, name: 'One'}, {id: 2, name: 'Two'}, {id: 3, name: 'Three'}]; // TODO Replace this with real data
+        const dropDownItemClickHandler = (uuid) => {
+            return function (item) {
+                const newItemValue = {
+                    id: uuid,
+                    fieldMasterName: item.value,
+                    fieldMasterId: `${item.key}`,
+                    rules: formatFieldRules(item.rules)
+                };
 
-        const objectFieldsList = formData.fieldItems.map(item => (
+                updateFieldItems(setFormData, formData, newItemValue);
+            };
+        };
+
+        const inputBoxListForAddMore = formData.fieldItems.map(item => (
             <CreateObjectFields
                 key={item.id}
-                name={item.id}
-                fieldMasterNameList={ fieldMasterNameData }
+                item={item}
                 onInputChangeHandler={ handleInputChanged }
                 onDeleteHandler={ () => deleteOneRow(item.id) }
+                onDropDownItemClick={ dropDownItemClickHandler(item.id) }
+                onFieldRuleCheckboxChange={ (e) => updateFieldRuleChecked(setFormData, formData, item.id, e.target.value) }
             />
         ));
 
         return (
             <>
-                <Button className="mb-3" variant="info" size="sm" onClick={ addOneObjectField }>
+                <Button className="mb-3" variant="info" onClick={ addOneObjectField }>
                     Add more object fields
                 </Button>
 
                 <Row>
                     <Form.Group as={Col} className="mb-3 col-3" controlId="objectFieldName">
-                        <Form.Label>Object Field Name</Form.Label>
+                        <Form.Label>
+                            Object Field Name <b>*</b>
+                        </Form.Label>
                     </Form.Group>
 
                     <Form.Group as={Col} className="mb-3 col-3" controlId="fieldMasterName">
-                        <Form.Label>Field Master Name</Form.Label>
+                        <Form.Label>
+                            Field Master Name <b>*</b>
+                        </Form.Label>
                     </Form.Group>
                 </Row>
 
-                { objectFieldsList }
+                { inputBoxListForAddMore }
             </>
         );
     };
@@ -112,34 +196,18 @@ const CreateObjectMaster = (props) => {
         </>
     );
 
-    const replaceFieldItem = (fieldItems, newItem) => {
-        return fieldItems.map(item => 
-            item.id === newItem.id ? { ...item, ...newItem } : item
-        );
-    }
-
     const handleInputChanged = (e) => {
         const name = e.target.name;
         const value = e.target.value;
 
         if (name.startsWith('fields-')) {
             // User changed an item of Object Field Name or Field Master Name
-            let newItemValue = null;
-            if (name.startsWith('fields-objfieldname-')) { 
-                // Object Field Name
-                newItemValue = {
-                    id: name.replace('fields-objfieldname-', ''), // The name's format is "fields-objfieldname-<UUID string>"
-                    objectFieldName: value,
-                };
-            } else { 
-                // Field Master Name
-                newItemValue = {
-                    id: name.replace('fields-fieldmastername-', ''), // The name's format is "fields-fieldmastername-<UUID string>"
-                    fieldMasterName: value
-                };
-            }
-            const newFieldItems = replaceFieldItem(formData.fieldItems, newItemValue);
-            setFormData({...formData, fieldItems: newFieldItems});
+            const newItemValue = {
+                id: name.replace('fields-objfieldname-', ''), // The name's format is "fields-objfieldname-<UUID string>"
+                objectFieldName: value,
+            };
+
+            updateFieldItems(setFormData, formData, newItemValue);
         } else {
             // User changed other input box: 
             //   - Object Name
@@ -149,6 +217,45 @@ const CreateObjectMaster = (props) => {
         }
     };
 
+    const [createValidationObject, createValidationObjectReponse] = useMutation(graphqlForObjectMaster.CreateValidationObject);
+    const submitHandler = async (event) => {
+        // TODO Disable the button after user's click
+        event.preventDefault();
+
+        const formatFieldValidation = (rules) => {
+            return Object.entries(rules).map(([_, r]) => {
+                if (r.isMandatory || r.isChecked) {
+                    return {
+                        fieldValidRuleId: r.id
+                    };
+                }
+            });
+        };
+
+        const submitData = {
+            dialectCode: defaultDialectCode,
+            objectDefinition: formData.objectDef,
+            objectLabelName: formData.labelName,
+            objectName: formData.objectName,
+            objectField: formData.fieldItems.map(item => {
+                return {
+                    fieldMasterId: item.fieldMasterId,
+                    objectFieldName: item.objectFieldName,
+                    fieldValidation: formatFieldValidation(item.rules)
+                };
+            })
+        };
+
+        try {
+            console.log('Submitted. Variables: ', JSON.stringify(submitData));
+            //const response = await createValidationObject({ variables: submitData });
+            //console.log('response', JSON.stringify(response));
+        } catch (error) {
+            console.log(error.name, JSON.stringify(error));
+            window.alert(`${error.name}: ${error.message}`);
+        }
+    }
+
     // React Forms, refer to https://www.w3schools.com/react/react_forms.asp
     return (
         <>
@@ -156,29 +263,37 @@ const CreateObjectMaster = (props) => {
                 { isUpdating ? 'Update Object Master' : 'Create Object Master' }
             </h2>
 
-            <Form>
+            <Form onSubmit={ submitHandler }>
                 <Form.Group className="mb-3 col-4" controlId="objectName">
-                    <Form.Label>Object Name</Form.Label>
+                    <Form.Label>
+                        Object Name <b>*</b>
+                    </Form.Label>
                     <Form.Control
                         type="text"
                         name="objectName"
+                        required
                         value={ formData.objectName }
                         onChange={ handleInputChanged }
                     />
                 </Form.Group>
 
                 <Form.Group className="mb-3 col-4" controlId="objectDefinition">
-                    <Form.Label>Object Definition</Form.Label>
+                    <Form.Label>
+                        Object Definition <b>*</b>
+                    </Form.Label>
                     <Form.Control 
                         type="text"
                         name="objectDef"
+                        required
                         value={ formData.objectDef }
                         onChange={ handleInputChanged }
                     />
                 </Form.Group>
 
                 <Form.Group className="mb-3 col-4" controlId="labelName">
-                    <Form.Label>Label Name</Form.Label>
+                    <Form.Label>
+                        Label Name <b>*</b>
+                    </Form.Label>
                     <Form.Control
                         type="text"
                         name="labelName"
@@ -191,20 +306,9 @@ const CreateObjectMaster = (props) => {
 
                 { isUpdating && showObjectFieldValidationSection() }
 
-                <Button 
-                    variant="primary" 
-                    type="submit"
-                    onClick={ (event) => {
-                        // TODO Disable the button after user's click
-                        event.preventDefault();
-                        console.log('submitted', JSON.stringify(formData));
-                    } }
-                >Submit</Button>
-
-                <div className="mt-4">
-                    <p><b>Debug output:</b></p>
-                    <div>{ JSON.stringify(formData) }</div>
-                </div>
+                <Button variant="primary" type="submit">
+                    Submit
+                </Button>
             </Form>
         </>
     );

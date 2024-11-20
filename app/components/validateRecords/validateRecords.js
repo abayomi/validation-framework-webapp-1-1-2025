@@ -148,8 +148,8 @@ const ValidateRecords = () => {
             </Col>
             <Col className="ps-0">
               <DropdownMenu 
-                  list={ getDropdownMenuDataMapping(objectList) } 
-                  onDropDownItemClick={ (val) => setObjectName(val) }
+                  optionList={ getDropdownMenuDataMapping(objectList) } 
+                  onDropDownItemClick={ item => setObjectName(item.value) }
               />
             </Col>
           </Row>

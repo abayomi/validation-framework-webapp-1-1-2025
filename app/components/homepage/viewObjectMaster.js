@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import DataTable from "react-data-table-component";
-import { useQuery, useLazyQuery } from "@apollo/client";
+import { useLazyQuery } from "@apollo/client";
 import { arrayGet, propertyGet } from "../../lib/arrayHelper";
 import { defaultDialectCode } from "../config/dialectCodeMap";
 import graphqlForObjectMaster from "../../graphql/objectMasterQueries";
@@ -12,6 +12,7 @@ import { eventKeyObjectMaster } from "../createobject/tabMenu";
 import withAuth from "../withAuth";
 import FieldsObject from "./fieldsObject";
 import FilterList, { doFilterList } from "./filterList";
+import fetchObjectMasterList from "./fetchObjectMasterList";
 
 const removeSelectedMark = function (rowList) {
   return rowList.map(function (item) {
@@ -23,17 +24,6 @@ const markSelectedRow = function (rowList, selectedRow) {
   const foundIndex = rowList.findIndex(x => x.objectMasterId == selectedRow.objectMasterId);
   rowList[foundIndex] = { ...selectedRow, isSelected: true };
   return rowList;
-};
-
-const formatObjectMasterList = function(apiResponseData) {
-  return apiResponseData.map(function(item) {
-    return {
-      objectMasterId: item.objectMasterId,
-      objectName: item.objectName,
-      objectLabelName: item.objectLabelName,
-      isSelected: false
-    };
-  });
 };
 
 const formatObjectFieldList = function(apiResponseData) {
@@ -51,11 +41,49 @@ const formatObjectFieldList = function(apiResponseData) {
   });
 }; 
 
+const formatObjectMasterList = function(apiResponseData) {
+  return apiResponseData.map(function(item) {
+    return {
+      objectMasterId: item.objectMasterId,
+      objectName: item.objectName,
+      objectLabelName: item.objectLabelName,
+      isSelected: false
+    };
+  });
+};
+
+// This is a custom hook, without this, useLazyQuery() must be called whitin ViewObjectMaster.
+function useLoadObjectFieldsData(setObjectFieldsOfSelectedRow) {
+  // You have to use useLazyQuery(), because userQuery() can only be used at the top of a component and you can't put it in a click event. 
+  // However, the objectLabelName cannot be obtained before the click event is triggered.
+  const [lazyLoadQuery, rawObjectFieldsData] = useLazyQuery(graphqlForObjectMaster.FetchObjectMetaDataByLabel);
+  const loadObjectFieldsData = (objectLabelName, dialectCode) => {
+    lazyLoadQuery({
+      variables: { 
+        objectLabelName: objectLabelName,
+        dialectCode: dialectCode
+      }
+    });
+  };
+
+  useEffect(() => {
+    // Show Object Fields section
+    if (rawObjectFieldsData.error) {
+      console.log('Error from GraphQL API: ', rawObjectFieldsData.error.message);
+    }
+    if (rawObjectFieldsData.data) {
+      const objectFieldList = formatObjectFieldList(rawObjectFieldsData.data.FetchObjectMetaDataByLabel);
+      setObjectFieldsOfSelectedRow(objectFieldList);
+    }
+  }, [rawObjectFieldsData]);
+
+  return loadObjectFieldsData;
+}
+
 const ViewObjectMaster = () => {
+  const [dialectCode, setDialectCode] = useState(defaultDialectCode);
   const [objectMasterList, setObjectMasterList] = useState([]);
   const [objectFieldsOfSelectedRow, setObjectFieldsOfSelectedRow] = useState(null);
-  const [selectedRow, setSelectedRow] = useState(null);
-  const [dialectCode, setDialectCode] = useState(defaultDialectCode);
   const [filterText, setFilterText] = useState('');
   const navigate = useNavigate();
   const dataTableColumns = [
@@ -82,50 +110,23 @@ const ViewObjectMaster = () => {
       ),
     }
   ];
+
+  const [objectMasterListData, doObjectMasterListRefresh] = fetchObjectMasterList(dialectCode);
+  useEffect(() => {
+    if (objectMasterListData) {
+      setObjectMasterList(formatObjectMasterList(objectMasterListData));
+    }
+  }, [objectMasterListData]);
+
   const highLightSelectedRow = (row) => {
     const listWithSelectedMark = markSelectedRow(removeSelectedMark(objectMasterList), row);
     setObjectMasterList(listWithSelectedMark);
   };
-
-  // You have to use useLazyQuery(), because userQuery() can only be used at the top of a component and you can't put it in a click event. 
-  // However, the objectLabelName cannot be obtained before the click event is triggered.
-  const [lazyLoadQuery, rawObjectFieldsData] = useLazyQuery(graphqlForObjectMaster.FetchObjectMetaDataByLabel);
-  const loadObjectFieldsData = (objectLabelName) => {
-    lazyLoadQuery({
-      variables: { 
-        objectLabelName: objectLabelName,
-        dialectCode: dialectCode
-      }
-    });
+  const loadObjectFieldsData = useLoadObjectFieldsData(setObjectFieldsOfSelectedRow);
+  const rowClickHandler = (row) => {
+    loadObjectFieldsData(row.objectLabelName, dialectCode);
+    highLightSelectedRow(row);
   };
-
-  const rawObjectMasterList = useQuery(graphqlForObjectMaster.FetchObjectMasterList, {
-    variables: { dialectCode: dialectCode }
-  });
-
-  useEffect(() => {
-    // Render the list of Object Master
-    if (rawObjectMasterList.error) {
-      return (<div>Error! {rawObjectMasterList.error.message}</div>);
-    }
-    if (rawObjectMasterList.data) {
-      const formattedRowList = formatObjectMasterList(rawObjectMasterList.data.FetchObjectMasterList);
-      setObjectMasterList(formattedRowList);
-    }
-  }, [rawObjectMasterList]);
-
-  useEffect(() => {
-    // Show Object Fields section
-    if (rawObjectFieldsData.error) {
-      return (<div>Error! {rawObjectFieldsData.error.message}</div>);
-    }
-    if (rawObjectFieldsData.data) {
-      const objectFieldList = formatObjectFieldList(rawObjectFieldsData.data.FetchObjectMetaDataByLabel);
-      setObjectFieldsOfSelectedRow(objectFieldList);
-
-      highLightSelectedRow(selectedRow); // setObjectFieldsOfSelectedRow() causes the component be rendered first, then the row can be marked as selected.
-    }
-  }, [rawObjectFieldsData]);
 
   // DataTable's doc: https://react-data-table-component.netlify.app/?path=/docs/api-props--docs
   return (
@@ -134,7 +135,7 @@ const ViewObjectMaster = () => {
         dialectCode={dialectCode}
         filterText={filterText}
         inputPlaceHolder="Filter By Object Name"
-        onRefreshClicked={() => rawObjectMasterList.refetch()}
+        onRefreshClicked={ doObjectMasterListRefresh }
         onFilterTextChanged={(e) => setFilterText(e.target.value)}
         onDialectCodeChanged={(e) => {
           setFilterText('');
@@ -153,11 +154,7 @@ const ViewObjectMaster = () => {
         columns={dataTableColumns}
         data={ doFilterList(objectMasterList, 'objectName', filterText) }
         selectableRowSelected={(row) => row.isSelected}
-        onRowClicked={(row) => {
-          loadObjectFieldsData(row.objectLabelName);
-
-          setSelectedRow(row); // Store the selected row so that it can be re-rendered in useEffect to mark it as selected. Otherwise it won't work.
-        }}
+        onRowClicked={ rowClickHandler }
       />
 
       {objectFieldsOfSelectedRow && <FieldsObject dataComeFrom={eventKeyObjectMaster} objectFieldsData={objectFieldsOfSelectedRow} />}

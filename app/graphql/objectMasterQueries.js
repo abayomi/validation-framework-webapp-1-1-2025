@@ -46,6 +46,47 @@ const graphqlForObjectMaster = {
         objectName
       }
     }
+  `,
+
+  CreateValidationObject: gql`
+    mutation MyMutation(
+      $dialectCode: DialectCodes!
+      $objectDefinition: String
+      $objectLabelName: String!
+      $objectName: String!
+      $objectField: [ObjectFieldXref!]
+    ) {
+      CreateValidationObject(object: {
+        objectInUseInd: true, 
+        dialectCode: $dialectCode, 
+        objectDefinition: $objectDefinition,
+        objectLabelName: $objectLabelName,
+        objectName: $objectName,
+        objectField: $objectField
+      }) {
+        fields {
+          enterpriseFieldInd
+          fieldMasterDefinition
+          fieldMasterId
+          fieldMasterName
+          fieldName
+          rules {
+            errorCode
+            errorMessage
+            id
+            isMandatory
+            longDescription
+            shortDescription
+            type
+          }
+          fieldXrefId
+        }
+        objMasterInUseInd
+        objectLabelName
+        objectMasterId
+        objectName
+      }
+    }
   `
 };
 

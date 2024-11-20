@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 
 
 const ObjectFields = (props) => {
-    const {deleteRow, id, item, fieldNameList, onChange} = props
+    const {deleteRow, id, item, onChange} = props
 
     const [fieldItem, setFieldItem] = useState( item || []);
 
@@ -22,12 +22,7 @@ const ObjectFields = (props) => {
         <div>
           <Row key={ id }>
                 <Form.Group as={Col} className="mb-3 col-3" controlId="fieldName">
-                    <Form.Select aria-label="fieldName" name="fieldName" value={fieldItem.fieldName ?? ''} onChange={handleFieldChange} required>
-                        <option></option>
-                        {fieldNameList.map(value => (
-                            <option key={value} value={value}>{value}</option>
-                        ))}
-                    </Form.Select>
+                    <Form.Control type="text" placeholder="" name="fieldName" value={fieldItem.fieldName ?? ''} onChange={handleFieldChange}/>
                 </Form.Group>
 
                 <Form.Group as={Col} className="mb-3 col-3" controlId="fieldValue">

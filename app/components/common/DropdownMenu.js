@@ -32,23 +32,28 @@ const CustomMenu = React.forwardRef(
   },
 );
 
-const DropdownMenu = ({ list, onDropDownItemClick, buttonName = '' }) => (
-  <Dropdown className="ps-0">
-    <Dropdown.Toggle id="dropdown-custom-components">
-      {buttonName}
-    </Dropdown.Toggle>
-    <Dropdown.Menu as={CustomMenu}>
-      {list.map((item) => (
-        <Dropdown.Item
-          key={item.key}
-          eventKey={item.key}
-          onClick={ () => onDropDownItemClick(item.value) }
-        >
-          {item.value}
-        </Dropdown.Item>
-      ))}
-    </Dropdown.Menu>
-  </Dropdown>
-);
+const DropdownMenu = ({ optionList, onDropDownItemClick, buttonName = '', customizeLabel = null}) => {
+  const dropdownItemList = optionList.map(item => (
+    <Dropdown.Item
+      key={item.key}
+      eventKey={item.key}
+      onClick={ () => onDropDownItemClick(item) }
+    >
+      {/* The label of the drop-down menu option can be modified through the callback function passed in by modifyLabel. */}
+      { customizeLabel ? customizeLabel(item) : item.value }
+    </Dropdown.Item>
+  ));
+
+  return (
+    <Dropdown className="ps-0">
+      <Dropdown.Toggle id="dropdown-custom-components">
+        {buttonName}
+      </Dropdown.Toggle>
+      <Dropdown.Menu as={CustomMenu}>
+        {dropdownItemList}
+      </Dropdown.Menu>
+    </Dropdown>
+  );
+};
 
 export default DropdownMenu;

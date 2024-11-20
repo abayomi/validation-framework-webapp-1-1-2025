@@ -46,6 +46,10 @@ export function propertyGet(obj, property, defaultValue = null) {
 }
 
 export function uniqueRecords(data, key = 'id') {
+    if (!data) {
+        return [];
+    }
+    
     const uniqueData = data.reduce((acc, current) => {
         if (key) {
             if (!current[key]) {
