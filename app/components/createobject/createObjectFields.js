@@ -91,7 +91,7 @@ function renderRuleList(rules, fieldMasterName, onFieldRuleCheckboxChange) {
     });
 
     return (
-        <Accordion>
+        <Accordion className='mb-5'>
             <Accordion.Item eventKey="0">
                 <Accordion.Header>
                     Rules for field master: &nbsp;<b>{ fieldMasterName }</b>
