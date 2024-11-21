@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import DataTable from "react-data-table-component";
-import { useLazyQuery } from "@apollo/client";
+import { useLazyQuery, useMutation } from "@apollo/client";
 import { arrayGet, propertyGet } from "../../lib/arrayHelper";
+import variableHelper from "../../lib/variableHelper";
 import { defaultDialectCode } from "../config/dialectCodeMap";
 import graphqlForObjectMaster from "../../graphql/objectMasterQueries";
 import { eventKeyObjectMaster } from "../createobject/tabMenu";
@@ -47,7 +48,8 @@ const formatObjectMasterList = function(apiResponseData) {
       objectMasterId: item.objectMasterId,
       objectName: item.objectName,
       objectLabelName: item.objectLabelName,
-      isSelected: false
+      objMasterInUseInd: item.objMasterInUseInd,
+      isSelected: false /* Add this field */
     };
   });
 };
@@ -81,11 +83,60 @@ function useLoadObjectFieldsData(setObjectFieldsOfSelectedRow) {
 }
 
 const ViewObjectMaster = () => {
+  const navigate = useNavigate();
   const [dialectCode, setDialectCode] = useState(defaultDialectCode);
   const [objectMasterList, setObjectMasterList] = useState([]);
   const [objectFieldsOfSelectedRow, setObjectFieldsOfSelectedRow] = useState(null);
   const [filterText, setFilterText] = useState('');
-  const navigate = useNavigate();
+  const [objectMasterListData, doObjectMasterListRefresh] = fetchObjectMasterList(dialectCode);
+  const [deleteValidationObject, deleteValidationObjectReponse] = useMutation(graphqlForObjectMaster.DeleteValidationObject);
+
+  const editButtonHandler = (objectMasterId) => {
+    return () => navigate(`/updatemasterobject/object/${objectMasterId}`);
+  }
+  
+  const deleteButtonHandler = (objLableName) => {
+    /*
+    const deleteRowFromObjectMasterList = (response) => {
+      const deleteValidationObject = arrayGet(propertyGet(response, 'data.DeleteValidationObject'), 0);
+      const deletedObjectMasterId = variableHelper.isObject(deleteValidationObject) ? deleteValidationObject.objectMasterId : 0;
+      if (deletedObjectMasterId > 0) {
+        const updatedList = objectMasterList.filter(item => item.objectMasterId !== deletedObjectMasterId);
+        setObjectMasterList(updatedList);
+      }
+    };
+    */
+
+    const changeObjMasterInUseInd = (response) => {
+      const deleteValidationObject = arrayGet(propertyGet(response, 'data.DeleteValidationObject'), 0);
+      const deletedObjectMasterId = variableHelper.isObject(deleteValidationObject) ? deleteValidationObject.objectMasterId : 0;
+      if (deletedObjectMasterId > 0) {
+        const updatedList = objectMasterList.map(item => {
+          if (item.objectMasterId === deletedObjectMasterId) {
+            item.objMasterInUseInd = false;
+          }
+
+          return item;
+        });
+        setObjectMasterList(updatedList);
+      }
+    };
+  
+    return async () => {
+      const msg = `Are you sure you want to delete ${objLableName}?`;
+      if (confirm(msg)) {
+        const response = await deleteValidationObject({
+          variables: {
+            field: { objectLabelName: objLableName }
+          }
+        });
+  
+        //deleteRowFromObjectMasterList(response);
+        changeObjMasterInUseInd(response);
+      }
+    }
+  }
+
   const dataTableColumns = [
     {
       name: 'Object Name',
@@ -97,26 +148,54 @@ const ViewObjectMaster = () => {
       name: 'Object Label Name',
       sortable: true,
       reorder: true,
-      selector: row => row.objectLabelName,
+      cell: (row) => (
+        <span title={ `Id: ${row.objectMasterId}` }>
+          { row.objectLabelName }
+        </span>
+      )
+    },
+    {
+      name: 'In Use',
+      sortable: true,
+      reorder: true,
+      cell: (row) => (
+        <span>
+          { row.objMasterInUseInd ? 'Yes' : 'No' }
+        </span>
+      )
     },
     {
       name: 'Action',
       sortable: false,
       reorder: false,
       cell: (row) => (
-        <Button variant="info" size="sm" onClick={() => navigate(`/updatemasterobject/object/${row.objectMasterId}`)}>
-          Edit
-        </Button>
+        <>
+          <Button variant="info" size="sm" onClick={ editButtonHandler(row.objectMasterId) }>
+            Edit
+          </Button>
+
+          <Button variant="danger" size="sm" className="ms-4" onClick={ deleteButtonHandler(row.objectLabelName) }>
+            Delete
+          </Button>
+        </>
       ),
     }
   ];
 
-  const [objectMasterListData, doObjectMasterListRefresh] = fetchObjectMasterList(dialectCode);
   useEffect(() => {
     if (objectMasterListData) {
       setObjectMasterList(formatObjectMasterList(objectMasterListData));
     }
   }, [objectMasterListData]);
+
+  useEffect(() => {
+    if (deleteValidationObjectReponse.error) {
+      console.log('Error from GraphQL API: ', deleteValidationObjectReponse.error.message);
+    }
+    if (deleteValidationObjectReponse.data) {
+      console.log('Deletion successful', JSON.stringify(deleteValidationObjectReponse.data));
+    }
+  }, [deleteValidationObjectReponse]);
 
   const highLightSelectedRow = (row) => {
     const listWithSelectedMark = markSelectedRow(removeSelectedMark(objectMasterList), row);

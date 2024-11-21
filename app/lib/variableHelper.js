@@ -16,4 +16,8 @@ variableHelper.isEmptyObject = function(obj) {
     return !(obj instanceof Object) || 0 === Object.keys(obj).length;
 }
 
+variableHelper.isObject = function (variable) {
+    return variable !== null && typeof variable === 'object';
+}
+
 export default variableHelper;

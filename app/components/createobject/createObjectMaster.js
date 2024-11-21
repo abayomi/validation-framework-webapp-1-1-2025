@@ -84,15 +84,57 @@ function formatFieldRules(rawRules) {
     return result;
 }
 
-const CreateObjectMaster = (props) => {
-    const { location } = props
-    const [formData, setFormData] = useState({
+function loadFormData(isUpdating) {
+    if (true === isUpdating) {
+        // TODO Fetch real data from API
+        return {
+            "objectName": "AssetRentalTest_2150_11_20_2024_1435",
+            "objectDef": "test def",
+            "labelName": "AssetRentalTest_2150_11_20_2024_1435",
+            "fieldItems": [
+              {
+                "id": "ac1182fc-530c-4116-badc-650953cfc902",
+                "objectFieldName": "birthday",
+                "fieldMasterName": "0/1 indicator",
+                "fieldMasterId": "25",
+                "rules": {
+                  "27": {
+                    "id": "27",
+                    "ruleGroupNumber": null,
+                    "longDescription": "Regular expression",
+                    "shortDescription": "Regex",
+                    "isMandatory": true,
+                    "isChecked": true
+                  },
+                  "105": {
+                    "id": "105",
+                    "ruleGroupNumber": null,
+                    "longDescription": "Allow the value provided in this field to be blank",
+                    "shortDescription": "Allow blank",
+                    "isMandatory": false,
+                    "isChecked": false
+                  }
+                }
+              }
+            ]
+        };
+    }
+
+    return {
         objectName: '',
         objectDef: '',
         labelName: '',
         fieldItems: [newEmptyFieldItem()]
-    });
+    };
+}
+
+const CreateObjectMaster = (props) => {
+    const { location } = props
     const isUpdating = location.pathname.includes('/updatemasterobject/object');
+    const initialFormData = loadFormData(isUpdating);
+    const initialFormDataSnapshot = {...initialFormData};
+    const [formData, setFormData] = useState(initialFormData);
+    
 
     const showAddMoreObjectFieldsSection = function() {
         const addOneObjectField = () => {
@@ -181,6 +223,9 @@ const CreateObjectMaster = (props) => {
         // TODO Disable the button after user's click
         event.preventDefault();
 
+        console.log('formData', JSON.stringify(formData));
+        return;
+
         const formatFieldValidation = (rules) => {
             const validationList = Object.entries(rules).map(([_, r]) => {
                 if (r.isMandatory || r.isChecked) {
@@ -217,6 +262,16 @@ const CreateObjectMaster = (props) => {
         }
     }
 
+    const updateHandler = (event) => {
+        event.preventDefault();
+
+        // TODO Check what the user changes
+
+        // TODO Call specific APIs
+
+        console.log('Update');
+    }
+
     if (isUpdating) {
         const { id: objectMasterId } = useParams();
         console.log('isUpdating. ID: ', objectMasterId);
@@ -239,7 +294,7 @@ const CreateObjectMaster = (props) => {
                 { isUpdating ? 'Update Object Master' : 'Create Object Master' }
             </h2>
 
-            <Form onSubmit={ submitHandler }>
+            <Form onSubmit={ isUpdating ? updateHandler : submitHandler }>
                 <Form.Group className="mb-3 col-4" controlId="objectName">
                     <Form.Label>
                         Object Name <b>*</b>
@@ -268,13 +323,14 @@ const CreateObjectMaster = (props) => {
 
                 <Form.Group className="mb-3 col-4" controlId="labelName">
                     <Form.Label>
-                        Label Name <b>*</b>
+                        Label Name { !isUpdating && (<b>*</b>) }
                     </Form.Label>
                     <Form.Control
                         type="text"
                         name="labelName"
                         value={ formData.labelName }
                         onChange={ handleInputChanged }
+                        disabled={ isUpdating /* The label name cannot be edited. */}
                     />
                 </Form.Group>
 

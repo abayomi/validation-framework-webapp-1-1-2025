@@ -87,6 +87,16 @@ const graphqlForObjectMaster = {
         objectName
       }
     }
+  `,
+
+  DeleteValidationObject: gql`
+    mutation MyMutation($field: DeletionObjectFilter!) {
+      DeleteValidationObject(field: $field) {
+        objectLabelName
+        objectMasterId
+        objectMasterInUseIndicator
+      }
+    }
   `
 };
 
