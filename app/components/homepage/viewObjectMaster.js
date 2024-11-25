@@ -170,12 +170,16 @@ const ViewObjectMaster = () => {
       reorder: false,
       cell: (row) => (
         <>
-          <Button variant="info" size="sm" onClick={ editButtonHandler(row.objectMasterId) }>
-            Edit
+          <Button variant="danger" size="sm" className="me-4" 
+            onClick={ deleteButtonHandler(row.objectLabelName) }
+            disabled={ false === row.objMasterInUseInd }
+          >
+            Delete
           </Button>
 
-          <Button variant="danger" size="sm" className="ms-4" onClick={ deleteButtonHandler(row.objectLabelName) }>
-            Delete
+          <Button variant="info" size="sm" 
+            onClick={ editButtonHandler(row.objectMasterId) }>
+            Edit
           </Button>
         </>
       ),
