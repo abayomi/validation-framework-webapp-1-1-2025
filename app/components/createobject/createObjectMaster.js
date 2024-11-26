@@ -5,8 +5,9 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import { useMutation } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
+import variableHelper from "@/app/lib/variableHelper";
 import { defaultDialectCode } from "@/app/components/config/dialectCodeMap";
 import graphqlForObjectMaster from '@/app/graphql/objectMasterQueries';
 import CreateObjectFields from '@/app/components/createobject/createObjectFields';
@@ -47,6 +48,7 @@ function newEmptyFieldItem() {
         objectFieldName: '',
         fieldMasterName: '',
         fieldMasterId: '0',
+        fieldXrefId: '0',
         rules: []
     };
 };
@@ -84,57 +86,191 @@ function formatFieldRules(rawRules) {
     return result;
 }
 
-function loadFormData(isUpdating) {
-    if (true === isUpdating) {
-        // TODO Fetch real data from API
-        return {
-            "objectName": "AssetRentalTest_2150_11_20_2024_1435",
-            "objectDef": "test def",
-            "labelName": "AssetRentalTest_2150_11_20_2024_1435",
-            "fieldItems": [
-              {
-                "id": "ac1182fc-530c-4116-badc-650953cfc902",
-                "objectFieldName": "birthday",
-                "fieldMasterName": "0/1 indicator",
-                "fieldMasterId": "25",
-                "rules": {
-                  "27": {
-                    "id": "27",
-                    "ruleGroupNumber": null,
-                    "longDescription": "Regular expression",
-                    "shortDescription": "Regex",
-                    "isMandatory": true,
-                    "isChecked": true
-                  },
-                  "105": {
-                    "id": "105",
-                    "ruleGroupNumber": null,
-                    "longDescription": "Allow the value provided in this field to be blank",
-                    "shortDescription": "Allow blank",
-                    "isMandatory": false,
-                    "isChecked": false
-                  }
-                }
-              }
-            ]
-        };
-    }
-
+function getInitialFormData() {
     return {
+        objectMasterId: '',
         objectName: '',
         objectDef: '',
         labelName: '',
+        objMasterInUseInd: true,
         fieldItems: [newEmptyFieldItem()]
     };
 }
 
+function formatRawObjectMetaData(rawData) {
+    const formateRuleList = (rawRules) => {
+        let ruleList = {};
+        rawRules.forEach(r => {
+            ruleList[r.id] = {
+                id: r.id,
+                ruleGroupNumber: r.ruleGroupNumber,
+                longDescription: r.longDescription,
+                shortDescription: r.shortDescription,
+                isMandatory: r.isMandatory,
+                isChecked: r.isMandatory
+            };
+        });
+
+        return ruleList;
+    };
+
+    const fieldItemList = rawData.fields.map(f => {
+        return {
+            id: uuidv4(),
+            objectFieldName: f.fieldName,
+            fieldMasterName: f.fieldMasterName, 
+            fieldMasterId: f.fieldMasterId,
+            fieldXrefId: f.fieldXrefId,
+            rules: formateRuleList(f.rules)
+        };
+    });
+
+    return {
+        "objectMasterId": rawData.objectMasterId,
+        "objectName": rawData.objectName,
+        "objectDef": "test def", // TODO The API does not return this.
+        "labelName": rawData.objectLabelName,
+        "objMasterInUseInd": rawData.objMasterInUseInd,
+        "fieldItems": fieldItemList
+    };
+}
+
+function checkUserChanges(formData, formDataSnapshot) {
+    const apisToBeCalled = [];
+
+    // Check if the objectName or the objectDef has been changed.
+    const objectNameChanged = formData.objectName !== formDataSnapshot.objectName;
+    const objectDefChanged = formData.objectDef !== formDataSnapshot.objectDef;
+    if (objectNameChanged || objectDefChanged) {
+        apisToBeCalled.push({
+            api: 'UpdateValidationObjectName',
+            apiQuery: graphqlForObjectMaster.UpdateValidationObjectName, // TODO
+            variables: {
+                field: {
+                    dialectCode: defaultDialectCode,
+                    objectDefinition: formData.objectDef,
+                    objectName: formData.objectName,
+                    objectMasterId: formData.objectMasterId,
+                }
+            }
+        });
+    }
+
+    // Check if the objMasterInUseInd has been changed.
+    const objMasterInUseIndChanged = formData.objMasterInUseInd !== formDataSnapshot.objMasterInUseInd;
+    if (objMasterInUseIndChanged) {
+        apisToBeCalled.push({
+            api: 'UpdateValidationObjectInUseInd',
+            apiQuery: graphqlForObjectMaster.UpdateValidationObjectInUseInd, // TODO
+            variables: {
+                field: {
+                    objectInUseInd: formData.objMasterInUseInd,
+                    objectMasterId: formData.objectMasterId
+                }
+            }
+        });
+    }
+
+    // Check if a field in the formData snapshot is not in formData: it should be deleted.
+    const fieldItemIds = formData.fieldItems.map(item => item.id);
+    const fieldItemsToBeDeleted = formDataSnapshot.fieldItems.filter(objField => false === fieldItemIds.includes(objField.id));
+    const objectFieldXrefIdList = fieldItemsToBeDeleted.map(objField => objField.fieldXrefId);
+    if (objectFieldXrefIdList.length) {
+        apisToBeCalled.push({
+            api: 'RemoveFieldFromObject',
+            apiQuery: graphqlForObjectMaster.RemoveFieldFromObject, // TODO
+            variables: {
+                objectFieldXrefIds: objectFieldXrefIdList
+            }
+        });
+    }
+
+    // Check if a field in the formData is not in the formData snapshot: it should be added.
+    const snapshotFieldItemIds = formDataSnapshot.fieldItems.map(item => item.id);
+    const fieldItemsToBeAdded = formData.fieldItems.filter(objField => false === snapshotFieldItemIds.includes(objField.id));
+    const addFieldsList = fieldItemsToBeAdded.map(objField => {
+        return {
+            fieldMasterId: 0, // According to the definition of the schema and reference Postman Collection, the value is "0".
+            objectFieldName: objField.objectFieldName,
+            objectMasterId: formData.objectMasterId
+        };
+    });
+    if (addFieldsList.length) {
+        apisToBeCalled.push({
+            api: 'AddFieldToObject',
+            apiQuery: graphqlForObjectMaster.AddFieldToObject,
+            variables: {
+                addFields: addFieldsList
+            }
+        });
+    }
+
+    // If a field is neither new nor pending deletion, check if its rule has changed.
+    const addValidationsList = [];
+    const removeValidationsList = [];
+    const fieldItemsToBeChecked = formData.fieldItems.filter(objField => snapshotFieldItemIds.includes(objField.id));
+    fieldItemsToBeChecked.forEach(objField => {
+        const changedRules = checkObjFieldRulesChanged(objField, formDataSnapshot.fieldItems);
+        changedRules.forEach(item => {
+            const validationItem = {
+                fieldValidRuleId: item.rule.id,
+                objectFieldXrefId: item.fieldXrefId
+            };
+            if (item.rule.isChecked) {
+                addValidationsList.push(validationItem);
+            } else {
+                removeValidationsList.push(validationItem);
+            }
+        });
+    });
+    if (addValidationsList.length) {
+        apisToBeCalled.push({
+            api: 'AddValidationToObjectField',
+            apiQuery: graphqlForObjectMaster.AddValidationToObjectField,
+            variables: {
+                addValidations: addValidationsList
+            }
+        });
+    }
+    if (removeValidationsList.length) {
+        apisToBeCalled.push({
+            api: 'RemoveValidationFromObjectField',
+            apiQuery: graphqlForObjectMaster.RemoveValidationFromObjectField,
+            variables: {
+                addValidations: removeValidationsList
+            }
+        });
+    }
+
+    return apisToBeCalled;
+}
+
+function checkObjFieldRulesChanged(fieldItem, fieldItemsSnapshot) {
+    const fieldSnapshot = fieldItemsSnapshot.filter(item => item.id === fieldItem.id).pop();
+    if (!fieldSnapshot) {
+        return null;
+    }
+
+    const changedRules = [];
+    Object.entries(fieldItem.rules).forEach(([_, ruleToBeSubmit]) => {
+        const ruleSnapshot = fieldSnapshot.rules[ruleToBeSubmit.id];
+        if (ruleToBeSubmit.isChecked !== ruleSnapshot.isChecked) {
+            changedRules.push({
+                fieldMasterId: fieldItem.fieldMasterId,
+                rule: ruleToBeSubmit
+            });
+        }
+    });
+
+    return changedRules;
+};
+
 const CreateObjectMaster = (props) => {
     const { location } = props
     const isUpdating = location.pathname.includes('/updatemasterobject/object');
-    const initialFormData = loadFormData(isUpdating);
-    const initialFormDataSnapshot = {...initialFormData};
+    const initialFormData = getInitialFormData();
     const [formData, setFormData] = useState(initialFormData);
-    
+    const [formDataSnapshot, setFormDataSnapshot] = useState({...initialFormData}); // a deep copy of initialFormData
 
     const showAddMoreObjectFieldsSection = function() {
         const addOneObjectField = () => {
@@ -197,23 +333,31 @@ const CreateObjectMaster = (props) => {
     };
 
     const handleInputChanged = (e) => {
-        const name = e.target.name;
-        const value = e.target.value;
+        if ('checkbox' === e.target.type) {
+            const newObjMasterInUseInd = !formData.objMasterInUseInd;
+            setFormData({...formData, objMasterInUseInd: newObjMasterInUseInd});
+            return;
+        }
 
-        if (name.startsWith('fields-')) {
-            // User changed an item of Object Field Name or Field Master Name
-            const newItemValue = {
-                id: name.replace('fields-objfieldname-', ''), // The name's format is "fields-objfieldname-<UUID string>"
-                objectFieldName: value,
-            };
+        if ('text' === e.target.type) {
+            const name = e.target.name;
 
-            updateFieldItems(setFormData, formData, newItemValue);
-        } else {
-            // User changed other input box: 
-            //   - Object Name
-            //   - Object Definition
-            //   - Label Name
-            setFormData({...formData, [name]: value});
+            if (name.startsWith('fields-')) {
+                // User changed an item of Object Field Name or Field Master Name
+                const newItemValue = {
+                    id: name.replace('fields-objfieldname-', ''), // The name's format is "fields-objfieldname-<UUID string>"
+                    objectFieldName: e.target.value,
+                };
+
+                updateFieldItems(setFormData, formData, newItemValue);
+            } else {
+                // User changed other input box: 
+                //   - Object Name
+                //   - Object Definition
+                setFormData({ ...formData, [name]: e.target.value });
+            }
+
+            return;
         }
     };
 
@@ -266,16 +410,47 @@ const CreateObjectMaster = (props) => {
         event.preventDefault();
 
         // TODO Check what the user changes
+        const apisToBeCalled = checkUserChanges(formData, formDataSnapshot);
+        const apisToBeCalledSimple = apisToBeCalled.map(item => {
+            return {
+                api: item.api,
+                variables: item.variables
+            };
+        });
+        console.log('Call these APIs', JSON.stringify(apisToBeCalledSimple));
 
         // TODO Call specific APIs
 
-        console.log('Update');
+        console.log('Updated', JSON.stringify(formData));
     }
 
-    if (isUpdating) {
-        const { id: objectMasterId } = useParams();
-        console.log('isUpdating. ID: ', objectMasterId);
-    }
+    //if (isUpdating) {
+        //const { id: objectMasterId } = useParams();
+        //console.log('isUpdating. ID: ', objectMasterId);
+    //}
+
+    const objMetaDataResponse = useQuery(graphqlForObjectMaster.FetchObjectMetaDataByLabel, {
+        variables: {
+            objectLabelName: 'AssetAcquisitionInfoInput',
+            dialectCode: defaultDialectCode
+        },
+        skip: false === isUpdating
+    });
+
+    useEffect(() => {
+        // Render the list of Object Master
+        if (objMetaDataResponse.error) {
+            console.log('Error from GraphQL API: ', objMetaDataResponse.error.message);
+        }
+        if (objMetaDataResponse.data) {
+            const rawObjMeataData = objMetaDataResponse.data.FetchObjectMetaDataByLabel;
+            const formattedRawObjMeataData = formatRawObjectMetaData(rawObjMeataData[0]);
+            setFormData(formattedRawObjMeataData);
+            setFormDataSnapshot({...formattedRawObjMeataData});
+
+            //console.log('Init.', JSON.stringify(rawObjMeataData));
+        }
+    }, [objMetaDataResponse, setFormData, setFormDataSnapshot]);
 
     // Submit the form and get the API response
     useEffect(() => {
@@ -295,18 +470,33 @@ const CreateObjectMaster = (props) => {
             </h2>
 
             <Form onSubmit={ isUpdating ? updateHandler : submitHandler }>
-                <Form.Group className="mb-3 col-4" controlId="objectName">
-                    <Form.Label>
-                        Object Name <b>*</b>
-                    </Form.Label>
-                    <Form.Control
-                        type="text"
-                        name="objectName"
-                        required
-                        value={ formData.objectName }
-                        onChange={ handleInputChanged }
-                    />
-                </Form.Group>
+                <Row>
+                    <Form.Group className="mb-3 col-4" controlId="objectName">
+                        <Form.Label>
+                            Object Name <b>*</b>
+                        </Form.Label>
+                        <Form.Control
+                            type="text"
+                            name="objectName"
+                            required
+                            value={ formData.objectName }
+                            onChange={ handleInputChanged }
+                        />
+                    </Form.Group>
+                    <Form.Group className="mb-3 col-4" controlId="objMasterInUseInd">
+                        <Form.Label>
+                            In Use Indicator <b>*</b>
+                        </Form.Label>
+                        <Form.Check
+                            type="checkbox"
+                            name="objMasterInUseInd"
+                            label="Check here to mark Object Master as 'In Use'"
+                            className="mt-2"
+                            checked={ formData.objMasterInUseInd }
+                            onChange={ handleInputChanged }
+                        />
+                    </Form.Group>
+                </Row>
 
                 <Form.Group className="mb-3 col-4" controlId="objectDefinition">
                     <Form.Label>

@@ -29,6 +29,7 @@ const graphqlForObjectMaster = {
             errorMessage
             id
             isMandatory
+            ruleGroupNumber
             longDescription
             shortDescription
             type
@@ -95,6 +96,73 @@ const graphqlForObjectMaster = {
         objectLabelName
         objectMasterId
         objectMasterInUseIndicator
+      }
+    }
+  `,
+
+  RemoveValidationFromObjectField: gql`
+    mutation MyMutation($removeValidations: [ObjectFieldValidation!]!) {
+      RemoveValidationFromObjectField(
+        rules: $removeValidations
+      ) {
+        objectFieldXrefId
+        fieldValidRuleId
+        validFromDateTime
+        validToDateTime
+      }
+    }
+  `,
+
+  AddValidationToObjectField: gql`
+    mutation MyMutation($addValidations: [ObjectFieldValidation!]!) {
+      AddValidationToObjectField(
+        rules: $addValidations
+      ) {
+        objectFieldXrefId
+        fieldValidRuleId
+        validFromDateTime
+        validToDateTime
+      }
+  }
+  `,
+
+  AddFieldToObject: gql`
+    mutation MyMutation($addFields: [ObjectFieldXrefRecord]!) {
+      AddFieldToObject(
+        fields: $addFields
+      ) {
+        objectFieldXrefId
+        objectMasterId
+        fieldMasterId      
+      }
+  }
+  `,
+
+  RemoveFieldFromObject: gql`
+    mutation MyMutation {
+        RemoveFieldFromObject(objectFieldXrefIds: ["1197","1198"]) {
+        fieldMasterId
+        objectFieldXrefId
+        objectMasterId
+      }
+    }
+  `,
+
+  UpdateValidationObjectInUseInd: gql`
+    mutation MyMutation {
+      UpdateValidationObjectInUseInd(field: {objectInUseInd: true, objectMasterId: "232"}) {
+        objectMasterId
+        objectMasterInUseIndicator
+      }
+    }
+  `,
+
+  UpdateValidationObjectName: gql`
+    mutation MyMutation($addField: ValidationObjectName!) {
+      UpdateValidationObjectName(field: $addField) {
+        objectDefinition
+        objectMasterId
+        objectName
       }
     }
   `

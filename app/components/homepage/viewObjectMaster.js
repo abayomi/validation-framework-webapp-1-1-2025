@@ -96,17 +96,6 @@ const ViewObjectMaster = () => {
   }
   
   const deleteButtonHandler = (objLableName) => {
-    /*
-    const deleteRowFromObjectMasterList = (response) => {
-      const deleteValidationObject = arrayGet(propertyGet(response, 'data.DeleteValidationObject'), 0);
-      const deletedObjectMasterId = variableHelper.isObject(deleteValidationObject) ? deleteValidationObject.objectMasterId : 0;
-      if (deletedObjectMasterId > 0) {
-        const updatedList = objectMasterList.filter(item => item.objectMasterId !== deletedObjectMasterId);
-        setObjectMasterList(updatedList);
-      }
-    };
-    */
-
     const changeObjMasterInUseInd = (response) => {
       const deleteValidationObject = arrayGet(propertyGet(response, 'data.DeleteValidationObject'), 0);
       const deletedObjectMasterId = variableHelper.isObject(deleteValidationObject) ? deleteValidationObject.objectMasterId : 0;
@@ -131,7 +120,6 @@ const ViewObjectMaster = () => {
           }
         });
   
-        //deleteRowFromObjectMasterList(response);
         changeObjMasterInUseInd(response);
       }
     }
