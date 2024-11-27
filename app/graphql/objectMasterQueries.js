@@ -139,8 +139,8 @@ const graphqlForObjectMaster = {
   `,
 
   RemoveFieldFromObject: gql`
-    mutation MyMutation {
-        RemoveFieldFromObject(objectFieldXrefIds: ["1197","1198"]) {
+    mutation MyMutation($xrefIds: [ID!]!) {
+        RemoveFieldFromObject(objectFieldXrefIds: $xrefIds) {
         fieldMasterId
         objectFieldXrefId
         objectMasterId
@@ -149,8 +149,8 @@ const graphqlForObjectMaster = {
   `,
 
   UpdateValidationObjectInUseInd: gql`
-    mutation MyMutation {
-      UpdateValidationObjectInUseInd(field: {objectInUseInd: true, objectMasterId: "232"}) {
+    mutation MyMutation($addField: ValidationObjectInUseInd!) {
+      UpdateValidationObjectInUseInd(field: $addField) {
         objectMasterId
         objectMasterInUseIndicator
       }

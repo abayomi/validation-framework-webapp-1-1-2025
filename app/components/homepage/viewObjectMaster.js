@@ -91,8 +91,8 @@ const ViewObjectMaster = () => {
   const [objectMasterListData, doObjectMasterListRefresh] = fetchObjectMasterList(dialectCode);
   const [deleteValidationObject, deleteValidationObjectReponse] = useMutation(graphqlForObjectMaster.DeleteValidationObject);
 
-  const editButtonHandler = (objectMasterId) => {
-    return () => navigate(`/updatemasterobject/object/${objectMasterId}`);
+  const editButtonHandler = (objectLabelName) => {
+    return () => navigate(`/updatemasterobject/object/${objectLabelName}`);
   }
   
   const deleteButtonHandler = (objLableName) => {
@@ -158,16 +158,16 @@ const ViewObjectMaster = () => {
       reorder: false,
       cell: (row) => (
         <>
-          <Button variant="danger" size="sm" className="me-4" 
+          <Button variant="info" size="sm" className="me-4"
+            onClick={ editButtonHandler(row.objectLabelName) }>
+            Edit
+          </Button>
+
+          <Button variant="danger" size="sm" 
             onClick={ deleteButtonHandler(row.objectLabelName) }
             disabled={ false === row.objMasterInUseInd }
           >
             Delete
-          </Button>
-
-          <Button variant="info" size="sm" 
-            onClick={ editButtonHandler(row.objectMasterId) }>
-            Edit
           </Button>
         </>
       ),

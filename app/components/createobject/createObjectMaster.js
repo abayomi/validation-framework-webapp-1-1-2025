@@ -1,16 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams } from 'react-router-dom';
-import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import { useQuery, useMutation } from '@apollo/client';
-import { v4 as uuidv4 } from 'uuid';
-import variableHelper from "@/app/lib/variableHelper";
+import { useParams, useNavigate } from "react-router-dom";
+import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import { useQuery, useMutation } from "@apollo/client";
+import { v4 as uuidv4 } from "uuid";
 import { defaultDialectCode } from "@/app/components/config/dialectCodeMap";
-import graphqlForObjectMaster from '@/app/graphql/objectMasterQueries';
-import CreateObjectFields from '@/app/components/createobject/createObjectFields';
+import graphqlForObjectMaster from "@/app/graphql/objectMasterQueries";
+import CreateObjectFields from "@/app/components/createobject/createObjectFields";
 
 function updateFieldRuleChecked(setFormData, formData, uuid, ruleId) {
     const updatedFieldItems = formData.fieldItems;
@@ -86,18 +85,18 @@ function formatFieldRules(rawRules) {
     return result;
 }
 
-function getInitialFormData() {
-    return {
-        objectMasterId: '',
-        objectName: '',
-        objectDef: '',
-        labelName: '',
-        objMasterInUseInd: true,
-        fieldItems: [newEmptyFieldItem()]
-    };
-}
+function formatFormData(rawData = null) {
+    if (!rawData) {
+        return {
+            objectMasterId: '',
+            objectName: '',
+            objectDef: '',
+            labelName: '',
+            objMasterInUseInd: true,
+            fieldItems: [newEmptyFieldItem()]
+        };
+    }
 
-function formatRawObjectMetaData(rawData) {
     const formateRuleList = (rawRules) => {
         let ruleList = {};
         rawRules.forEach(r => {
@@ -116,7 +115,7 @@ function formatRawObjectMetaData(rawData) {
 
     const fieldItemList = rawData.fields.map(f => {
         return {
-            id: uuidv4(),
+            id: uuidv4(), // For UI render
             objectFieldName: f.fieldName,
             fieldMasterName: f.fieldMasterName, 
             fieldMasterId: f.fieldMasterId,
@@ -128,7 +127,7 @@ function formatRawObjectMetaData(rawData) {
     return {
         "objectMasterId": rawData.objectMasterId,
         "objectName": rawData.objectName,
-        "objectDef": "test def", // TODO The API does not return this.
+        "objectDef": "The API does not return this", // TODO The API does not return this.
         "labelName": rawData.objectLabelName,
         "objMasterInUseInd": rawData.objMasterInUseInd,
         "fieldItems": fieldItemList
@@ -144,9 +143,9 @@ function checkUserChanges(formData, formDataSnapshot) {
     if (objectNameChanged || objectDefChanged) {
         apisToBeCalled.push({
             api: 'UpdateValidationObjectName',
-            apiQuery: graphqlForObjectMaster.UpdateValidationObjectName, // TODO
+            apiQuery: graphqlForObjectMaster.UpdateValidationObjectName,
             variables: {
-                field: {
+                addField: {
                     dialectCode: defaultDialectCode,
                     objectDefinition: formData.objectDef,
                     objectName: formData.objectName,
@@ -161,9 +160,9 @@ function checkUserChanges(formData, formDataSnapshot) {
     if (objMasterInUseIndChanged) {
         apisToBeCalled.push({
             api: 'UpdateValidationObjectInUseInd',
-            apiQuery: graphqlForObjectMaster.UpdateValidationObjectInUseInd, // TODO
+            apiQuery: graphqlForObjectMaster.UpdateValidationObjectInUseInd,
             variables: {
-                field: {
+                addField: {
                     objectInUseInd: formData.objMasterInUseInd,
                     objectMasterId: formData.objectMasterId
                 }
@@ -178,9 +177,9 @@ function checkUserChanges(formData, formDataSnapshot) {
     if (objectFieldXrefIdList.length) {
         apisToBeCalled.push({
             api: 'RemoveFieldFromObject',
-            apiQuery: graphqlForObjectMaster.RemoveFieldFromObject, // TODO
+            apiQuery: graphqlForObjectMaster.RemoveFieldFromObject,
             variables: {
-                objectFieldXrefIds: objectFieldXrefIdList
+                xrefIds: objectFieldXrefIdList
             }
         });
     }
@@ -237,7 +236,7 @@ function checkUserChanges(formData, formDataSnapshot) {
             api: 'RemoveValidationFromObjectField',
             apiQuery: graphqlForObjectMaster.RemoveValidationFromObjectField,
             variables: {
-                addValidations: removeValidationsList
+                removeValidations: removeValidationsList
             }
         });
     }
@@ -265,12 +264,17 @@ function checkObjFieldRulesChanged(fieldItem, fieldItemsSnapshot) {
     return changedRules;
 };
 
-const CreateObjectMaster = (props) => {
-    const { location } = props
-    const isUpdating = location.pathname.includes('/updatemasterobject/object');
-    const initialFormData = getInitialFormData();
+const CreateObjectMaster = () => {
+    const { objLabelName } = useParams();
+    const navigate = useNavigate();
+    const isUpdating = undefined !== objLabelName;
+    const initialFormData = formatFormData(null);
     const [formData, setFormData] = useState(initialFormData);
     const [formDataSnapshot, setFormDataSnapshot] = useState({...initialFormData}); // a deep copy of initialFormData
+
+    const goToHomepage = () => {
+        navigate('/');
+    }
 
     const showAddMoreObjectFieldsSection = function() {
         const addOneObjectField = () => {
@@ -424,33 +428,46 @@ const CreateObjectMaster = (props) => {
         console.log('Updated', JSON.stringify(formData));
     }
 
-    //if (isUpdating) {
-        //const { id: objectMasterId } = useParams();
-        //console.log('isUpdating. ID: ', objectMasterId);
-    //}
+    const cancelHandler = () => {
+        const apisToBeCalled = checkUserChanges(formData, formDataSnapshot);
+        if (apisToBeCalled.length > 0) {
+            if (window.confirm('Do you confirm to discard changes?')) {
+                goToHomepage();
+            }
+        } else {
+            goToHomepage();
+        }
+    }
+
+    const resetFormData = () => {
+        setFormData(initialFormData);
+        setFormDataSnapshot({ ...initialFormData });
+    }
 
     const objMetaDataResponse = useQuery(graphqlForObjectMaster.FetchObjectMetaDataByLabel, {
         variables: {
-            objectLabelName: 'AssetAcquisitionInfoInput',
+            objectLabelName: objLabelName,
             dialectCode: defaultDialectCode
         },
-        skip: false === isUpdating
+        skip: false === isUpdating /* The query operation will be executed only when "Updating". */
     });
 
     useEffect(() => {
         // Render the list of Object Master
-        if (objMetaDataResponse.error) {
-            console.log('Error from GraphQL API: ', objMetaDataResponse.error.message);
+        if (isUpdating) {
+            if (objMetaDataResponse.error) {
+                console.log('Error from GraphQL API: ', objMetaDataResponse.error.message);
+            }
+            if (objMetaDataResponse.data) {
+                const rawObjMeataData = objMetaDataResponse.data.FetchObjectMetaDataByLabel;
+                const formattedFormData = formatFormData(rawObjMeataData[0]);
+                setFormData(formattedFormData);
+                setFormDataSnapshot({ ...formattedFormData });
+            }
+        } else {
+            resetFormData();
         }
-        if (objMetaDataResponse.data) {
-            const rawObjMeataData = objMetaDataResponse.data.FetchObjectMetaDataByLabel;
-            const formattedRawObjMeataData = formatRawObjectMetaData(rawObjMeataData[0]);
-            setFormData(formattedRawObjMeataData);
-            setFormDataSnapshot({...formattedRawObjMeataData});
-
-            //console.log('Init.', JSON.stringify(rawObjMeataData));
-        }
-    }, [objMetaDataResponse, setFormData, setFormDataSnapshot]);
+    }, [isUpdating, objMetaDataResponse, setFormData, setFormDataSnapshot]);
 
     // Submit the form and get the API response
     useEffect(() => {
@@ -458,7 +475,7 @@ const CreateObjectMaster = (props) => {
             console.log('Failed to save Object Master.', createValidationObjectReponse.error.message);
         }
         if (createValidationObjectReponse.data) {
-            navigate('/');
+            goToHomepage();
         }
     }, [createValidationObjectReponse]);
 
@@ -529,6 +546,14 @@ const CreateObjectMaster = (props) => {
                 <Button variant="primary" type="submit">
                     { isUpdating ? 'Update' : 'Submit' }
                 </Button>
+
+                { isUpdating && (
+                    <Button variant="secondary" type="button" 
+                            className="ms-4" 
+                            onClick={ cancelHandler }>
+                        Cancel
+                    </Button>
+                ) }
             </Form>
         </>
     );
