@@ -7,6 +7,7 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import { useQuery, useMutation } from "@apollo/client";
 import { v4 as uuidv4 } from "uuid";
+import { propertyGet } from "@/app/lib/arrayHelper";
 import { defaultDialectCode } from "@/app/components/config/dialectCodeMap";
 import graphqlForObjectMaster from "@/app/graphql/objectMasterQueries";
 import CreateObjectFields from "@/app/components/createobject/createObjectFields";
@@ -113,24 +114,22 @@ function formatFormData(rawData = null) {
         return ruleList;
     };
 
-    const fieldItemList = rawData.fields.map(f => {
-        return {
-            id: uuidv4(), // For UI render
-            objectFieldName: f.fieldName,
-            fieldMasterName: f.fieldMasterName, 
-            fieldMasterId: f.fieldMasterId,
-            fieldXrefId: f.fieldXrefId,
-            rules: formateRuleList(f.rules)
-        };
-    });
-
     return {
         "objectMasterId": rawData.objectMasterId,
         "objectName": rawData.objectName,
-        "objectDef": "The API does not return this", // TODO The API does not return this.
+        "objectDef": propertyGet(rawData, 'objectDefinition', 'The API does not return this value.'),
         "labelName": rawData.objectLabelName,
         "objMasterInUseInd": rawData.objMasterInUseInd,
-        "fieldItems": fieldItemList
+        "fieldItems": rawData.fields.map(f => {
+            return {
+                id: uuidv4(), // For UI render
+                objectFieldName: f.fieldName,
+                fieldMasterName: f.fieldMasterName, 
+                fieldMasterId: f.fieldMasterId,
+                fieldXrefId: f.fieldXrefId,
+                rules: formateRuleList(f.rules)
+            };
+        })
     };
 }
 
@@ -142,7 +141,7 @@ function checkUserChanges(formData, formDataSnapshot) {
     const objectDefChanged = formData.objectDef !== formDataSnapshot.objectDef;
     if (objectNameChanged || objectDefChanged) {
         apisToBeCalled.push({
-            api: 'UpdateValidationObjectName',
+            apiName: 'UpdateValidationObjectName',
             apiQuery: graphqlForObjectMaster.UpdateValidationObjectName,
             variables: {
                 addField: {
@@ -159,7 +158,7 @@ function checkUserChanges(formData, formDataSnapshot) {
     const objMasterInUseIndChanged = formData.objMasterInUseInd !== formDataSnapshot.objMasterInUseInd;
     if (objMasterInUseIndChanged) {
         apisToBeCalled.push({
-            api: 'UpdateValidationObjectInUseInd',
+            apiName: 'UpdateValidationObjectInUseInd',
             apiQuery: graphqlForObjectMaster.UpdateValidationObjectInUseInd,
             variables: {
                 addField: {
@@ -176,7 +175,7 @@ function checkUserChanges(formData, formDataSnapshot) {
     const objectFieldXrefIdList = fieldItemsToBeDeleted.map(objField => objField.fieldXrefId);
     if (objectFieldXrefIdList.length) {
         apisToBeCalled.push({
-            api: 'RemoveFieldFromObject',
+            apiName: 'RemoveFieldFromObject',
             apiQuery: graphqlForObjectMaster.RemoveFieldFromObject,
             variables: {
                 xrefIds: objectFieldXrefIdList
@@ -189,14 +188,14 @@ function checkUserChanges(formData, formDataSnapshot) {
     const fieldItemsToBeAdded = formData.fieldItems.filter(objField => false === snapshotFieldItemIds.includes(objField.id));
     const addFieldsList = fieldItemsToBeAdded.map(objField => {
         return {
-            fieldMasterId: 0, // According to the definition of the schema and reference Postman Collection, the value is "0".
+            fieldMasterId: objField.fieldMasterId,
             objectFieldName: objField.objectFieldName,
             objectMasterId: formData.objectMasterId
         };
     });
     if (addFieldsList.length) {
         apisToBeCalled.push({
-            api: 'AddFieldToObject',
+            apiName: 'AddFieldToObject',
             apiQuery: graphqlForObjectMaster.AddFieldToObject,
             variables: {
                 addFields: addFieldsList
@@ -224,7 +223,7 @@ function checkUserChanges(formData, formDataSnapshot) {
     });
     if (addValidationsList.length) {
         apisToBeCalled.push({
-            api: 'AddValidationToObjectField',
+            apiName: 'AddValidationToObjectField',
             apiQuery: graphqlForObjectMaster.AddValidationToObjectField,
             variables: {
                 addValidations: addValidationsList
@@ -233,7 +232,7 @@ function checkUserChanges(formData, formDataSnapshot) {
     }
     if (removeValidationsList.length) {
         apisToBeCalled.push({
-            api: 'RemoveValidationFromObjectField',
+            apiName: 'RemoveValidationFromObjectField',
             apiQuery: graphqlForObjectMaster.RemoveValidationFromObjectField,
             variables: {
                 removeValidations: removeValidationsList
@@ -264,6 +263,66 @@ function checkObjFieldRulesChanged(fieldItem, fieldItemsSnapshot) {
     return changedRules;
 };
 
+function useMultipleMutations() {
+    const [mutationHandler1, { data: data1, loading: loading1, error: error1 }] = useMutation(graphqlForObjectMaster.UpdateValidationObjectName);
+    const [mutationHandler2, { data: data2, loading: loading2, error: error2 }] = useMutation(graphqlForObjectMaster.UpdateValidationObjectInUseInd);
+    const [mutationHandler3, { data: data3, loading: loading3, error: error3 }] = useMutation(graphqlForObjectMaster.RemoveFieldFromObject);
+    const [mutationHandler4, { data: data4, loading: loading4, error: error4 }] = useMutation(graphqlForObjectMaster.AddFieldToObject);
+    const [mutationHandler5, { data: data5, loading: loading5, error: error5 }] = useMutation(graphqlForObjectMaster.AddValidationToObjectField);
+    const [mutationHandler6, { data: data6, loading: loading6, error: error6 }] = useMutation(graphqlForObjectMaster.RemoveValidationFromObjectField);
+
+    return {
+        UpdateValidationObjectName: {
+            mutationHandler: mutationHandler1,
+            mutationResponse: {
+                data: data1,
+                loading: loading1,
+                error: error1
+            }
+        },
+        UpdateValidationObjectInUseInd: {
+            mutationHandler: mutationHandler2,
+            mutationResponse: {
+                data: data2,
+                loading: loading2,
+                error: error2
+            }
+        },
+        RemoveFieldFromObject: {
+            mutationHandler: mutationHandler3,
+            mutationResponse: {
+                data: data3,
+                loading: loading3,
+                error: error3
+            }
+        },
+        AddFieldToObject: {
+            mutationHandler: mutationHandler4,
+            mutationResponse: {
+                data: data4,
+                loading: loading4,
+                error: error4
+            }
+        },
+        AddValidationToObjectField: {
+            mutationHandler: mutationHandler5,
+            mutationResponse: {
+                data: data5,
+                loading: loading5,
+                error: error5
+            }
+        },
+        RemoveValidationFromObjectField: {
+            mutationHandler: mutationHandler6,
+            mutationResponse: {
+                data: data6,
+                loading: loading6,
+                error: error6
+            }
+        }
+    };
+}
+
 const CreateObjectMaster = () => {
     const { objLabelName } = useParams();
     const navigate = useNavigate();
@@ -271,6 +330,7 @@ const CreateObjectMaster = () => {
     const initialFormData = formatFormData(null);
     const [formData, setFormData] = useState(initialFormData);
     const [formDataSnapshot, setFormDataSnapshot] = useState({...initialFormData}); // a deep copy of initialFormData
+    const mutationQueryList = useMultipleMutations();
 
     const goToHomepage = () => {
         navigate('/');
@@ -304,7 +364,7 @@ const CreateObjectMaster = () => {
             <CreateObjectFields
                 key={item.id}
                 item={item}
-                onInputChangeHandler={ handleInputChanged }
+                onInputChangeHandler={ inputChangeHandler }
                 onDeleteHandler={ () => deleteOneRow(item.id) }
                 onDropDownItemClick={ dropDownItemClickHandler(item.id) }
                 onFieldRuleCheckboxChange={ (e) => updateFieldRuleChecked(setFormData, formData, item.id, e.target.value) }
@@ -336,7 +396,7 @@ const CreateObjectMaster = () => {
         );
     };
 
-    const handleInputChanged = (e) => {
+    const inputChangeHandler = (e) => {
         if ('checkbox' === e.target.type) {
             const newObjMasterInUseInd = !formData.objMasterInUseInd;
             setFormData({...formData, objMasterInUseInd: newObjMasterInUseInd});
@@ -371,7 +431,6 @@ const CreateObjectMaster = () => {
         // TODO Disable the button after user's click
         event.preventDefault();
 
-        console.log('formData', JSON.stringify(formData));
         return;
 
         const formatFieldValidation = (rules) => {
@@ -413,19 +472,22 @@ const CreateObjectMaster = () => {
     const updateHandler = (event) => {
         event.preventDefault();
 
-        // TODO Check what the user changes
+        // Check what the user changes
         const apisToBeCalled = checkUserChanges(formData, formDataSnapshot);
-        const apisToBeCalledSimple = apisToBeCalled.map(item => {
-            return {
-                api: item.api,
-                variables: item.variables
-            };
+        if (0 === apisToBeCalled.length) {
+            console.log('The user made no changes, no API call needed.');
+        }
+        
+        // TODO Call specific APIs in a loop
+        apisToBeCalled.forEach(async (api) => {
+            console.log(`Call ${api.apiName}`);
+            const mutationQuery = mutationQueryList[api.apiName].mutationHandler;
+            const queryResponse = await mutationQuery({ variables: api.variables });
+            console.log('queryResponse', JSON.stringify(queryResponse));
+            console.log('api.variables', JSON.stringify(api.variables));
         });
-        console.log('Call these APIs', JSON.stringify(apisToBeCalledSimple));
 
-        // TODO Call specific APIs
-
-        console.log('Updated', JSON.stringify(formData));
+        goToHomepage();
     }
 
     const cancelHandler = () => {
@@ -451,6 +513,10 @@ const CreateObjectMaster = () => {
         },
         skip: false === isUpdating /* The query operation will be executed only when "Updating". */
     });
+
+    useEffect(() => {
+        objMetaDataResponse.refetch();
+    }, [objLabelName]);
 
     useEffect(() => {
         // Render the list of Object Master
@@ -497,7 +563,7 @@ const CreateObjectMaster = () => {
                             name="objectName"
                             required
                             value={ formData.objectName }
-                            onChange={ handleInputChanged }
+                            onChange={ inputChangeHandler }
                         />
                     </Form.Group>
                     <Form.Group className="mb-3 col-4" controlId="objMasterInUseInd">
@@ -510,7 +576,7 @@ const CreateObjectMaster = () => {
                             label="Check here to mark Object Master as 'In Use'"
                             className="mt-2"
                             checked={ formData.objMasterInUseInd }
-                            onChange={ handleInputChanged }
+                            onChange={ inputChangeHandler }
                         />
                     </Form.Group>
                 </Row>
@@ -524,7 +590,7 @@ const CreateObjectMaster = () => {
                         name="objectDef"
                         required
                         value={ formData.objectDef }
-                        onChange={ handleInputChanged }
+                        onChange={ inputChangeHandler }
                     />
                 </Form.Group>
 
@@ -536,7 +602,7 @@ const CreateObjectMaster = () => {
                         type="text"
                         name="labelName"
                         value={ formData.labelName }
-                        onChange={ handleInputChanged }
+                        onChange={ inputChangeHandler }
                         disabled={ isUpdating /* The label name cannot be edited. */}
                     />
                 </Form.Group>
