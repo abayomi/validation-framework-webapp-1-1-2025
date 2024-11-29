@@ -3,13 +3,12 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 
 const ObjectFields = (props) => {
     const {deleteRow, id, item, fieldNameList, onChange} = props
-
-    const [fieldItem, setFieldItem] = useState( item || []);
+    const [fieldItem, setFieldItem] = useState( item ?? []);
 
     const handleFieldChange = (e) => {
         const { name, value } = e.target;
@@ -19,11 +18,11 @@ const ObjectFields = (props) => {
     };
 
     return (
-        <div>
+        <div className="row-object-field">
           <Row key={ id }>
                 <Form.Group as={Col} className="mb-3 col-3" controlId="fieldName">
                     <Form.Select aria-label="fieldName" name="fieldName" value={fieldItem.fieldName ?? ''} onChange={handleFieldChange} required>
-                        <option></option>
+                    <option></option>
                         {fieldNameList.map(value => (
                             <option key={value} value={value}>{value}</option>
                         ))}
@@ -34,7 +33,7 @@ const ObjectFields = (props) => {
                     <Form.Control type="text" placeholder="" name="fieldValue" value={fieldItem.fieldValue ?? ''} onChange={handleFieldChange}/>
                 </Form.Group>
                 <Form.Group as={Col} className="mb-3 col-3" controlId="">
-                    <Button className="mb-3" variant="danger" size="sm" onClick={(e) => deleteRow(id)}>Delete</Button>
+                    <Button className="mb-3 delete-object-field" variant="danger" size="sm" onClick={(e) => deleteRow(id)}>Delete</Button>
                 </Form.Group>
             </Row>
         </div>

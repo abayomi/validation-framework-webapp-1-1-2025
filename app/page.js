@@ -12,6 +12,7 @@ import { Routes, Route, BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import store from "./store/store";
 import "./App.scss";
+import ErrorBoundary from "./errorBoundary";
 import {
   ApolloClient,
   InMemoryCache,
@@ -79,9 +80,11 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <div className={styles.description}>
+      <ErrorBoundary>
         <ApolloProvider client={client}>
           {isBrowser ? browserRouter : null}
         </ApolloProvider>
+        </ErrorBoundary>
       </div>
     </main>
   );

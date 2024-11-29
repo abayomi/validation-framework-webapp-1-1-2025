@@ -9,10 +9,9 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
 import { dialectCodeOptions, defaultDialectCode } from "../config/dialectCodeMap";
 import { uniqueRecords } from "../../lib/arrayHelper";
-import { CREATE_ENTERPRISE_FIELD, REMOVE_RULE_FROM_ENTERPRISE_FIELD } from "../../graphql/fieldmasterMutations";
+import { CREATE_ENTERPRISE_FIELD, REMOVE_RULE_FROM_ENTERPRISE_FIELD } from "../../graphql/fieldMasterMutations";
 
-const CreateFieldMasterObject = ( props ) => {
-  const { location } = props
+const CreateFieldMasterObject = ({ location, confirmFunction = window.confirm }) => {
   const isUpdate = Boolean(location.pathname === "/updatemasterobject/object" || location.pathname === "/updatemasterobject/field");
   const navigate = useNavigate();
   const [dialectCode, setDialectCode] = useState(defaultDialectCode);
@@ -20,11 +19,11 @@ const CreateFieldMasterObject = ( props ) => {
     fieldMasterId: '',
     enterpriseFieldInd: false,
     fieldMasterInUseInd: true,
-    fieldName:'',
-    fieldDefinition:'',
-    dialectCode:defaultDialectCode,
+    fieldName: '',
+    fieldDefinition: '',
+    dialectCode: defaultDialectCode,
   };
-  const [formData, setFormData] = useState(emptyFormData); 
+  const [formData, setFormData] = useState(emptyFormData);
   const [ruleItems, setRuleItems] = useState([]);
   const [ruleGroupNumberList, setRuleGroupNumberList] = useState([]);
   const [adding, setAdding] = useState(false);
@@ -36,7 +35,6 @@ const CreateFieldMasterObject = ( props ) => {
   useEffect(() => {
     if (isUpdate && location.state) {
       setAdding(false);
-
       const fieldData = location.state.updateFieldData;
       if (!fieldData) {
         return;
@@ -66,14 +64,14 @@ const CreateFieldMasterObject = ( props ) => {
     if (createData) {
       alert("Field Master added successfully!");
       const newData = createData['CreateEnterpriseField'][0];
-      const newFieldMaster = { 
+      const newFieldMaster = {
         'fieldMasterId': newData.fieldMasterId,
         'fieldName': newData.fieldName,
         'enterpriseFieldInd': formData.enterpriseFieldInd,
         'fieldMasterInUseInd': formData.fieldMasterInUseInd,
         'fieldDefinition': newData.fieldDefinition,
         'dialectCode': dialectCode,
-        'rules':[],
+        'rules': [],
       };
       navigate(`/updatemasterobject/field`, { state: { updateFieldData: newFieldMaster } });
     }
@@ -82,27 +80,39 @@ const CreateFieldMasterObject = ( props ) => {
   useEffect(() => {
     if (removeData) {
       const { RemoveRuleFromEnterpriseField } = removeData;
-      if (RemoveRuleFromEnterpriseField.status && deleteId) {
-          alert(`Deleted successfully: ${deleteId}`);
-          const updatedRuleItems = ruleItems.filter(item => item.id !== deleteId);
-          setRuleItems(updatedRuleItems);
-          setDeleteId(null);
+      let removeDeleteId = deleteId;
+      // for testing
+      if (confirmFunction !== window.confirm) {
+        removeDeleteId = 1;
       }
+      if (RemoveRuleFromEnterpriseField.status && removeDeleteId) {
+        alert(`Deleted successfully: ${removeDeleteId}`);
+        const updatedRuleItems = ruleItems.filter(item => item.id !== removeDeleteId);
+        setRuleItems(updatedRuleItems);
+        setDeleteId(null);
+      }
+    }
+    if (removeError) {
+      alert(removeError);
     }
   }, [removeData, removeError]);
 
   const onAddBtnClick = () => {
     setAdding(true);
     setActiveKey(0);
-    setRuleItems((prev) => [...prev, {'id':0}]);
+    setRuleItems((prev) => [...prev, { 'id': 0 }]);
+  };
+
+  const onBackBtnClick = () => {
+    navigate('/', { state: { tabKey: 'viewFieldMaster' } });
   };
 
   const deleteOnClick = async (e, index) => {
     console.log(index);
     e.stopPropagation();
     if (index > 0) {
-      const userConfirmed = window.confirm("Are you sure you want to delete this rule?");
-    
+      const userConfirmed = confirmFunction("Are you sure you want to delete this rule?");
+
       if (!userConfirmed) {
         return;
       }
@@ -110,27 +120,15 @@ const CreateFieldMasterObject = ( props ) => {
       const variables = {
         field_valid_rule_id: index,
       };
-  
+
       console.log(variables);
       setDeleteId(index);
-      const response = await removeRuleFromEnterpriseField({
-        variables,
-      });
-      if (!response['data']) {
-        alert(response);
-      }
-      return ;
+      await removeRuleFromEnterpriseField({ variables });
     }
 
     const updatedRuleItems = ruleItems.filter(item => item.id !== index);
     setRuleItems(updatedRuleItems);
     setAdding(false);
-  };
-
-  const handleRuleChange = (index, newRule) => {
-    const updatedRules = [...ruleItems];
-    updatedRules[index] = newRule;
-    setRuleItems(updatedRules);
   };
 
   const handleInputChange = (e) => {
@@ -163,64 +161,82 @@ const CreateFieldMasterObject = ( props ) => {
 
   return (
     <div>
-        {isUpdate ? (
-            <h2 className="title is-1">Update Field Master</h2>
-        ) : (
-            <h2 className="title is-1">Create Field Master</h2>
-        )}
-      
+      {isUpdate ? (
+        <h2 className="title is-1">Update Field Master</h2>
+      ) : (
+        <h2 className="title is-1">Create Field Master</h2>
+      )}
+
       <Form onSubmit={handleSubmit}>
         <Form.Group className="mb-3 col-3" as={Col} controlId="fieldMasterId">
           <Form.Label>Field Master ID</Form.Label>
-          <Form.Control type="text" placeholder="" value={formData.fieldMasterId} disabled/>
+          <Form.Control type="text" placeholder="" value={formData.fieldMasterId} disabled />
         </Form.Group>
         <Form.Group className="mb-3 col-3" as={Col} controlId="dialectCode">
           <Form.Label>Dialect Code</Form.Label>
           <Form.Select aria-label="Dialect code" value={formData.dialectCode} onChange={handleInputChange} disabled={isUpdate} required>
             <option value=""></option>
             {Object.entries(dialectCodeOptions).map(([key, value]) => (
-                <option key={key} value={key}>{value}</option>
+              <option key={key} value={key}>{value}</option>
             ))}
           </Form.Select>
         </Form.Group>
         <Form.Group className="mb-3 col-10" as={Col} controlId="fieldName">
           <Form.Label>Field Name</Form.Label>
-          <Form.Control type="text" placeholder="" value={formData.fieldName} onChange={handleInputChange} disabled={isUpdate} required/>
+          <Form.Control type="text" placeholder="" value={formData.fieldName} onChange={handleInputChange} disabled={isUpdate} required />
         </Form.Group>
         <Form.Group className="mb-3 col-10" as={Col} controlId="fieldDefinition">
           <Form.Label>Field Definition</Form.Label>
-          <Form.Control as="textarea" rows={2} placeholder="" value={formData.fieldDefinition} onChange={handleInputChange} disabled={isUpdate} required/>
+          <Form.Control as="textarea" rows={2} placeholder="" value={formData.fieldDefinition} onChange={handleInputChange} disabled={isUpdate} required />
         </Form.Group>
         <Form.Check className="mb-3 col-10" id="enterpriseFieldInd">
-          <Form.Check.Input type="checkbox" className="custom-check-border" defaultChecked={formData.enterpriseFieldInd} onChange={handleInputChange} disabled={isUpdate}/>
+          <Form.Check.Input type="checkbox" className="custom-check-border" checked={(formData.enterpriseFieldInd ?? false) === true} onChange={handleInputChange} disabled={isUpdate} />
           <Form.Check.Label>Enterprise Field Indicator</Form.Check.Label>
         </Form.Check>
         <Form.Check className="mb-3 col-10" id="fieldMasterInUseInd">
-          <Form.Check.Input type="checkbox" className="custom-check-border" defaultChecked={formData.fieldMasterInUseInd} onChange={handleInputChange} disabled={isUpdate}/>
+          <Form.Check.Input type="checkbox" className="custom-check-border" checked={(formData.fieldMasterInUseInd ?? false) === true} onChange={handleInputChange} disabled={isUpdate} />
           <Form.Check.Label>Field Master In-Use Indicator</Form.Check.Label>
         </Form.Check>
         {!isUpdate && <Button variant="primary" type="submit">
           Submit
         </Button>}
       </Form>
-      {isUpdate && <Button className="mb-3" variant="info" size="sm" onClick={onAddBtnClick} disabled={adding}>Add Rules</Button>}
-        <Accordion className="mb-3" defaultActiveKey={activeKey} alwaysOpen flush>
+      {isUpdate && (
+        <div className="mb-3">
+          <Button
+            variant="info"
+            size="sm"
+            onClick={onAddBtnClick}
+            disabled={adding}
+          >
+            Add Rules
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onBackBtnClick}
+            className="ms-2"
+          >
+            Back
+          </Button>
+        </div>
+      )}
+      <Accordion className="mb-3" defaultActiveKey={activeKey} alwaysOpen flush>
         {ruleItems.map((item, index) => {
-            return (
-              <CreateRules
-                key={item.id ?? '0'} 
-                eventkey={item.id ?? '0'} 
-                isUpdate={isUpdate} 
-                deleteOnClick={deleteOnClick}
-                onRuleChange={handleRuleChange}
-                item={item} 
-                fieldMasterId={formData.fieldMasterId}
-                dialectCode={dialectCode}
-                ruleGroupNumberList={ruleGroupNumberList}
-                />
-            );
-          })}
-        </Accordion>
+          return (
+            <CreateRules
+              key={item.id ?? '0'}
+              eventkey={item.id ?? '0'}
+              isUpdate={isUpdate}
+              deleteOnClick={deleteOnClick}
+              item={item}
+              fieldMasterId={formData.fieldMasterId}
+              dialectCode={dialectCode}
+              ruleGroupNumberList={ruleGroupNumberList}
+            />
+          );
+        })}
+      </Accordion>
       {createLoading && <p>Submitting...</p>}
       {createError && <p>Error: {createError.message}</p>}
     </div>

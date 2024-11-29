@@ -1,33 +1,33 @@
 "use client";
 import withAuth from "../withAuth";
 import React, { useState, useEffect } from "react";
-import { Modal, Button, Form } from 'react-bootstrap';
+import { Modal, Alert, Button, Form } from 'react-bootstrap';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { v4 as uuidv4 } from 'uuid';
 import { useLazyQuery, useQuery } from "@apollo/client";
-import graphqlForObjectMaster from "@/app/graphql/objectMasterQueries";
-import { defaultDialectCode } from "@/app/components/config/dialectCodeMap";
-import { LOAD_VALIDATE_RECORDS } from "@/app/graphql/validationQueries";
+import graphqlForObjectMaster from "../../graphql/objectMasterQueries";
+import { defaultDialectCode } from "../../components/config/dialectCodeMap";
+import { LOAD_VALIDATE_RECORDS } from "../../graphql/validationQueries";
 import RecordCard from "./recordCard";
 import DropdownMenu from "../common/DropdownMenu";
-import { propertyGet } from "@/app/lib/arrayHelper";
+import { propertyGet } from "../../lib/arrayHelper";
+import AlertWindow from "./alertWindow";
 
 const ValidateRecords = () => {
-
-  const [objectName, setObjectName] = useState("");
-  const [recordCurrentId, setRecordCurrentId] = useState(10);
-  const [recordItems, setRecordItems] = useState([ {'recordId': recordCurrentId, 'fields': [{}]}]);
-  const [dialectCode, setDialectCode] = useState(defaultDialectCode);
+  const initRecordId = 10;
+  const [objectName, setObjectName] = useState('');
+  const [recordCurrentId, setRecordCurrentId] = useState(initRecordId);
+  const [recordItems, setRecordItems] = useState([{ 'recordId': initRecordId, 'fields': [{}] }]);
   const [objectList, setObjectList] = useState([]);
   const [fieldNameList, setFieldNameList] = useState([]);
   const [show, setShow] = useState(false);
   const [modalData, setModalData] = useState('');
   const [loadValidateRecords, { called, loading, data, error }] = useLazyQuery(LOAD_VALIDATE_RECORDS);
   const rawObjectMasterList = useQuery(graphqlForObjectMaster.FetchObjectMasterList, {
-    variables: { dialectCode: dialectCode }
+    variables: { dialectCode: defaultDialectCode }
   });
-  const [lazyLoadQuery, rawObjectFieldsData] = useLazyQuery(graphqlForObjectMaster.FetchObjectMetaDataByLabel);
+  const [lazyLoadQuery, { data: fetchObjectData, loading: fetchObjectLoading, error: fetchObjectError }] = useLazyQuery(graphqlForObjectMaster.FetchObjectMetaDataByLabel);
 
   useEffect(() => {
     if (rawObjectMasterList.error) {
@@ -40,26 +40,29 @@ const ValidateRecords = () => {
   }, [rawObjectMasterList]);
 
   useEffect(() => {
-    if (rawObjectFieldsData.error) {
-      console.error(rawObjectFieldsData.error);
+    if (fetchObjectError) {
+      console.error(fetchObjectError);
       setFieldNameList([]);
     }
-    if (rawObjectFieldsData.data) {
-      const rawObjectList = propertyGet(rawObjectFieldsData, 'data.FetchObjectMetaDataByLabel.0.fields', []);
-      setFieldNameList(rawObjectList.map(obj => obj.fieldName));
+    if (fetchObjectData) {
+      const rawFieldList = propertyGet(fetchObjectData, 'FetchObjectMetaDataByLabel.0.fields', []);
+      const newfieldNameList = rawFieldList.map(obj => obj.fieldName);
+      setFieldNameList(newfieldNameList);
     }
-  }, [rawObjectFieldsData]);
+  }, [fetchObjectData, fetchObjectError, fetchObjectLoading]);
 
   useEffect(() => {
     // check if name is in objectList
     if (objectList.some(object => object.objectName === objectName)) {
-        const fetchData = async (objectName) => {
-          await lazyLoadQuery({ variables: {
+      const fetchData = async (objectName) => {
+        await lazyLoadQuery({
+          variables: {
             objectLabelName: objectName,
-            dialectCode: dialectCode
-          } });
-        };
-        fetchData(objectName);
+            dialectCode: defaultDialectCode
+          }
+        });
+      };
+      fetchData(objectName);
     } else {
       setFieldNameList([]);
     }
@@ -68,16 +71,16 @@ const ValidateRecords = () => {
   useEffect(() => {
     if (data) {
       const info = JSON.stringify(data, null, 2)
-      .split('\n')
-      .filter(line => !line.includes('"__typename":'))
-      .join('\n');
+        .split('\n')
+        .filter(line => !line.includes('"__typename":'))
+        .join('\n');
       setModalData(info);
     }
     if (error) {
       const info = JSON.stringify(error, null, 2)
-      .split('\n')
-      .filter(line => !line.includes('"__typename":'))
-      .join('\n');
+        .split('\n')
+        .filter(line => !line.includes('"__typename":'))
+        .join('\n');
       setModalData(info);
     }
   }, [called, loading, data, error]);
@@ -94,7 +97,6 @@ const ValidateRecords = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const batch = {
       batchId: uuidv4(),
       objectName: objectName,
@@ -106,13 +108,13 @@ const ValidateRecords = () => {
       }));
       batch.objectRecords = formatRecordItems;
     }
-    console.log("============================handleSubmit======", batch);
+    console.log(batch);
     loadValidateRecords({ variables: { batch } });
     handleShow();
   }
 
   const onAddBtnClick = (event) => {
-    const updateRecordItems = [...recordItems, {'recordId': recordCurrentId + 1, 'fields': [{}]}];
+    const updateRecordItems = [...recordItems, { 'recordId': recordCurrentId + 1, 'fields': [{}] }];
     setRecordCurrentId(recordCurrentId + 1);
     setRecordItems(updateRecordItems);
   };
@@ -130,12 +132,12 @@ const ValidateRecords = () => {
     const updateRecordItems = [...recordItems];
     updateRecordItems.splice(index - 1, 1);
     setRecordItems(updateRecordItems);
-}
+  }
 
   return (
     <div>
       <Form onSubmit={handleSubmit}>
-        <Form.Group as={Col} className="mb-3 col-10" controlId="objectName">
+        <Form.Group as={Col} className="mb-3 col-10">
           <Form.Label>Object Name</Form.Label>
           <Row>
             <Col xs="2" className="pe-0">
@@ -144,18 +146,19 @@ const ValidateRecords = () => {
                 defaultValue="us_en"
               />
             </Col>
-            <Col className="pe-0">
+            <Col className="pe-0 object-name">
               <Form.Control
+                className="input-object-name"
                 type="text"
                 value={objectName}
-                onChange={ (e) => setObjectName(e.target.value) }
+                onChange={(e) => setObjectName(e.target.value)}
                 required
               />
             </Col>
             <Col className="ps-0">
-              <DropdownMenu 
-                  optionList={ getDropdownMenuDataMapping(objectList) } 
-                  onDropDownItemClick={ item => setObjectName(item.value) }
+              <DropdownMenu
+                optionList={getDropdownMenuDataMapping(objectList)}
+                onDropDownItemClick={item => setObjectName(item.value)}
               />
             </Col>
           </Row>
@@ -170,26 +173,13 @@ const ValidateRecords = () => {
             <Button variant="info" size="sm" onClick={onAddBtnClick}>Add Record</Button>
           </Col>
         </Row>
-        {recordItems && recordItems.map((item, key) => (
-           <RecordCard key={key} id={key} item={item} fieldNameList={fieldNameList} onChange={handleRecordsChange} onDelete={onDeleteRecord}/>
+        {recordItems && Array.isArray(recordItems) && recordItems.map((item, key) => (
+          <RecordCard key={key} id={key} item={item} fieldNameList={fieldNameList} onChange={handleRecordsChange} onDelete={onDeleteRecord} />
         ))}
         <Button className="mb-3" variant="info" size="sm" type="submit">Validate</Button>
       </Form>
 
-      <Modal show={show} onHide={handleClose} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Information</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {error && <p>Error: {error.message}</p>}
-          {modalData && <pre>{modalData}</pre>}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="primary" onClick={handleClose}>
-            Confirm
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      <AlertWindow show={show} handleClose={handleClose} error={error} modalData={modalData} />
     </div>
   );
 };

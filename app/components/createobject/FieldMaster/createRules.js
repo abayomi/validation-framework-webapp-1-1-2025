@@ -14,7 +14,7 @@ import { useMutation } from '@apollo/client';
 
 import CreateConditions from './createConditions';
 import { validationCodeOptions, getErrorCodeOptions, errorMessageOptions, getConditions } from './ruleValidationCodeMap';
-import { ADD_RULE_TO_ENTERPRISE_FIELD } from '../../../graphql/fieldmasterMutations';
+import { ADD_RULE_TO_ENTERPRISE_FIELD } from '../../../graphql/fieldMasterMutations';
 import { dialectCodeOptions } from "../../config/dialectCodeMap";
 import { uniqueRecords } from "../../../lib/arrayHelper";
 
@@ -36,7 +36,7 @@ function CustomToggle({ eventkey, deleteOnClick }) {
     );
 }
 
-const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fieldMasterId = 0, dialectCode, ruleGroupNumberList }) => {
+const CreateRules = ({ eventkey, isUpdate, deleteOnClick, item, fieldMasterId = 0, dialectCode, ruleGroupNumberList }) => {
 
     const disabled = isUpdate && item.id > 0;
     const navigate = useNavigate();
@@ -55,7 +55,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
         setRuleGroupNumber(item.ruleGroupNumber ?? null);
         if (item?.conditions) {
             const valid_conditions = uniqueRecords(item.conditions);
-            setConditionItems(valid_conditions || []);
+            setConditionItems(valid_conditions);
         }
     }, [item]);
 
@@ -71,7 +71,9 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
     }, [addData, addError]);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
+        const { name } = e.target;
+        const value = (e.target.type === 'checkbox') ? e.target.checked : e.target.value;
+
         let updatedRule = { ...rule, [name]: value };
 
         if (name === 'type') {
@@ -93,7 +95,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
                 dialectCode: dialectCode,
                 validationRuleCode: rule.type,
                 validationErrorCode: rule.errorCode,
-                mandatoryRuleInd: rule.mandatoryRuleInd ?? false,
+                mandatoryRuleInd: rule.isMandatory ?? false,
                 description: {
                     shortDescription: rule.shortDescription,
                     longDescription: rule.longDescription,
@@ -126,7 +128,6 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
 
         const updatedRule = { ...rule, conditions: updatedConditions };
         setRule(updatedRule);
-        onRuleChange(eventkey - 1, updatedRule);
     };
 
     return (
@@ -135,7 +136,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
                 <CustomToggle eventkey={eventkey} deleteOnClick={deleteOnClick} />
                 <Accordion.Collapse eventKey={eventkey}>
                     <div className="p-2">
-                        <Form onSubmit={handleSubmit}>
+                        <Form onSubmit={handleSubmit} data-testid='rule-form-element'>
                             <Row>
                                 <Form.Group as={Col} xs={3} className="mb-3" controlId="validationRuleCode">
                                     <Form.Label>Validation Code</Form.Label>
@@ -186,11 +187,11 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, onRuleChange, item, fi
                                         ))}
                                     </Form.Select>
                                 </Form.Group>
-                                <Form.Group as={Col} className="mb-3 col-2" controlId="mandatoryRuleInd">
+                                <Form.Group as={Col} className="mb-3 col-2" controlId="isMandatory">
                                     <Form.Label>Mandatory Rule</Form.Label>
-                                    <Form.Check type="checkbox" id="mandatoryRuleInd" aria-labelledby="mandatory-rule-label" >
-                                        <Form.Check.Input type="checkbox" name="mandatoryRuleInd" className="custom-check-border"
-                                            onChange={handleChange} value={rule.mandatoryRuleInd ?? false} disabled={disabled} />
+                                    <Form.Check type="checkbox" id="isMandatory" aria-labelledby="mandatory-rule-label" >
+                                        <Form.Check.Input type="checkbox" name="isMandatory" className="custom-check-border"
+                                            onChange={handleChange} checked={(rule.isMandatory ?? false) === true} disabled={disabled} />
                                     </Form.Check>
                                 </Form.Group>
                                 <Form.Group as={Col} className="mb-3" xs={3} controlId="shortDescription">

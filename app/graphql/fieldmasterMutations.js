@@ -56,6 +56,8 @@ mutation AddRuleToEnterpriseField(
       }
       errorCode
       errorMessage
+      longDescription
+      shortDescription
       ruleGroupNumber
       id
       isMandatory

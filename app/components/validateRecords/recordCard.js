@@ -4,7 +4,7 @@ import ObjectFields from './objectFields';
 import { useState } from "react";
 
 const RecordCard = ({ id, item, onChange, fieldNameList, onDelete }) => {
-    const [recordItem, setRecordItem] = useState(item || {});
+    const [recordItem, setRecordItem] = useState(item ?? {});
     const [fieldItems, setFieldItems] = useState(item?.fields ?? []);
 
     const handleRecordChange = (e) => {
@@ -51,7 +51,7 @@ const RecordCard = ({ id, item, onChange, fieldNameList, onDelete }) => {
                         required
                         disabled
                     />
-                    <Button variant="danger" size="sm" onClick={() => onDelete(id)} className="ms-auto col-1">
+                    <Button variant="danger" size="sm" onClick={() => onDelete(id)} className="ms-auto delete-object-record col-1">
                         Delete
                     </Button>
                 </Form.Group>
