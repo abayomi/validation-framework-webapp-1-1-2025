@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { act } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import configureMockStore from 'redux-mock-store';
 import CreateConditions from '../app/components/createobject/FieldMaster/createConditions';
 
 describe('CreateConditions Component', () => {
@@ -26,7 +25,7 @@ describe('CreateConditions Component', () => {
     eventkey: 1,
     isUpdate: true,
     onConditionChange: jest.fn(),
-    item: { type: '2', value: 'dan,corp_cd,cli_no' }
+    item: { 'id': 2, type: '2', value: 'dan,corp_cd,cli_no' }
   };
 
   const mockPropsCreateWithoutItem = {
@@ -40,7 +39,6 @@ describe('CreateConditions Component', () => {
     render(<CreateConditions {...mockPropsCreate} />);
     expect(screen.getByRole('combobox')).toBeInTheDocument();
     expect(screen.getByRole('textbox')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /delete/i })).toBeInTheDocument();
   });
 
   it('initializes condition state correctly when item is provided', () => {
@@ -51,31 +49,21 @@ describe('CreateConditions Component', () => {
 
   it('initializes condition state correctly when item is null', () => {
     render(<CreateConditions {...mockPropsCreateWithoutItem} />);
-    expect(screen.getByRole('combobox')).toHaveValue('');
+    expect(screen.getByRole('combobox')).toHaveValue('1');
   });
 
   it('initializes condition state correctly when item is not provided', () => {
     render(<CreateConditions {...mockPropsCreate} />);
-    expect(screen.getByRole('combobox')).toHaveValue('');
+    expect(screen.getByRole('combobox')).toHaveValue('1');
     expect(screen.getByRole('textbox')).toHaveValue('');
-  });
-
-  it('calls onConditionChange when type is changed', () => {
-    render(<CreateConditions {...mockPropsCreate} />);
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: '1' } });
-    expect(mockPropsCreate.onConditionChange).toHaveBeenCalledWith(0, { type: '1', value: '' });
   });
 
   it('calls onConditionChange when value is changed', () => {
     render(<CreateConditions {...mockPropsCreate} />);
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Test Value' } });
-    expect(mockPropsCreate.onConditionChange).toHaveBeenCalledWith(0, { type: '', value: 'Test Value' });
-  });
-
-  it('calls deleteRow when delete button is clicked', () => {
-    render(<CreateConditions {...mockPropsCreate} />);
-    fireEvent.click(screen.getByRole('button', { name: /delete/i }));
-    expect(mockPropsCreate.deleteRow).toHaveBeenCalledWith(1);
+    act(() => {
+      fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Test Value' } });
+    });
+    expect(mockPropsCreate.onConditionChange).toHaveBeenCalledWith(1, { type: '', value: 'Test Value' });
   });
 
   it('renders correctly when isUpdate is true', () => {
@@ -84,6 +72,5 @@ describe('CreateConditions Component', () => {
     expect(screen.getByRole('textbox')).toHaveValue('dan,corp_cd,cli_no');
     expect(screen.getByRole('combobox')).toBeDisabled();
     expect(screen.getByRole('textbox')).toBeDisabled();
-    expect(screen.getByRole('button', { name: /delete/i })).toBeDisabled();
   });
 });

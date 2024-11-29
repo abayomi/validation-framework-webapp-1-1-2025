@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { act } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { gql, useMutation } from '@apollo/client';
+import { useNavigate } from 'react-router-dom';
+
 import CreateRules from '../app/components/createobject/FieldMaster/createRules';
 import {getErrorCodeOptions, getConditions, validationCodeOptions} from '../app/components/createobject/FieldMaster/ruleValidationCodeMap';
 
@@ -70,6 +72,8 @@ jest.mock('../app/components/createobject/FieldMaster/ruleValidationCodeMap', ()
 
 const mockUseMutation = useMutation;
 const mockAddRuleToEnterpriseField = jest.fn();
+const mockNavigate = jest.fn();
+useNavigate.mockReturnValue(mockNavigate);
 mockUseMutation.mockReturnValue([mockAddRuleToEnterpriseField, { data: null, loading: false, error: null }]);
 
 describe('CreateRules Component', () => {
@@ -81,6 +85,7 @@ describe('CreateRules Component', () => {
     deleteOnClick: jest.fn(),
     onRuleChange: jest.fn(),
     ruleGroupNumberList: [1,4,7],
+    dialectCode: 'us_en',
     item: {
       type: '',
       errorCode: '',
@@ -101,6 +106,7 @@ describe('CreateRules Component', () => {
     onRuleChange: jest.fn(),
     ruleGroupNumberList: [],
     item: {
+      id: 2,
       type: '2',
       errorCode: '2',
       errorMessage: 'Error message',
@@ -108,7 +114,7 @@ describe('CreateRules Component', () => {
       mandatoryRuleInd: true,
       shortDescription: 'Short description test',
       longDescription: 'Long description test',
-      conditions: [{ type: '1', value: 'Condition 1' }]
+      conditions: [{ id: 1, type: '1', value: 'Condition 1' }]
     }
   };
 
@@ -139,6 +145,20 @@ describe('CreateRules Component', () => {
     expect(screen.getByLabelText('Mandatory Rule').value).toBe('true');
     expect(screen.getByLabelText('Short Description')).toHaveValue('Short description test');
     expect(screen.getByLabelText('Long Description')).toHaveValue('Long description test');
+
+    const conditionTypeInput = screen.getAllByTestId('condition-type-input');
+    const conditionTypeInput0 = conditionTypeInput[0];
+    expect(conditionTypeInput0.value).toBe('1');
+  });
+
+  it('should handle item without conditions and groupNumber', () => {
+    const item = {
+        id: 2,
+    };
+    const newMockPropsUpdate = {...mockPropsUpdate, ['item']: item};
+    render(<CreateRules {...newMockPropsUpdate} />);
+
+    expect(screen.queryByText('Condition')).not.toBeInTheDocument();  
   });
 
   it('calls onRuleChange when a field is changed', () => {
@@ -183,10 +203,127 @@ describe('CreateRules Component', () => {
     expect(textarea).toHaveTextContent(testTextareaValue);
   });
 
-  // it('calls deleteOnClick when delete button is clicked', () => {
-  //   render(<CreateRules {...mockProps} />);
-  //   fireEvent.click(screen.getByRole('button', { name: /delete/i }));
-  //   expect(mockProps.deleteOnClick).toHaveBeenCalledWith(expect.any(Object), 1);
-  // });
+  it('handleSubmit function', async () => {
+    render(<CreateRules {...mockProps} />);
 
+    const testTextareaValue = 'updatedCondition1';
+    fireEvent.change(screen.getByLabelText('Validation Code'), { target: { name: 'type', value: '1' } });
+    const textarea = screen.getByTestId('condition-type-value');
+    fireEvent.change(textarea, { target: { value: testTextareaValue } });
+    const input = screen.getByLabelText('Rule Group Number');
+    fireEvent.change(input, { target: { value: '2' } });
+    const shortDescription = screen.getByLabelText('Short Description');
+    fireEvent.change(shortDescription, { target: { value: 'test short' } });
+    const mandatoryRuleCheckbox = screen.getByLabelText('Mandatory Rule');
+    fireEvent.click(mandatoryRuleCheckbox);
+    expect(mandatoryRuleCheckbox).toBeChecked();
+    fireEvent.submit(screen.getByTestId('rule-form-element'));
+    expect(mockAddRuleToEnterpriseField).toHaveBeenCalledWith({
+      variables: {
+        "condition": [
+           {
+             "ruleConditionTypeCode": "1",
+             "ruleConditionValue": "updatedCondition1",
+           },
+         ],
+         "description": {
+           "longDescription": "",
+           "shortDescription": "test short",
+         },
+         "dialectCode": "us_en",
+         "fieldMasterId": 0,
+         "mandatoryRuleInd": true,
+         "ruleGroupNumber": "2",
+         "validationErrorCode": "1",
+         "validationRuleCode": "1",
+      }
+    });
+  });
+
+  it('handleSubmit function without mandatoryRuleInd', async () => {
+    const newMockProps = {...mockProps, ['item']: []};
+    render(<CreateRules {...newMockProps} />);
+
+    const testTextareaValue = 'updatedCondition1';
+    fireEvent.change(screen.getByLabelText('Validation Code'), { target: { name: 'type', value: '1' } });
+    const textarea = screen.getByTestId('condition-type-value');
+    fireEvent.change(textarea, { target: { value: testTextareaValue } });
+    const input = screen.getByLabelText('Rule Group Number');
+    fireEvent.change(input, { target: { value: '2' } });
+    const shortDescription = screen.getByLabelText('Short Description');
+    fireEvent.change(shortDescription, { target: { value: 'test short' } });
+    fireEvent.submit(screen.getByTestId('rule-form-element'));
+    expect(mockAddRuleToEnterpriseField).toHaveBeenCalledWith({
+      variables: {
+        "condition": [
+           {
+             "ruleConditionTypeCode": "1",
+             "ruleConditionValue": "updatedCondition1",
+           },
+         ],
+         "description": {
+           "longDescription":  undefined,
+           "shortDescription": "test short",
+         },
+         "dialectCode": "us_en",
+         "fieldMasterId": 0,
+         "mandatoryRuleInd": false,
+         "ruleGroupNumber": "2",
+         "validationErrorCode": "1",
+         "validationRuleCode": "1",
+      }
+    });
+  });
+
+  it('handleSubmit function handles error', async () => {
+
+    mockAddRuleToEnterpriseField.mockRejectedValue(new Error('Test error'));
+  
+    window.alert = jest.fn();
+  
+    render(<CreateRules {...mockProps} />);
+  
+    fireEvent.submit(screen.getByTestId('rule-form-element'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(window.alert).toHaveBeenCalledWith(new Error('Test error'));
+  });
+
+  it('handles addData and navigates correctly', async () => {
+    const addData = {
+      AddRuleToEnterpriseField: [{ id: '1', name: 'Test Field' }],
+    };
+    mockUseMutation.mockReturnValue([mockAddRuleToEnterpriseField, { data: addData, loading: false, error: null }]);
+  
+    render(<CreateRules {...mockProps} />);
+  
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/updatemasterobject/field', {
+        state: { updateFieldData: { id: '1', name: 'Test Field', dialectCode: 'us_en' } },
+      });
+    });
+  });
+
+  it('handles addError and shows alert', async () => {
+    const addError = new Error('Test error');
+    mockUseMutation.mockReturnValue([mockAddRuleToEnterpriseField, { data: null, loading: false, error: addError }]);
+  
+    window.alert = jest.fn();
+  
+    render(<CreateRules {...mockProps} />);
+  
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith(addError);
+    });
+  });
+
+  it('calls deleteOnClick with correct arguments', () => {
+      const deleteOnClickMock = jest.fn();
+      const newMockPropsUpdate = {...mockPropsUpdate, ['deleteOnClick']: deleteOnClickMock};
+
+      render(<CreateRules {...newMockPropsUpdate} />);
+
+      const deleteButton = screen.getByText('Delete');
+      fireEvent.click(deleteButton);
+      expect(deleteOnClickMock).toHaveBeenCalled();
+  });
 });
