@@ -1,327 +1,25 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import {useEffect, useState} from "react";
+import {useNavigate, useParams} from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { useQuery, useMutation } from "@apollo/client";
-import { v4 as uuidv4 } from "uuid";
-import { propertyGet } from "@/app/lib/arrayHelper";
-import { defaultDialectCode } from "@/app/components/config/dialectCodeMap";
+import {useMutation, useQuery} from "@apollo/client";
+import {defaultDialectCode} from "@/app/components/config/dialectCodeMap";
 import graphqlForObjectMaster from "@/app/graphql/objectMasterQueries";
+import variableHelper from "@/app/lib/variableHelper";
+import {loadFetchFieldMetaData} from '@/app/graphql/fieldMasterQueries'
 import CreateObjectFields from "@/app/components/createobject/createObjectFields";
-
-function updateFieldRuleChecked(setFormData, formData, uuid, ruleId) {
-    const updatedFieldItems = formData.fieldItems;
-    if (!updatedFieldItems) {
-        return formData;
-    }
-
-    let targetFieldIndex = 0;
-
-    const targetField = updatedFieldItems.filter((item, index) => {
-        if (item.id === uuid) {
-            targetFieldIndex = index;
-            return true;
-        }
-        return false;
-    }).pop();
-
-    if (!(targetField instanceof Object)) {
-        return;
-    }
-    if (!targetField.rules[ruleId]) {
-        return;
-    }
-
-    const oldCheckedValue = targetField.rules[ruleId].isChecked;
-    targetField.rules[ruleId].isChecked = !oldCheckedValue;
-    updatedFieldItems[targetFieldIndex] = targetField;
-
-    setFormData({...formData, fieldItems: updatedFieldItems});
-}
-
-function newEmptyFieldItem() {
-    return { 
-        id: uuidv4(),
-        objectFieldName: '',
-        fieldMasterName: '',
-        fieldMasterId: '0',
-        fieldXrefId: '0',
-        rules: []
-    };
-};
-
-function updateFieldItems(setFormData, formData, newItemValue) {
-    const replaceFieldItem = (fieldItems, newItem) => {
-        return fieldItems.map(item => 
-            item.id === newItem.id ? { ...item, ...newItem } : item
-        );
-    }
-
-    const newFieldItems = replaceFieldItem(formData.fieldItems, newItemValue);
-
-    setFormData({...formData, fieldItems: newFieldItems});
-}
-
-function formatFieldRules(rawRules) {
-    if (!rawRules || 0 === rawRules.length) {
-        return [];
-    }
-
-    let result = {};
-
-    rawRules.forEach(item => {
-        result[item.id] = {
-            id: item.id,
-            ruleGroupNumber: item.ruleGroupNumber,
-            longDescription: item.longDescription,
-            shortDescription: item.shortDescription,
-            isMandatory: item.isMandatory,
-            isChecked: item.isMandatory // Add this field for the UI. If a rule is mandatory, the value is true and users cnnot change it.
-        };
-    });
-
-    return result;
-}
-
-function formatFormData(rawData = null) {
-    if (!rawData) {
-        return {
-            objectMasterId: '',
-            objectName: '',
-            objectDef: '',
-            labelName: '',
-            objMasterInUseInd: true,
-            fieldItems: [newEmptyFieldItem()]
-        };
-    }
-
-    const formateRuleList = (rawRules) => {
-        let ruleList = {};
-        rawRules.forEach(r => {
-            ruleList[r.id] = {
-                id: r.id,
-                ruleGroupNumber: r.ruleGroupNumber,
-                longDescription: r.longDescription,
-                shortDescription: r.shortDescription,
-                isMandatory: r.isMandatory,
-                isChecked: r.isMandatory
-            };
-        });
-
-        return ruleList;
-    };
-
-    return {
-        "objectMasterId": rawData.objectMasterId,
-        "objectName": rawData.objectName,
-        "objectDef": propertyGet(rawData, 'objectDefinition', 'The API does not return this value.'),
-        "labelName": rawData.objectLabelName,
-        "objMasterInUseInd": rawData.objMasterInUseInd,
-        "fieldItems": rawData.fields.map(f => {
-            return {
-                id: uuidv4(), // For UI render
-                objectFieldName: f.fieldName,
-                fieldMasterName: f.fieldMasterName, 
-                fieldMasterId: f.fieldMasterId,
-                fieldXrefId: f.fieldXrefId,
-                rules: formateRuleList(f.rules)
-            };
-        })
-    };
-}
-
-function checkUserChanges(formData, formDataSnapshot) {
-    const apisToBeCalled = [];
-
-    // Check if the objectName or the objectDef has been changed.
-    const objectNameChanged = formData.objectName !== formDataSnapshot.objectName;
-    const objectDefChanged = formData.objectDef !== formDataSnapshot.objectDef;
-    if (objectNameChanged || objectDefChanged) {
-        apisToBeCalled.push({
-            apiName: 'UpdateValidationObjectName',
-            apiQuery: graphqlForObjectMaster.UpdateValidationObjectName,
-            variables: {
-                addField: {
-                    dialectCode: defaultDialectCode,
-                    objectDefinition: formData.objectDef,
-                    objectName: formData.objectName,
-                    objectMasterId: formData.objectMasterId,
-                }
-            }
-        });
-    }
-
-    // Check if the objMasterInUseInd has been changed.
-    const objMasterInUseIndChanged = formData.objMasterInUseInd !== formDataSnapshot.objMasterInUseInd;
-    if (objMasterInUseIndChanged) {
-        apisToBeCalled.push({
-            apiName: 'UpdateValidationObjectInUseInd',
-            apiQuery: graphqlForObjectMaster.UpdateValidationObjectInUseInd,
-            variables: {
-                addField: {
-                    objectInUseInd: formData.objMasterInUseInd,
-                    objectMasterId: formData.objectMasterId
-                }
-            }
-        });
-    }
-
-    // Check if a field in the formData snapshot is not in formData: it should be deleted.
-    const fieldItemIds = formData.fieldItems.map(item => item.id);
-    const fieldItemsToBeDeleted = formDataSnapshot.fieldItems.filter(objField => false === fieldItemIds.includes(objField.id));
-    const objectFieldXrefIdList = fieldItemsToBeDeleted.map(objField => objField.fieldXrefId);
-    if (objectFieldXrefIdList.length) {
-        apisToBeCalled.push({
-            apiName: 'RemoveFieldFromObject',
-            apiQuery: graphqlForObjectMaster.RemoveFieldFromObject,
-            variables: {
-                xrefIds: objectFieldXrefIdList
-            }
-        });
-    }
-
-    // Check if a field in the formData is not in the formData snapshot: it should be added.
-    const snapshotFieldItemIds = formDataSnapshot.fieldItems.map(item => item.id);
-    const fieldItemsToBeAdded = formData.fieldItems.filter(objField => false === snapshotFieldItemIds.includes(objField.id));
-    const addFieldsList = fieldItemsToBeAdded.map(objField => {
-        return {
-            fieldMasterId: objField.fieldMasterId,
-            objectFieldName: objField.objectFieldName,
-            objectMasterId: formData.objectMasterId
-        };
-    });
-    if (addFieldsList.length) {
-        apisToBeCalled.push({
-            apiName: 'AddFieldToObject',
-            apiQuery: graphqlForObjectMaster.AddFieldToObject,
-            variables: {
-                addFields: addFieldsList
-            }
-        });
-    }
-
-    // If a field is neither new nor pending deletion, check if its rule has changed.
-    const addValidationsList = [];
-    const removeValidationsList = [];
-    const fieldItemsToBeChecked = formData.fieldItems.filter(objField => snapshotFieldItemIds.includes(objField.id));
-    fieldItemsToBeChecked.forEach(objField => {
-        const changedRules = checkObjFieldRulesChanged(objField, formDataSnapshot.fieldItems);
-        changedRules.forEach(item => {
-            const validationItem = {
-                fieldValidRuleId: item.rule.id,
-                objectFieldXrefId: item.fieldXrefId
-            };
-            if (item.rule.isChecked) {
-                addValidationsList.push(validationItem);
-            } else {
-                removeValidationsList.push(validationItem);
-            }
-        });
-    });
-    if (addValidationsList.length) {
-        apisToBeCalled.push({
-            apiName: 'AddValidationToObjectField',
-            apiQuery: graphqlForObjectMaster.AddValidationToObjectField,
-            variables: {
-                addValidations: addValidationsList
-            }
-        });
-    }
-    if (removeValidationsList.length) {
-        apisToBeCalled.push({
-            apiName: 'RemoveValidationFromObjectField',
-            apiQuery: graphqlForObjectMaster.RemoveValidationFromObjectField,
-            variables: {
-                removeValidations: removeValidationsList
-            }
-        });
-    }
-
-    return apisToBeCalled;
-}
-
-function checkObjFieldRulesChanged(fieldItem, fieldItemsSnapshot) {
-    const fieldSnapshot = fieldItemsSnapshot.filter(item => item.id === fieldItem.id).pop();
-    if (!fieldSnapshot) {
-        return null;
-    }
-
-    const changedRules = [];
-    Object.entries(fieldItem.rules).forEach(([_, ruleToBeSubmit]) => {
-        const ruleSnapshot = fieldSnapshot.rules[ruleToBeSubmit.id];
-        if (ruleToBeSubmit.isChecked !== ruleSnapshot.isChecked) {
-            changedRules.push({
-                fieldMasterId: fieldItem.fieldMasterId,
-                rule: ruleToBeSubmit
-            });
-        }
-    });
-
-    return changedRules;
-};
-
-function useMultipleMutations() {
-    const [mutationHandler1, { data: data1, loading: loading1, error: error1 }] = useMutation(graphqlForObjectMaster.UpdateValidationObjectName);
-    const [mutationHandler2, { data: data2, loading: loading2, error: error2 }] = useMutation(graphqlForObjectMaster.UpdateValidationObjectInUseInd);
-    const [mutationHandler3, { data: data3, loading: loading3, error: error3 }] = useMutation(graphqlForObjectMaster.RemoveFieldFromObject);
-    const [mutationHandler4, { data: data4, loading: loading4, error: error4 }] = useMutation(graphqlForObjectMaster.AddFieldToObject);
-    const [mutationHandler5, { data: data5, loading: loading5, error: error5 }] = useMutation(graphqlForObjectMaster.AddValidationToObjectField);
-    const [mutationHandler6, { data: data6, loading: loading6, error: error6 }] = useMutation(graphqlForObjectMaster.RemoveValidationFromObjectField);
-
-    return {
-        UpdateValidationObjectName: {
-            mutationHandler: mutationHandler1,
-            mutationResponse: {
-                data: data1,
-                loading: loading1,
-                error: error1
-            }
-        },
-        UpdateValidationObjectInUseInd: {
-            mutationHandler: mutationHandler2,
-            mutationResponse: {
-                data: data2,
-                loading: loading2,
-                error: error2
-            }
-        },
-        RemoveFieldFromObject: {
-            mutationHandler: mutationHandler3,
-            mutationResponse: {
-                data: data3,
-                loading: loading3,
-                error: error3
-            }
-        },
-        AddFieldToObject: {
-            mutationHandler: mutationHandler4,
-            mutationResponse: {
-                data: data4,
-                loading: loading4,
-                error: error4
-            }
-        },
-        AddValidationToObjectField: {
-            mutationHandler: mutationHandler5,
-            mutationResponse: {
-                data: data5,
-                loading: loading5,
-                error: error5
-            }
-        },
-        RemoveValidationFromObjectField: {
-            mutationHandler: mutationHandler6,
-            mutationResponse: {
-                data: data6,
-                loading: loading6,
-                error: error6
-            }
-        }
-    };
-}
+import {
+    checkUserChanges,
+    formatFieldRules,
+    formatFormData,
+    newEmptyFieldItem,
+    updateFieldItems,
+    updateHandlerLogic,
+    useMultipleMutations
+} from "@/app/components/createobject/createObjectMasterLogic";
 
 const CreateObjectMaster = () => {
     const { objLabelName } = useParams();
@@ -329,12 +27,17 @@ const CreateObjectMaster = () => {
     const isUpdating = undefined !== objLabelName;
     const initialFormData = formatFormData(null);
     const [formData, setFormData] = useState(initialFormData);
-    const [formDataSnapshot, setFormDataSnapshot] = useState({...initialFormData}); // a deep copy of initialFormData
+    const [formDataSnapshot, setFormDataSnapshot] = useState(variableHelper.deepCopy(formData));
+    const [fieldMasterList, setFieldMasterList] = useState([]);
     const mutationQueryList = useMultipleMutations();
 
     const goToHomepage = () => {
         navigate('/');
     }
+
+    const rawFieldMasterList = useQuery(loadFetchFieldMetaData, {
+        variables: { dialectCode: defaultDialectCode }
+    });
 
     const showAddMoreObjectFieldsSection = function() {
         const addOneObjectField = () => {
@@ -347,18 +50,42 @@ const CreateObjectMaster = () => {
             setFormData({...formData, fieldItems: newFieldItems});
         };
 
+        const removeIsNotMandatoryRule = (rules) => {
+            return rules.filter(r => r.isMandatory);
+        }
+
         const dropDownItemClickHandler = (uuid) => {
             return function (item) {
                 const newItemValue = {
                     id: uuid,
                     fieldMasterName: item.value,
                     fieldMasterId: `${item.key}`,
-                    rules: formatFieldRules(item.rules)
+                    fieldXrefId: '0', // TODO
+                    rules: removeIsNotMandatoryRule(formatFieldRules(item.rules))
                 };
 
                 updateFieldItems(setFormData, formData, newItemValue);
             };
         };
+
+        const fieldRuleCheckboxCallback = (fieldUUID, fieldMasterId, checkedRule) => {
+            const newFormData = variableHelper.deepCopy(formData);
+            let fieldToBeUpdated = newFormData.fieldItems.find(field => field.fieldMasterId === fieldMasterId && field.id === fieldUUID);
+            if (!fieldToBeUpdated) {
+                return;
+            }
+
+            const ruleExists = fieldToBeUpdated.rules.some(rule => rule.id === checkedRule.id);
+            if (ruleExists) {
+                fieldToBeUpdated.rules = fieldToBeUpdated.rules.filter(rule => rule.id !== checkedRule.id);
+            } else {
+                fieldToBeUpdated.rules = [...fieldToBeUpdated.rules, checkedRule];
+            }
+
+            newFormData.fieldItems = newFormData.fieldItems.map(field => field.id === fieldToBeUpdated.id ? fieldToBeUpdated : field);
+
+            setFormData(newFormData);
+        }
 
         const inputBoxListForAddMore = formData.fieldItems.map(item => (
             <CreateObjectFields
@@ -367,7 +94,8 @@ const CreateObjectMaster = () => {
                 onInputChangeHandler={ inputChangeHandler }
                 onDeleteHandler={ () => deleteOneRow(item.id) }
                 onDropDownItemClick={ dropDownItemClickHandler(item.id) }
-                onFieldRuleCheckboxChange={ (e) => updateFieldRuleChecked(setFormData, formData, item.id, e.target.value) }
+                fieldMasterList={ fieldMasterList }
+                fieldRuleCheckboxCallback={ fieldRuleCheckboxCallback }
             />
         ));
 
@@ -420,44 +148,36 @@ const CreateObjectMaster = () => {
                 //   - Object Definition
                 setFormData({ ...formData, [name]: e.target.value });
             }
-
-            return;
         }
     };
 
-    const [createValidationObject, createValidationObjectReponse] = useMutation(graphqlForObjectMaster.CreateValidationObject);
+    const [createValidationObject, createValidationObjectResponse] = useMutation(graphqlForObjectMaster.CreateValidationObject);
 
     const submitHandler = async (event) => {
         // TODO Disable the button after user's click
         event.preventDefault();
-
-        return;
-
-        const formatFieldValidation = (rules) => {
-            const validationList = Object.entries(rules).map(([_, r]) => {
-                if (r.isMandatory || r.isChecked) {
-                    return {
-                        fieldValidRuleId: r.id
-                    };
-                }
-            });
-
-            return validationList.filter(v => v instanceof Object);
-        };
 
         const submitData = {
             dialectCode: defaultDialectCode,
             objectDefinition: formData.objectDef,
             objectLabelName: formData.labelName,
             objectName: formData.objectName,
-            objectField: formData.fieldItems.map(item => {
+            objectField: formData.fieldItems.map(field => {
                 return {
-                    fieldMasterId: item.fieldMasterId,
-                    objectFieldName: item.objectFieldName,
-                    fieldValidation: formatFieldValidation(item.rules)
+                    fieldMasterId: field.fieldMasterId,
+                    objectFieldName: field.objectFieldName,
+                    fieldValidation: field.rules.map(r => {
+                        return {
+                            fieldValidRuleId: r.id
+                        };
+                    })
                 };
             })
         };
+
+        console.log('submit me', JSON.stringify(submitData));
+
+        return;
 
         try {
             //console.log('Submitted. Variables: ', JSON.stringify(submitData));
@@ -469,23 +189,37 @@ const CreateObjectMaster = () => {
         }
     }
 
-    const updateHandler = (event) => {
+    const updateHandler = async (event) => {
         event.preventDefault();
 
         // Check what the user changes
-        const apisToBeCalled = checkUserChanges(formData, formDataSnapshot);
-        if (0 === apisToBeCalled.length) {
+        const apisToBeCalledFirstGroup = checkUserChanges(formData, formDataSnapshot);
+        if (0 === apisToBeCalledFirstGroup.length) {
             console.log('The user made no changes, no API call needed.');
         }
+
+        console.log('updated---apisToBeCalledFirstGroup', JSON.stringify(apisToBeCalledFirstGroup));
+        return;
         
-        // TODO Call specific APIs in a loop
-        apisToBeCalled.forEach(async (api) => {
-            console.log(`Call ${api.apiName}`);
-            const mutationQuery = mutationQueryList[api.apiName].mutationHandler;
-            const queryResponse = await mutationQuery({ variables: api.variables });
-            console.log('queryResponse', JSON.stringify(queryResponse));
-            console.log('api.variables', JSON.stringify(api.variables));
-        });
+        let queryResponseList = await updateHandlerLogic.runMutationQuery(apisToBeCalledFirstGroup, mutationQueryList);
+        const addedObjectFieldList = updateHandlerLogic.getAddedObjectFieldList(queryResponseList);
+
+        // If there are new object fields, need to call the API to add validation rules for these new object fields. Otherwise these newly added fields cannot be displayed.
+        if (addedObjectFieldList.length) {
+            const validationsToBeAdded = updateHandlerLogic.getValidationsToBeAdded(addedObjectFieldList, apisToBeCalledFirstGroup);
+            if (validationsToBeAdded.length > 0) {
+                const apisToBeCalledSecondGroup = [
+                    {
+                        apiName: 'AddValidationToObjectField',
+                        variables: {
+                            addValidations: validationsToBeAdded
+                        }
+                    }
+                ];
+                queryResponseList = await updateHandlerLogic.runMutationQuery(apisToBeCalledSecondGroup, mutationQueryList);
+                console.log('queryResponseList from apisToBeCalledSecondGroup', JSON.stringify(queryResponseList));
+            }
+        }
 
         goToHomepage();
     }
@@ -503,7 +237,7 @@ const CreateObjectMaster = () => {
 
     const resetFormData = () => {
         setFormData(initialFormData);
-        setFormDataSnapshot({ ...initialFormData });
+        setFormDataSnapshot(variableHelper.deepCopy(initialFormData));
     }
 
     const objMetaDataResponse = useQuery(graphqlForObjectMaster.FetchObjectMetaDataByLabel, {
@@ -525,10 +259,10 @@ const CreateObjectMaster = () => {
                 console.log('Error from GraphQL API: ', objMetaDataResponse.error.message);
             }
             if (objMetaDataResponse.data) {
-                const rawObjMeataData = objMetaDataResponse.data.FetchObjectMetaDataByLabel;
-                const formattedFormData = formatFormData(rawObjMeataData[0]);
+                const rawObjMetaData = objMetaDataResponse.data.FetchObjectMetaDataByLabel;
+                const formattedFormData = formatFormData(rawObjMetaData[0]);
                 setFormData(formattedFormData);
-                setFormDataSnapshot({ ...formattedFormData });
+                setFormDataSnapshot(variableHelper.deepCopy(formattedFormData));
             }
         } else {
             resetFormData();
@@ -537,13 +271,23 @@ const CreateObjectMaster = () => {
 
     // Submit the form and get the API response
     useEffect(() => {
-        if (createValidationObjectReponse.error) {
-            console.log('Failed to save Object Master.', createValidationObjectReponse.error.message);
+        if (createValidationObjectResponse.error) {
+            console.log('Failed to save Object Master.', createValidationObjectResponse.error.message);
         }
-        if (createValidationObjectReponse.data) {
+        if (createValidationObjectResponse.data) {
             goToHomepage();
         }
-    }, [createValidationObjectReponse]);
+    }, [createValidationObjectResponse]);
+
+    useEffect(() => {
+        if (rawFieldMasterList.error) {
+            console.error('Failed to obtain the Object Master list: ', rawFieldMasterList.error);
+        }
+        if (rawFieldMasterList.data) {
+            const fieldMetaData = rawFieldMasterList.data.FetchFieldMetaData;
+            setFieldMasterList(fieldMetaData);
+        }
+    }, [rawFieldMasterList]);
 
     // React Forms, refer to https://www.w3schools.com/react/react_forms.asp
     return (

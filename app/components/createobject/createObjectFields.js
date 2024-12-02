@@ -6,13 +6,11 @@ import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Accordion from 'react-bootstrap/Accordion';
-import { useQuery } from "@apollo/client";
 import styles from '@/app/page.module.css';
 import stringHelper from '@/app/lib/stringHelper';
 import variableHelper from '@/app/lib/variableHelper';
-import { loadFetchFieldMetaData } from '@/app/graphql/fieldMasterQueries'
-import { defaultDialectCode } from '@/app/components/config/dialectCodeMap';
 import DropdownMenu from '@/app/components/common/DropdownMenu';
+import { formatFieldRules } from "@/app/components/createobject/createObjectMasterLogic";
 
 function mapOptionList(fieldMasterList) {
     return fieldMasterList.map(item => {
@@ -50,13 +48,22 @@ function getRuleDesc(rule, defaultValue) {
     return defaultValue;
 };
 
-function renderRuleList(rules, fieldMasterName, onFieldRuleCheckboxChange) {
-    if (variableHelper.isEmptyObject(rules)) {
+function getOriginalRuleList(fieldMasterList, fieldMasterId) {
+    const targetField = fieldMasterList.find(field => field.fieldMasterId == fieldMasterId);
+
+    return targetField ? targetField.rules : [];
+}
+
+function getRuleIdList(existingRuleList) {
+    return Object.entries(existingRuleList).map(([_, r]) => r.id); // TODO No more key here
+}
+
+function renderRuleList(groupedOriginalRuleList, currObjMasterRules, fieldMasterName, onChangeHandler, fieldUUID) {
+    if (variableHelper.isEmptyObject(currObjMasterRules)) {
         return (<></>);
     }
 
-    const groupedRules = groupByGroupId(rules);
-
+    const currObjMasterRuleIdList = getRuleIdList(currObjMasterRules);
     const createRuleList = (rules) => {
         return rules.map(rule => {
             return (
@@ -66,9 +73,9 @@ function renderRuleList(rules, fieldMasterName, onFieldRuleCheckboxChange) {
                         name={ `fieldrule-${rule.id}` }
                         className={ rule.isMandatory ? styles['disabled-checkbox'] : '' }
                         value={ rule.id }
-                        checked={ rule.isChecked }
+                        checked={ currObjMasterRuleIdList.includes(rule.id) }
                         disabled={ rule.isMandatory } /* If a rule is mandatory, the user cannot modify it. */
-                        onChange={ onFieldRuleCheckboxChange }
+                        onChange={ () => onChangeHandler(fieldUUID, rule) }
                     />&nbsp;
                     Description: <b>{ getRuleDesc(rule, 'N/A') }</b>
                 </li>
@@ -76,7 +83,7 @@ function renderRuleList(rules, fieldMasterName, onFieldRuleCheckboxChange) {
         });
     }
 
-    const dlItemList = Object.entries(groupedRules).map(([ruleGroupNumber, rules]) => {
+    const dlItemList = Object.entries(groupedOriginalRuleList).map(([ruleGroupNumber, rules]) => {
         return (
             <Row key={ `div-${ruleGroupNumber}` }> {/* There is no need for any HTML tags, such as div, so React.Fragment is used. */}
                 <Col className="col-3">
@@ -105,9 +112,8 @@ function renderRuleList(rules, fieldMasterName, onFieldRuleCheckboxChange) {
     );
 }
 
-function hasValideFieldRules(obj) {
-    const keys = Object.keys(obj);
-    return !(keys.length === 1 && keys[0] === "null");
+function hasValidFieldRules(rules) {
+    return variableHelper.isArray(rules) && rules.length > 0;
 }
 
 const CreateObjectFields = (props) => {
@@ -116,26 +122,23 @@ const CreateObjectFields = (props) => {
         onInputChangeHandler, 
         onDeleteHandler, 
         onDropDownItemClick,
-        onFieldRuleCheckboxChange
+        fieldMasterList,
+        fieldRuleCheckboxCallback
     } = props
 
-    const { id: itemId, objectFieldName, fieldMasterName, rules } = item;
+    const { 
+        id: fieldUUID, 
+        objectFieldName, 
+        fieldMasterName, 
+        fieldMasterId, 
+        rules: currObjMasterRules
+    } = item;
 
-    const [fieldMasterList, setFieldMasterList] = useState([]);
+    const groupedOriginalRuleList = groupByGroupId(formatFieldRules(getOriginalRuleList(fieldMasterList, fieldMasterId)));
 
-    const rawFieldMasterList = useQuery(loadFetchFieldMetaData, {
-        variables: { dialectCode: defaultDialectCode }
-    });
-    
-    useEffect(() => {
-        if (rawFieldMasterList.error) {
-            console.error('Failed to obtain the Object Master list: ', rawFieldMasterList.error);
-        }
-        if (rawFieldMasterList.data) {
-            const formattedRowList = rawFieldMasterList.data.FetchFieldMetaData;
-            setFieldMasterList(formattedRowList);
-        }
-    }, [rawFieldMasterList]);
+    const onFieldRuleCheckboxChange = (fieldUUID, objRule) => {
+        fieldRuleCheckboxCallback(fieldUUID, fieldMasterId, objRule);
+    }
 
     return (
         <>
@@ -143,7 +146,7 @@ const CreateObjectFields = (props) => {
                 <Form.Group as={Col} className="mb-3 col-3" controlId="objectFieldName">
                     <Form.Control
                         type="text"
-                        name={ `fields-objfieldname-${itemId}` }
+                        name={ `fields-objfieldname-${fieldUUID}` }
                         required
                         value={ objectFieldName }
                         onChange={ onInputChangeHandler }
@@ -180,8 +183,8 @@ const CreateObjectFields = (props) => {
             <Row>
                 <Form.Group as={Col} className="mb-3 col-7 offset-0">
                     { 
-                        hasValideFieldRules(rules) /* Test data or unqualified data may not have relevant rules, which will cause warning messages to appear when the component is rendered. */
-                        && renderRuleList(rules, fieldMasterName, onFieldRuleCheckboxChange) 
+                        hasValidFieldRules(currObjMasterRules) /* Test data or unqualified data may not have relevant rules, which will cause warning messages to appear when the component is rendered. */
+                        && renderRuleList(groupedOriginalRuleList, currObjMasterRules, fieldMasterName, onFieldRuleCheckboxChange, fieldUUID) 
                     }
                 </Form.Group>
             </Row>

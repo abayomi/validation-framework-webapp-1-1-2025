@@ -16,8 +16,12 @@ variableHelper.isEmptyObject = function(obj) {
     return !(obj instanceof Object) || 0 === Object.keys(obj).length;
 }
 
-variableHelper.isObject = function (variable) {
+variableHelper.isObject = function(variable) {
     return variable !== null && typeof variable === 'object';
+}
+
+variableHelper.deepCopy = function(originalObject) {
+    return JSON.parse(JSON.stringify(originalObject));
 }
 
 export default variableHelper;
