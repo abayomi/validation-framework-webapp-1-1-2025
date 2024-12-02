@@ -113,10 +113,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, item, fieldMasterId = 
             }
 
             console.log(variables);
-            const response = await addRuleToEnterpriseField({
-                variables,
-            });
-            console.log(response);
+            await addRuleToEnterpriseField({ variables });
         } catch (error) {
             alert(error);
         }

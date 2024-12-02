@@ -4,6 +4,8 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { useQuery } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
 import ViewFieldMaster from '../app/components/homepage/viewFieldMaster';
+import RulesObject from '../app/components/homepage/RulesObject';
+import Conditions from '../app/components/homepage/Conditions';
 
 const mockData = {
   FetchFieldMetaData: [
@@ -141,13 +143,13 @@ it('filters items based on dialectCode', async () => {
 
   const selectElement = document.querySelector('select[name="select_dialectCode"]');
   const options = Array.from(selectElement.options).map(option => option.value);
-  console.log(options);
   selectElement.selectedIndex = 1;
   expect(selectElement).toBeInTheDocument();
-
-  const event = new Event('change', { bubbles: true });
-  selectElement.dispatchEvent(event);
-  expect(selectElement.value).toBe('ca_en');
+  act(() => {
+    const event = new Event('change', { bubbles: true });
+    selectElement.dispatchEvent(event);
+    expect(selectElement.value).toBe('ca_en');
+  });
 });
 
 it('calls onRowClicked and show RuleData', async () => {
@@ -168,4 +170,23 @@ it('calls onRowClicked and show RuleData', async () => {
   expect(targetCell).not.toBeNull();
   fireEvent.click(targetCell);
   expect(screen.getByText('Rules')).toBeInTheDocument();
+});
+
+it('render RulesObject without ruleList', async () => {
+    render(<RulesObject />);
+});
+
+it('render Conditions', async () => {
+  const mockConditionData = [{
+    id:1,
+    value:1,
+    shortDescription: 'test1',
+    longDescription: 'testLong1'
+  },{
+    id:2,
+    value:2,
+    shortDescription: 'test2',
+    longDescription: 'testLong2'
+  }];
+  render(<Conditions conditionData={mockConditionData}/>);
 });

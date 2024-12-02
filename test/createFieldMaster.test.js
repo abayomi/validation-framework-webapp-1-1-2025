@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { act } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MockedProvider } from '@apollo/client/testing';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
@@ -137,12 +137,37 @@ it('renders CreateFieldMasterObject and submits form', async () => {
   // Submit the form
   fireEvent.click(screen.getByText(/Submit/i));
 
-  await waitFor(() => {
-    // expect(screen.getByLabelText('Field Master ID')).toHaveValue(variables.fieldMasterId);
+  createFieldSpy.mockRestore();
+});
+
+it('should log an error when form submission fails', async () => {
+  const mockCreateEnterpriseField = jest.fn().mockResolvedValue({ data: null });
+  const variables = {
+    fieldMasterId: 678,
+    dialectCode: "en_us",
+    fieldName: 'Test Field',
+    fieldDefinition: 'This is a test field',
+    enterpriseFieldInd: false,
+    fieldMasterInUseInd: true,
+  };
+
+  useMutation.mockReturnValue([mockCreateEnterpriseField, { data: null, loading: false, error: null }]);
+  render(<CreateFieldMasterObject location={{ pathname: '/createmasterobject/field' }} />);
+
+  // Check if the form is rendered
+  expect(screen.getByLabelText('Dialect Code')).toBeInTheDocument();
+
+  // Fill out the form
+  fireEvent.change(screen.getByLabelText(/Field Name/i), { target: { value: variables.fieldName } });
+  fireEvent.change(screen.getByLabelText(/Field Definition/i), { target: { value: variables.fieldDefinition } });
+
+  const createFieldSpy = jest.spyOn({ mockCreateEnterpriseField }, 'mockCreateEnterpriseField').mockImplementation((...args) => {
+    throw new Error('Submission failed');
   });
-  // expect(screen.getByLabelText('Field Master ID')).toHaveValue(variables.fieldMasterId);
-  // expect(screen.getByLabelText('Field Name')).toHaveValue(variables.fieldName);
-  // expect(screen.getByLabelText('Field Definition')).toHaveValue(variables.fieldDefinition);
+  // Submit the form
+  const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
+  fireEvent.click(screen.getByText(/Submit/i));
+  expect(consoleErrorSpy).toHaveBeenCalledWith('Error submitting form:', expect.any(Error));
   createFieldSpy.mockRestore();
 });
 
@@ -164,18 +189,15 @@ it('renders CreateFieldMasterObject and deletes a rule', async () => {
   // expect(screen.getByLabelText('Field Master In-Use Indicator').value).toBe('true');
 
   // Delete the rule
-  fireEvent.click(screen.getByText(/Delete/i));
-
+  await act(async () => {
+    const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => { });
+    fireEvent.click(screen.getByText(/Delete/i));
+  });
   useMutation
     .mockReturnValueOnce([mockCreateField, { data: null, loading: false, error: null }])
     .mockReturnValueOnce([mockRemoveRuleFromEnterpriseField, { data: { 'RemoveRuleFromEnterpriseField': { status: test } }, loading: false, error: null }]);
 
   render(<CreateFieldMasterObject confirmFunction={mockConfirm} location={{ pathname: '/updatemasterobject/field', state: mockFieldUpdate }} />);
-
-  //   // Wait for the success message
-  //   await waitFor(() => {
-  //     expect(screen.getByText(/Deleted successfully: 1/i)).toBeInTheDocument();
-  //   });
 });
 
 it('renders CreateFieldMasterObject and add a rule', async () => {
@@ -232,7 +254,9 @@ it('renders CreateFieldMasterObject and do not want to delete rule', async () =>
 
   const mockConfirm = jest.fn().mockReturnValue(false);
   render(<CreateFieldMasterObject confirmFunction={mockConfirm} location={{ pathname: '/updatemasterobject/field', state: mockFieldUpdate }} />);
-  fireEvent.click(screen.getByText(/Delete/i));
+  act(() => {
+    fireEvent.click(screen.getByText(/Delete/i));
+  });
 });
 
 it('renders CreateFieldMasterObject and encounter an error when attempting to delete a rule.', async () => {
@@ -257,4 +281,13 @@ it('renders UpdateFieldMasterObject and fieldData is empty', async () => {
     .mockReturnValueOnce([mockRemoveRuleFromEnterpriseField, { data: null, loading: false, error: null }]);
 
   render(<CreateFieldMasterObject location={{ pathname: '/updatemasterobject/field', state: {} }} />);
+});
+
+it('should navigate to the correct route when back button is clicked', () => {
+  const navigate = useNavigate();
+  render(<CreateFieldMasterObject location={{ pathname: '/updatemasterobject/field', state: {} }} />);
+
+  fireEvent.click(screen.getByText(/Back/i));
+
+  expect(navigate).toHaveBeenCalledWith('/', { state: { tabKey: 'viewFieldMaster' } });
 });

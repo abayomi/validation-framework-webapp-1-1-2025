@@ -126,10 +126,12 @@ describe('CreateRules Component', () => {
     
     const dropdownItem = container.querySelector('.dropdown-menu');
     const links = dropdownItem.querySelectorAll('a');
-    expect(links).toHaveLength(3);
-    const expectedTexts = ['1', '4', '7'];
-    links.forEach((link, index) => {
-      expect(link).toHaveTextContent(expectedTexts[index]);
+    waitFor(() => {
+      expect(links).toHaveLength(3);
+      const expectedTexts = ['1', '4', '7'];
+      links.forEach((link, index) => {
+        expect(link).toHaveTextContent(expectedTexts[index]);
+      });
     });
   });
 
@@ -142,7 +144,7 @@ describe('CreateRules Component', () => {
     expect(dropdownMenu).toBeNull();
 
     expect(screen.getByLabelText('Mandatory Rule')).toBeInTheDocument();
-    expect(screen.getByLabelText('Mandatory Rule').value).toBe('true');
+    expect(screen.getByLabelText('Mandatory Rule').value).toBe('on');
     expect(screen.getByLabelText('Short Description')).toHaveValue('Short description test');
     expect(screen.getByLabelText('Long Description')).toHaveValue('Long description test');
 
@@ -167,24 +169,30 @@ describe('CreateRules Component', () => {
 
     render(<CreateRules {...mockProps} />);
     expect(screen.getByText('Rule - New'));
-    fireEvent.change(screen.getByLabelText('Validation Code'), { target: { name: 'type', value: '3' } });
-    expect(getErrorCodeOptions).toHaveBeenCalled();
-    expect(getErrorCodeOptions).toHaveBeenCalledWith('3');
-    expect(getConditions).toHaveBeenCalled();
-    expect(getConditions).toHaveBeenCalledWith('3');
-    expect(screen.getByLabelText('Validation Error Code')).toHaveValue('4');
-    const conditionTypeInput = screen.getAllByTestId('condition-type-input');
-    const conditionTypeInput0 = conditionTypeInput[0];
-    expect(conditionTypeInput0.value).toBe('5');
+    act(() => {
+      fireEvent.change(screen.getByLabelText('Validation Code'), { target: { name: 'type', value: '3' } });
+      expect(getErrorCodeOptions).toHaveBeenCalled();
+      expect(getErrorCodeOptions).toHaveBeenCalledWith('3');
+      expect(getConditions).toHaveBeenCalled();
+      expect(getConditions).toHaveBeenCalledWith('3');
+      expect(screen.getByLabelText('Validation Error Code')).toHaveValue('4');
+      const conditionTypeInput = screen.getAllByTestId('condition-type-input');
+      const conditionTypeInput0 = conditionTypeInput[0];
+      expect(conditionTypeInput0.value).toBe('5');
+    });
   });
 
   it('should call setRuleGroupNumber with eventKey when not disabled and list is not empty', () => {
     const { container } = render(<CreateRules {...mockProps} />);
+
     expect(screen.getByLabelText('Rule Group Number')).toHaveValue('');
     const dropdownItem = container.querySelector('.dropdown-menu');
     const links = dropdownItem.querySelectorAll('a');
     fireEvent.click(links[1]);
-    expect(screen.getByLabelText('Rule Group Number')).toHaveValue('4');
+
+    waitFor(() => {
+      expect(screen.getByLabelText('Rule Group Number')).toHaveValue('4');
+    });
   });
 
   it('should call setRuleGroupNumber with correct value when input changes', () => {

@@ -150,10 +150,9 @@ const CreateFieldMasterObject = ({ location, confirmFunction = window.confirm })
       };
 
       console.log(variables);
-      const response = await createEnterpriseField({
+      await createEnterpriseField({
         variables,
       });
-      console.log(response);
     } catch (error) {
       console.error('Error submitting form:', error);
     }
