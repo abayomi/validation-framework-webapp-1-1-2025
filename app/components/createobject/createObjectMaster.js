@@ -18,7 +18,8 @@ import {
     newEmptyFieldItem,
     updateFieldItems,
     updateHandlerLogic,
-    useMultipleMutations
+    useMultipleMutations,
+    updateFiledRule
 } from "@/app/components/createobject/createObjectMasterLogic";
 
 const CreateObjectMaster = () => {
@@ -69,25 +70,8 @@ const CreateObjectMaster = () => {
         };
 
         const fieldRuleCheckboxCallback = (fieldUUID, fieldMasterId, checkedRule) => {
-            const newFormData = variableHelper.deepCopy(formData);
-            let fieldToBeUpdated = newFormData.fieldItems.find(field => field.fieldMasterId === fieldMasterId && field.id === fieldUUID);
-            if (!fieldToBeUpdated) {
-                return;
-            }
-
-            const ruleExists = fieldToBeUpdated.rules.some(rule => rule.id === checkedRule.id);
-            if (ruleExists) {
-                // Remove the existing field
-                fieldToBeUpdated.rules = fieldToBeUpdated.rules.filter(rule => rule.id !== checkedRule.id);
-            } else {
-                // Add a new filed
-                fieldToBeUpdated.rules = [...fieldToBeUpdated.rules, checkedRule];
-            }
-
-            // Replace the original field with the new one.
-            newFormData.fieldItems = newFormData.fieldItems.map(field => field.id === fieldToBeUpdated.id ? fieldToBeUpdated : field);
-
-            setFormData(newFormData);
+            const updatedFormData = updateFiledRule(formData, fieldUUID, fieldMasterId, checkedRule);
+            setFormData(updatedFormData);
         }
 
         const inputBoxListForAddMore = formData.fieldItems.map(item => (
@@ -157,7 +141,6 @@ const CreateObjectMaster = () => {
     const [createValidationObject, createValidationObjectResponse] = useMutation(graphqlForObjectMaster.CreateValidationObject);
 
     const submitHandler = async (event) => {
-        // TODO Disable the button after user's click
         event.preventDefault();
 
         const submitData = {
@@ -169,21 +152,16 @@ const CreateObjectMaster = () => {
                 return {
                     fieldMasterId: field.fieldMasterId,
                     objectFieldName: field.objectFieldName,
-                    fieldValidation: field.rules.map(r => {
+                    fieldValidation: field.rules.map(rule => {
                         return {
-                            fieldValidRuleId: r.id
+                            fieldValidRuleId: rule.id
                         };
                     })
                 };
             })
         };
 
-        console.log('submit me', JSON.stringify(submitData));
-
-        return;
-
         try {
-            //console.log('Submitted. Variables: ', JSON.stringify(submitData));
             const response = await createValidationObject({ variables: submitData });
             console.log('response', JSON.stringify(response));
         } catch (error) {
@@ -195,19 +173,23 @@ const CreateObjectMaster = () => {
     const updateHandler = async (event) => {
         event.preventDefault();
 
-        // Check what the user changes
-        const apisToBeCalledFirstGroup = checkUserChanges(formData, formDataSnapshot);
-        if (0 === apisToBeCalledFirstGroup.length) {
-            console.log('The user made no changes, no API call needed.');
+        if (0 === formData.fieldItems.length) {
+            window.alert('You cannot delete all object fields.');
+            return;
         }
 
-        console.log('updated---apisToBeCalledFirstGroup', JSON.stringify(apisToBeCalledFirstGroup));
-        return;
-        
-        let queryResponseList = await updateHandlerLogic.runMutationQuery(apisToBeCalledFirstGroup, mutationQueryList);
-        const addedObjectFieldList = updateHandlerLogic.getAddedObjectFieldList(queryResponseList);
+        // Check what the user changes
+        const apisToBeCalledFirstGroup = checkUserChanges(formData, formDataSnapshot);
 
-        // If there are new object fields, need to call the API to add validation rules for these new object fields. Otherwise, these newly added fields cannot be displayed.
+        if (0 === apisToBeCalledFirstGroup.length) {
+            console.log('The user made no changes, no API call needed.');
+            goToHomepage();
+        }
+
+        const firstGroupResponseList = await updateHandlerLogic.runMutationQuery(apisToBeCalledFirstGroup, mutationQueryList);
+        const addedObjectFieldList = updateHandlerLogic.getAddedObjectFieldList(firstGroupResponseList);
+
+        // If there are new object fields, need to call the API to add validation rules for them. Otherwise, these new fields cannot be displayed.
         if (addedObjectFieldList.length) {
             const validationsToBeAdded = updateHandlerLogic.getValidationsToBeAdded(addedObjectFieldList, apisToBeCalledFirstGroup);
             if (validationsToBeAdded.length > 0) {
@@ -219,8 +201,8 @@ const CreateObjectMaster = () => {
                         }
                     }
                 ];
-                queryResponseList = await updateHandlerLogic.runMutationQuery(apisToBeCalledSecondGroup, mutationQueryList);
-                console.log('queryResponseList from apisToBeCalledSecondGroup', JSON.stringify(queryResponseList));
+                const secondGroupResponseList = await updateHandlerLogic.runMutationQuery(apisToBeCalledSecondGroup, mutationQueryList);
+                console.log('queryResponseList from apisToBeCalledSecondGroup', JSON.stringify(secondGroupResponseList));
             }
         }
 
@@ -229,11 +211,13 @@ const CreateObjectMaster = () => {
 
     const cancelHandler = () => {
         const apisToBeCalled = checkUserChanges(formData, formDataSnapshot);
-        if (apisToBeCalled.length > 0) {
-            if (window.confirm('Do you confirm to discard changes?')) {
-                goToHomepage();
-            }
-        } else {
+
+        const nothingWasChanged = 0 === apisToBeCalled.length;
+        if (nothingWasChanged) {
+            goToHomepage();
+        }
+
+        if (window.confirm('Do you confirm to discard changes?')) {
             goToHomepage();
         }
     }
