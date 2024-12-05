@@ -15,7 +15,7 @@ export function newEmptyFieldItem() {
         fieldXrefId: '0',
         rules: []
     };
-};
+}
 
 export function updateFieldItems(setFormData, formData, newItemValue) {
     const replaceFieldItem = (fieldItems, newItem) => {
@@ -59,7 +59,7 @@ export function formatFormData(rawData = null) {
         };
     }
 
-    const formateRuleList = (rawRules) => {
+    const formatRuleList = (rawRules) => {
         let ruleList = [];
         rawRules.forEach(r => {
             ruleList.push({
@@ -87,7 +87,7 @@ export function formatFormData(rawData = null) {
                 fieldMasterName: f.fieldMasterName, 
                 fieldMasterId: f.fieldMasterId,
                 fieldXrefId: f.fieldXrefId,
-                rules: formateRuleList(f.rules)
+                rules: formatRuleList(f.rules)
             };
         })
     };
@@ -320,7 +320,7 @@ function getAddedRulesForField(apisToBeCalledFirstGroup, fieldMasterId) {
         return [];
     }
     
-    const target = rulesToBeAdded.find(item => item.fieldMasterId == fieldMasterId);
+    const target = rulesToBeAdded.find(item => item.fieldMasterId === fieldMasterId);
     if (!target) {
         return [];
     }
@@ -336,7 +336,7 @@ updateHandlerLogic.runMutationQuery = async function (apisToBeCalled, mutationQu
         const mutationQuery = mutationQueryList[api.apiName].mutationHandler;
         queryResponseList[api.apiName] = await mutationQuery({ variables: api.variables });
         console.log('queryResponseList', JSON.stringify(queryResponseList));
-    };
+    }
 
     return queryResponseList;
 }
