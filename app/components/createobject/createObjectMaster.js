@@ -77,11 +77,14 @@ const CreateObjectMaster = () => {
 
             const ruleExists = fieldToBeUpdated.rules.some(rule => rule.id === checkedRule.id);
             if (ruleExists) {
+                // Remove the existing field
                 fieldToBeUpdated.rules = fieldToBeUpdated.rules.filter(rule => rule.id !== checkedRule.id);
             } else {
+                // Add a new filed
                 fieldToBeUpdated.rules = [...fieldToBeUpdated.rules, checkedRule];
             }
 
+            // Replace the original field with the new one.
             newFormData.fieldItems = newFormData.fieldItems.map(field => field.id === fieldToBeUpdated.id ? fieldToBeUpdated : field);
 
             setFormData(newFormData);
@@ -204,7 +207,7 @@ const CreateObjectMaster = () => {
         let queryResponseList = await updateHandlerLogic.runMutationQuery(apisToBeCalledFirstGroup, mutationQueryList);
         const addedObjectFieldList = updateHandlerLogic.getAddedObjectFieldList(queryResponseList);
 
-        // If there are new object fields, need to call the API to add validation rules for these new object fields. Otherwise these newly added fields cannot be displayed.
+        // If there are new object fields, need to call the API to add validation rules for these new object fields. Otherwise, these newly added fields cannot be displayed.
         if (addedObjectFieldList.length) {
             const validationsToBeAdded = updateHandlerLogic.getValidationsToBeAdded(addedObjectFieldList, apisToBeCalledFirstGroup);
             if (validationsToBeAdded.length > 0) {
