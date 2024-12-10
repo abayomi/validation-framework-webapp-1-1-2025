@@ -28,23 +28,19 @@ export function updateFieldItems(setFormData, formData, newItemValue) {
 }
 
 export function formatFieldRules(rawRules) {
-    let rules = [];
-
     if (!rawRules || 0 === rawRules.length) {
-        return rules;
+        return [];
     }
 
-    rawRules.forEach(r => {
-        rules.push({
+    return rawRules.map(r => {
+        return {
             id: r.id,
             ruleGroupNumber: r.ruleGroupNumber,
             longDescription: r.longDescription,
             shortDescription: r.shortDescription,
             isMandatory: r.isMandatory
-        });
+        };
     });
-
-    return rules;
 }
 
 export function formatFormData(rawData = null) {
