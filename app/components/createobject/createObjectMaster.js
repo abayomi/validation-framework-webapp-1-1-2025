@@ -32,8 +32,13 @@ const CreateObjectMaster = () => {
     const [fieldMasterList, setFieldMasterList] = useState([]);
     const mutationQueryList = useMultipleMutations();
 
-    const goToHomepage = () => {
-        navigate('/');
+    const goToHomepage = (isRefresh = false) => {
+        const navOptions = {
+            state: {
+                refreshPage: isRefresh
+            }
+        };
+        navigate('/', navOptions);
     }
 
     const rawFieldMasterList = useQuery(loadFetchFieldMetaData, {
@@ -168,6 +173,8 @@ const CreateObjectMaster = () => {
             console.log(error.name, JSON.stringify(error));
             window.alert(`${error.name}: ${error.message}`);
         }
+
+        goToHomepage(true);
     }
 
     const updateHandler = async (event) => {
@@ -206,7 +213,7 @@ const CreateObjectMaster = () => {
             }
         }
 
-        goToHomepage();
+        goToHomepage(true);
     }
 
     const cancelHandler = () => {
@@ -214,11 +221,11 @@ const CreateObjectMaster = () => {
 
         const nothingWasChanged = 0 === apisToBeCalled.length;
         if (nothingWasChanged) {
-            goToHomepage();
-        }
-
-        if (window.confirm('Do you confirm to discard changes?')) {
-            goToHomepage();
+            goToHomepage(true);
+        } else {
+            if (window.confirm('Do you confirm to discard changes?')) {
+                goToHomepage();
+            }
         }
     }
 

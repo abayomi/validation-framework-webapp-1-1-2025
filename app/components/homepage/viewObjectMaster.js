@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import DataTable from "react-data-table-component";
 import { useLazyQuery, useMutation } from "@apollo/client";
@@ -84,6 +84,9 @@ function useLoadObjectFieldsData(setObjectFieldsOfSelectedRow) {
 
 const ViewObjectMaster = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { state } = location;
+  const { refreshPage } = state || {};
   const [dialectCode, setDialectCode] = useState(defaultDialectCode);
   const [objectMasterList, setObjectMasterList] = useState([]);
   const [objectFieldsOfSelectedRow, setObjectFieldsOfSelectedRow] = useState(null);
@@ -173,6 +176,12 @@ const ViewObjectMaster = () => {
       ),
     }
   ];
+
+  useEffect(() => {
+    if (refreshPage) {
+      doObjectMasterListRefresh();
+    }
+  }, [refreshPage]);
 
   useEffect(() => {
     if (objectMasterListData) {
