@@ -22,6 +22,10 @@ import {
     updateFiledRule
 } from "@/app/components/createobject/createObjectMasterLogic";
 
+/**
+ * Component: create or edit an object master
+ * @returns {void}
+ */
 const CreateObjectMaster = () => {
     const { objLabelName } = useParams();
     const navigate = useNavigate();
@@ -32,6 +36,11 @@ const CreateObjectMaster = () => {
     const [fieldMasterList, setFieldMasterList] = useState([]);
     const mutationQueryList = useMultipleMutations();
 
+    /**
+     * Component: create or edit an object master
+     * @param {boolean} isRefresh - Whether to force refresh the page after returning to homepage
+     * @returns {void}
+     */
     const goToHomepage = (isRefresh = false) => {
         const navOptions = {
             state: {
