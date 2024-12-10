@@ -47,7 +47,7 @@ const RulesObject = ({ruleList, isRowExpanded = true}) => {
         <DataTable
           highlightOnHover
           pointerOnHover
-          pagination
+          pagination={ruleList.length > 10 /* The pagination part will not be displayed when the number of records is less than 10. */}
           expandableRows
           columns={columns}
           data={ruleList}
