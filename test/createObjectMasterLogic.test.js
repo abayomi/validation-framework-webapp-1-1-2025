@@ -4,6 +4,23 @@ import {
     getAddedRulesForField
 } from "@/app/components/createobject/createObjectMasterLogic.js";
 
+const mockRawRules = [
+    {
+        id: '111',
+        ruleGroupNumber: '2',
+        longDescription: 'The long description',
+        shortDescription: 'The short description',
+        isMandatory: true
+    },
+    {
+        id: '222',
+        ruleGroupNumber: '10',
+        longDescription: 'The long description',
+        shortDescription: 'The short description',
+        isMandatory: false
+    }
+];
+
 // Run: npm test -- createObjectMasterLogic.test.js
 describe('createObjectMasterLogic', () => {
 
@@ -69,23 +86,7 @@ describe('createObjectMasterLogic', () => {
     });
 
     it('formatFieldRules', () => {
-        const rawRules = [
-            {
-                id: '111',
-                ruleGroupNumber: '2',
-                longDescription: 'The long description',
-                shortDescription: 'The short description',
-                isMandatory: true
-            },
-            {
-                id: '222',
-                ruleGroupNumber: '10',
-                longDescription: 'The long description',
-                shortDescription: 'The short description',
-                isMandatory: false
-            }
-        ];
-        const formattedRules = formatFieldRules(rawRules);
+        const formattedRules = formatFieldRules(mockRawRules);
 
         expect(formattedRules.length).toBe(2);
         expect(formattedRules[0].id).toBe('111');
@@ -105,22 +106,7 @@ describe('createObjectMasterLogic', () => {
                     fieldMasterName: 'Test Master Name',
                     fieldMasterId: '137',
                     fieldXrefId: '1417',
-                    rules: [
-                        {
-                            id: '111',
-                            ruleGroupNumber: '2',
-                            longDescription: 'The long description',
-                            shortDescription: 'The short description',
-                            isMandatory: true
-                        },
-                        {
-                            id: '222',
-                            ruleGroupNumber: '10',
-                            longDescription: 'The long description',
-                            shortDescription: 'The short description',
-                            isMandatory: false
-                        }
-                    ]
+                    rules: mockRawRules
                 }
             ]
         };
