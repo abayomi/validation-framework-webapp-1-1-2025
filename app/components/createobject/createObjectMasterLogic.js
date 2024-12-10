@@ -59,21 +59,6 @@ export function formatFormData(rawData = null) {
         };
     }
 
-    const formatRuleList = (rawRules) => {
-        let ruleList = [];
-        rawRules.forEach(r => {
-            ruleList.push({
-                id: r.id,
-                ruleGroupNumber: r.ruleGroupNumber,
-                longDescription: r.longDescription,
-                shortDescription: r.shortDescription,
-                isMandatory: r.isMandatory
-            });
-        });
-
-        return ruleList;
-    };
-
     return {
         "objectMasterId": rawData.objectMasterId,
         "objectName": rawData.objectName,
@@ -87,7 +72,7 @@ export function formatFormData(rawData = null) {
                 fieldMasterName: f.fieldMasterName, 
                 fieldMasterId: f.fieldMasterId,
                 fieldXrefId: f.fieldXrefId,
-                rules: formatRuleList(f.rules)
+                rules: formatFieldRules(f.rules)
             };
         })
     };
