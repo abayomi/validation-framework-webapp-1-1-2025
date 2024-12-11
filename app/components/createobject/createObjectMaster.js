@@ -97,6 +97,7 @@ const CreateObjectMaster = () => {
                 onDropDownItemClick={ dropDownItemClickHandler(item.id) }
                 fieldMasterList={ fieldMasterList }
                 fieldRuleCheckboxCallback={ fieldRuleCheckboxCallback }
+                isUpdating={ isUpdating }
             />
         ));
 

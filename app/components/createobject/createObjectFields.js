@@ -123,7 +123,8 @@ const CreateObjectFields = (props) => {
         onDeleteHandler, 
         onDropDownItemClick,
         fieldMasterList,
-        fieldRuleCheckboxCallback
+        fieldRuleCheckboxCallback,
+        isUpdating
     } = props
 
     const { 
@@ -150,6 +151,7 @@ const CreateObjectFields = (props) => {
                         required
                         value={ objectFieldName }
                         onChange={ onInputChangeHandler }
+                        disabled={ isUpdating }
                     />
                 </Form.Group>
 
