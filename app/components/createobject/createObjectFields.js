@@ -12,6 +12,11 @@ import variableHelper from '@/app/lib/variableHelper';
 import DropdownMenu from '@/app/components/common/DropdownMenu';
 import { formatFieldRules } from "@/app/components/createobject/createObjectMasterLogic";
 
+/**
+ * Format the option list of DropdownMenu
+ * @param {Array<Object>} fieldMasterList
+ * @returns {Array<Object>}
+ */
 function mapOptionList(fieldMasterList) {
     return fieldMasterList.map(item => {
         return {
@@ -23,6 +28,11 @@ function mapOptionList(fieldMasterList) {
     });
 }
 
+/**
+ * Group the rules under an object field according to the group number.
+ * @param {Object} rules
+ * @returns {Object}
+ */
 function groupByGroupId(rules) {
     let grouped = {};
 
@@ -36,6 +46,12 @@ function groupByGroupId(rules) {
     return grouped;
 }
 
+/**
+ * Get the appropriate rule description information
+ * @param {Object} rule
+ * @param {String} defaultValue
+ * @returns {String}
+ */
 function getRuleDesc(rule, defaultValue) {
     if (stringHelper.isNotEmpty(rule.longDescription)) {
         return rule.longDescription;
@@ -46,18 +62,38 @@ function getRuleDesc(rule, defaultValue) {
     }
 
     return defaultValue;
-};
+}
 
+/**
+ * Get the corresponding validation rules according to fieldMasterId
+ * @param {Array<Object>} fieldMasterList
+ * @param {String|Number} fieldMasterId
+ * @returns {Array}
+ */
 function getOriginalRuleList(fieldMasterList, fieldMasterId) {
     const targetField = fieldMasterList.find(field => field.fieldMasterId == fieldMasterId);
 
     return targetField ? targetField.rules : [];
 }
 
+/**
+ * Extract rule IDs from an array of rules and return them as an array.
+ * @param {Object} existingRuleList
+ * @returns {String[]}
+ */
 function getRuleIdList(existingRuleList) {
-    return Object.entries(existingRuleList).map(([_, r]) => r.id); // TODO No more key here
+    return Object.entries(existingRuleList).map(([_, r]) => r.id);
 }
 
+/**
+ * Component: Renders form fields for filling in "Object Field Name" and "Field Master Name".
+ * @param {Object} groupedOriginalRuleList
+ * @param {Object} currObjMasterRules
+ * @param {String} fieldMasterName
+ * @param {function} onChangeHandler
+ * @param {String} fieldUUID
+ * @returns {Element}
+ */
 function renderRuleList(groupedOriginalRuleList, currObjMasterRules, fieldMasterName, onChangeHandler, fieldUUID) {
     if (variableHelper.isEmptyObject(currObjMasterRules)) {
         return (<></>);
@@ -112,10 +148,21 @@ function renderRuleList(groupedOriginalRuleList, currObjMasterRules, fieldMaster
     );
 }
 
+/**
+ * Check if the rule array is valid
+ * @param {Array} rules
+ * @returns {boolean}
+ */
 function hasValidFieldRules(rules) {
     return variableHelper.isArray(rules) && rules.length > 0;
 }
 
+/**
+ * Component: create or edit an object master
+ * @param {Object} props
+ * @returns {Element}
+ * @constructor
+ */
 const CreateObjectFields = (props) => {
     const { 
         item, 

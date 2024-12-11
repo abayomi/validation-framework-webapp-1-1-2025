@@ -23,7 +23,7 @@ import {
 } from "@/app/components/createobject/createObjectMasterLogic";
 
 /**
- * Component: create or edit an object master
+ * Component: The form of creating or editing an object master
  * @returns {void}
  */
 const CreateObjectMaster = () => {
@@ -56,7 +56,7 @@ const CreateObjectMaster = () => {
 
     /**
      * Renders form fields for filling in "Object Field Name" and "Field Master Name".
-     * @returns {JSX.Element}
+     * @returns {Element}
      */
     const showAddMoreObjectFieldsSection = function() {
         const addOneObjectField = () => {
