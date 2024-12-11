@@ -37,7 +37,7 @@ const CreateObjectMaster = () => {
     const mutationQueryList = useMultipleMutations();
 
     /**
-     * Component: create or edit an object master
+     * Return to homepage (the list of object master)
      * @param {boolean} isRefresh - Whether to force refresh the page after returning to homepage
      * @returns {void}
      */
@@ -54,6 +54,10 @@ const CreateObjectMaster = () => {
         variables: { dialectCode: defaultDialectCode }
     });
 
+    /**
+     * Renders form fields for filling in "Object Field Name" and "Field Master Name".
+     * @returns {JSX.Element}
+     */
     const showAddMoreObjectFieldsSection = function() {
         const addOneObjectField = () => {
             const newFieldItems = [...formData.fieldItems, newEmptyFieldItem()];
@@ -126,6 +130,10 @@ const CreateObjectMaster = () => {
         );
     };
 
+    /**
+     * Handling input changes
+     * @returns {void}
+     */
     const inputChangeHandler = (e) => {
         if ('checkbox' === e.target.type) {
             const newObjMasterInUseInd = !formData.objMasterInUseInd;
@@ -155,6 +163,11 @@ const CreateObjectMaster = () => {
 
     const [createValidationObject, createValidationObjectResponse] = useMutation(graphqlForObjectMaster.CreateValidationObject);
 
+    /**
+     * Handle form submission
+     * @param event
+     * @returns {Promise<void>}
+     */
     const submitHandler = async (event) => {
         event.preventDefault();
 
@@ -187,6 +200,11 @@ const CreateObjectMaster = () => {
         goToHomepage(true);
     }
 
+    /**
+     * Handling form update operations
+     * @param event
+     * @returns {Promise<void>}
+     */
     const updateHandler = async (event) => {
         event.preventDefault();
 
@@ -226,6 +244,10 @@ const CreateObjectMaster = () => {
         goToHomepage(true);
     }
 
+    /**
+     * Handling form cancellation
+     * @returns {void}
+     */
     const cancelHandler = () => {
         const apisToBeCalled = checkUserChanges(formData, formDataSnapshot);
 
@@ -239,6 +261,10 @@ const CreateObjectMaster = () => {
         }
     }
 
+    /**
+     * Reset the form
+     * @returns {void}
+     */
     const resetFormData = () => {
         setFormData(initialFormData);
         setFormDataSnapshot(variableHelper.deepCopy(initialFormData));
