@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { Dropdown, Form } from 'react-bootstrap';
 
+/**
+ * Component: The custom dropdown component, with it we can control how each component behaves.
+ * @returns {JSX.Element}
+ */
 const CustomMenu = React.forwardRef(
   ({ children, style, className, 'aria-labelledby': labeledBy }, ref) => {
     const [searchKeyword, setSearchKeyword] = useState('');
@@ -32,6 +36,10 @@ const CustomMenu = React.forwardRef(
   },
 );
 
+/**
+ * Component: The dropdown menu for displaying the list of Field Master.
+ * @returns {JSX.Element}
+ */
 const DropdownMenu = ({ optionList, onDropDownItemClick, buttonName = '', customizeLabel = null}) => {
   const dropdownItemList = optionList.map(item => (
     <Dropdown.Item

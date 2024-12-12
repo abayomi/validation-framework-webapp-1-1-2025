@@ -9,7 +9,7 @@ import RulesObject from "./RulesObject";
 
 /**
  * Component: Show the object fields of an object master
- * @returns {Element}
+ * @returns {JSX.Element}
  */
 const FieldsObject = ( props ) => {
     const { dataComeFrom, objectFieldsData } = props;

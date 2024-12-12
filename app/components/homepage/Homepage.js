@@ -10,6 +10,9 @@ import data from "./data";
 import FieldsObject from "./fieldsObject";
 import { useNavigate } from "react-router-dom";
 
+/**
+ * @deprecated An UI at the beginning of the project is no longer used.
+ */
 const Home = () => {
   const name = useSelector(state => state.user.name)
   const email = useSelector(state => state.user.email)

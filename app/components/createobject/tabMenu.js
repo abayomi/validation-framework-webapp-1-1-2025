@@ -8,6 +8,10 @@ import { useLocation } from "react-router-dom";
 const eventKeyObjectMaster = 'objectMaster';
 const eventKeyFieldMaster = 'fieldMaster';
 
+/**
+ * Component: The tab menu for Object Master and Field Master on the homepage.
+ * @returns {JSX.Element}
+ */
 const TabMenu = () => {  
   const location = useLocation();
   const activeKey = location.pathname.includes("/updatemasterobject/object") ? eventKeyObjectMaster : eventKeyFieldMaster;;

@@ -1,8 +1,13 @@
 "use client";
-import { Navigate } from 'react-router-dom';
+import {Navigate} from 'react-router-dom';
 
+/**
+ * A Higher-order component to handle authentication.
+ * @param {React.ComponentType} Component - The component to wrap with authentication.
+ * @returns {React.ComponentType} - The component wrapped with authentication logic.
+ */
 const withAuth = (Component) => {
-  const AuthRoute = (props) => {
+    return (props) => {
       const isAuth = !!localStorage.getItem("token");
       if (isAuth) {
           return <Component {...props} />;
@@ -10,8 +15,6 @@ const withAuth = (Component) => {
           return <Navigate to="/" />;
       }
   };
-
-  return AuthRoute;
 };
 
 export default withAuth;

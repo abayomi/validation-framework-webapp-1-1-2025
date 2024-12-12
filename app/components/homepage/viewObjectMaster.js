@@ -110,7 +110,7 @@ function useLoadObjectFieldsData(setObjectFieldsOfSelectedRow) {
 
 /**
  * Component: Show the list of object master
- * @returns {Element}
+ * @returns {JSX.Element}
  */
 const ViewObjectMaster = () => {
   const navigate = useNavigate();

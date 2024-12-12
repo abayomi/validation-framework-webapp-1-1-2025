@@ -7,7 +7,7 @@ const sortByItemsIdAsc = (conditionData) => [...conditionData].sort((a, b) => a.
 
 /**
  * Component: Show the details of a rule of an object field
- * @returns {Element}
+ * @returns {JSX.Element}
  */
 const Conditions = ({ conditionData }) => {
     const filteredConditionData = uniqueRecords(conditionData);

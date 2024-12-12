@@ -39,6 +39,10 @@ const link = from([
   })
 ]);
 
+/**
+ * Creates an Apollo Client instance.
+ * @type {ApolloClient<NormalizedCacheObject>}
+ */
 const client = new ApolloClient({
   cache: new InMemoryCache(),
   link: link,
@@ -54,6 +58,10 @@ const client = new ApolloClient({
   }
 });
 
+/**
+ * Home component that sets up the main application structure.
+ * @returns {JSX.Element}
+ */
 export default function Home() {
   const [isBrowser, setIsBrowser] = useState(false);
 

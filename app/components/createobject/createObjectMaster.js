@@ -24,7 +24,7 @@ import {
 
 /**
  * Component: The form of creating or editing an object master
- * @returns {Element}
+ * @returns {JSX.Element}
  */
 const CreateObjectMaster = () => {
     const { objLabelName } = useParams();
@@ -56,7 +56,7 @@ const CreateObjectMaster = () => {
 
     /**
      * Renders form fields for filling in "Object Field Name" and "Field Master Name".
-     * @returns {Element}
+     * @returns {JSX.Element}
      */
     const showAddMoreObjectFieldsSection = function() {
         const addOneObjectField = () => {

@@ -1,3 +1,7 @@
+/**
+ * The dummy data used for UI at the beginning of the project is no longer used.
+ * @deprecated
+ */
 const data = {
     "data": {
         "FetchObjectMetaData": [
