@@ -2,6 +2,10 @@
 import { useParams } from "react-router-dom";
 import withAuth from "../withAuth";
 
+/**
+ * Component: Currently, this component has no specific content to display. It may be used in the future to show logged-in users' personal information.
+ * @returns {JSX.Element}
+ */
 const Profile = () => {
   const { name } = useParams();
   return (
