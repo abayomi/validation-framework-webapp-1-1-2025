@@ -3,6 +3,12 @@
 import { uniqueRecords } from "../../lib/arrayHelper";
 import withAuth from "../withAuth";
 
+/**
+ * Sorts an array of items in ascending order by their ID.
+ *
+ * @param {Array} conditionData - The array of items to be sorted.
+ * @returns {Array} A new array with items sorted by ID in ascending order.
+ */
 const sortByItemsIdAsc = (conditionData) => [...conditionData].sort((a, b) => a.id - b.id);
 
 /**

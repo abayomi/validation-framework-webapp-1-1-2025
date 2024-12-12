@@ -5,7 +5,11 @@ import { defaultDialectCode } from "@/app/components/config/dialectCodeMap";
 import { useMutation } from "@apollo/client";
 import graphqlForObjectMaster from "@/app/graphql/objectMasterQueries";
 
-
+/**
+ * Creates a new empty field item.
+ *
+ * @returns {Object} A new field item object with default values.
+ */
 export function newEmptyFieldItem() {
     return { 
         id: uuidv4(),
@@ -17,6 +21,13 @@ export function newEmptyFieldItem() {
     };
 }
 
+/**
+ * Updates the field items in the form data with a new item value.
+ *
+ * @param {Function} setFormData - Function to update the form data state.
+ * @param {Object} formData - The current form data.
+ * @param {Object} newItemValue - The new item value to update in the field items.
+ */
 export function updateFieldItems(setFormData, formData, newItemValue) {
     const replaceFieldItem = (fieldItems, newItem) => {
         return fieldItems.map(item => (item.id === newItem.id) ? {...item, ...newItem} : item);
@@ -43,6 +54,12 @@ export function formatFieldRules(rawRules) {
     });
 }
 
+/**
+ * Formats raw field rules into a structured format.
+ *
+ * @param {Array} rawRules - The raw rules to format.
+ * @returns {Object} The formatted field rules.
+ */
 export function formatFormData(rawData = null) {
     if (!rawData) {
         return {
@@ -74,6 +91,14 @@ export function formatFormData(rawData = null) {
     };
 }
 
+/**
+ * Checks for changes between the current form data and a snapshot of the form data,
+ * and determines which API calls need to be made to update the backend.
+ *
+ * @param {Object} formData - The current form data.
+ * @param {Object} formDataSnapshot - The snapshot of the form data to compare against.
+ * @returns {Array} A list of API calls to be made based on the changes detected.
+ */
 export function checkUserChanges(formData, formDataSnapshot) {
     const apisToBeCalled = [];
 
@@ -83,7 +108,6 @@ export function checkUserChanges(formData, formDataSnapshot) {
     if (objectNameChanged || objectDefChanged) {
         apisToBeCalled.push({
             apiName: 'UpdateValidationObjectName',
-            //apiQuery: graphqlForObjectMaster.UpdateValidationObjectName,
             variables: {
                 addField: {
                     dialectCode: defaultDialectCode,
@@ -100,7 +124,6 @@ export function checkUserChanges(formData, formDataSnapshot) {
     if (objMasterInUseIndChanged) {
         apisToBeCalled.push({
             apiName: 'UpdateValidationObjectInUseInd',
-            //apiQuery: graphqlForObjectMaster.UpdateValidationObjectInUseInd,
             variables: {
                 addField: {
                     objectInUseInd: formData.objMasterInUseInd,
@@ -117,7 +140,6 @@ export function checkUserChanges(formData, formDataSnapshot) {
     if (objectFieldXrefIdList.length) {
         apisToBeCalled.push({
             apiName: 'RemoveFieldFromObject',
-            //apiQuery: graphqlForObjectMaster.RemoveFieldFromObject,
             variables: {
                 xrefIds: objectFieldXrefIdList
             }
@@ -130,7 +152,6 @@ export function checkUserChanges(formData, formDataSnapshot) {
     if (fieldItemsToBeAdded.length > 0) {
         apisToBeCalled.push({
             apiName: 'AddFieldToObject',
-            //apiQuery: graphqlForObjectMaster.AddFieldToObject,
             variables: {
                 addFields: fieldItemsToBeAdded.map(field => {
                     return {
@@ -173,7 +194,6 @@ export function checkUserChanges(formData, formDataSnapshot) {
     if (addValidationsList.length) {
         apisToBeCalled.push({
             apiName: 'AddValidationToObjectField',
-            //apiQuery: graphqlForObjectMaster.AddValidationToObjectField,
             variables: {
                 addValidations: addValidationsList
             }
@@ -182,7 +202,6 @@ export function checkUserChanges(formData, formDataSnapshot) {
     if (removeValidationsList.length) {
         apisToBeCalled.push({
             apiName: 'RemoveValidationFromObjectField',
-            //apiQuery: graphqlForObjectMaster.RemoveValidationFromObjectField,
             variables: {
                 removeValidations: removeValidationsList
             }
@@ -192,6 +211,13 @@ export function checkUserChanges(formData, formDataSnapshot) {
     return apisToBeCalled;
 }
 
+/**
+ * Checks for changes in the rules of a field between the current field data and a snapshot.
+ *
+ * @param {Object} fieldToBeChecked - The field data to be checked for changes.
+ * @param {Array} fieldSnapshot - The snapshot of the field data to compare against.
+ * @returns {Object} An object containing arrays of added and removed rules.
+ */
 function checkObjFieldRulesChanged(fieldToBeChecked, fieldSnapshot) {
     let changedRules = {
         addedRules: [],
@@ -232,6 +258,11 @@ function checkObjFieldRulesChanged(fieldToBeChecked, fieldSnapshot) {
     return changedRules;
 }
 
+/**
+ * Custom hook to manage multiple GraphQL mutations for object master operations.
+ *
+ * @returns {Object} An object containing mutation handlers and their responses for various operations.
+ */
 export function useMultipleMutations() {
     const [mutationHandler1, { data: data1, loading: loading1, error: error1 }] = useMutation(graphqlForObjectMaster.UpdateValidationObjectName);
     const [mutationHandler2, { data: data2, loading: loading2, error: error2 }] = useMutation(graphqlForObjectMaster.UpdateValidationObjectInUseInd);
@@ -292,6 +323,15 @@ export function useMultipleMutations() {
     };
 }
 
+/**
+ * Updates the rules of a specific field in the form data.
+ *
+ * @param {Object} formData - The current form data.
+ * @param {string} fieldUUID - The unique identifier of the field to be updated.
+ * @param {string} fieldMasterId - The master ID of the field to be updated.
+ * @param {Object} checkedRule - The rule to be added or removed.
+ * @returns {Object} The updated form data with the modified field rules.
+ */
 export function updateFieldRule(formData, fieldUUID, fieldMasterId, checkedRule) {
     const newFormData = variableHelper.deepCopy(formData);
     let fieldToBeUpdated = newFormData.fieldItems.find(field => field.fieldMasterId === fieldMasterId && field.id === fieldUUID);
@@ -314,6 +354,13 @@ export function updateFieldRule(formData, fieldUUID, fieldMasterId, checkedRule)
     return newFormData;
 }
 
+/**
+ * Retrieves the rules to be added for a specific field from the list of API calls.
+ *
+ * @param {Array} apisToBeCalledFirstGroup - The list of API calls to be made.
+ * @param {string} fieldMasterId - The master ID of the field to retrieve rules for.
+ * @returns {Array} The rules to be added for the specified field.
+ */
 export function getAddedRulesForField(apisToBeCalledFirstGroup, fieldMasterId) {
     const targetAPIName = apisToBeCalledFirstGroup.find(item => 'AddFieldToObject' === item.apiName);
     if (!targetAPIName) {
@@ -333,8 +380,18 @@ export function getAddedRulesForField(apisToBeCalledFirstGroup, fieldMasterId) {
     return target.rules;
 }
 
+/**
+ * An object containing logic for handling update operations.
+ */
 const updateHandlerLogic = {};
 
+/**
+ * Runs a series of mutation queries and collects their responses.
+ *
+ * @param {Array} apisToBeCalled - The list of API calls to be made.
+ * @param {Object} mutationQueryList - The list of mutation handlers.
+ * @returns {Object} The responses from the mutation queries.
+ */
 updateHandlerLogic.runMutationQuery = async function (apisToBeCalled, mutationQueryList) {
     let queryResponseList = {};
     for (const api of apisToBeCalled) {
@@ -346,6 +403,12 @@ updateHandlerLogic.runMutationQuery = async function (apisToBeCalled, mutationQu
     return queryResponseList;
 }
 
+/**
+ * Extracts the list of added object fields from the query responses.
+ *
+ * @param {Object} queryResponseList - The responses from the mutation queries.
+ * @returns {Array} The list of added object fields.
+ */
 updateHandlerLogic.getAddedObjectFieldList = function (queryResponseList) {
     let addedObjectFieldList = [];
     Object.entries(queryResponseList).forEach(([apiName, response]) => {
@@ -363,6 +426,13 @@ updateHandlerLogic.getAddedObjectFieldList = function (queryResponseList) {
     return addedObjectFieldList;
 }
 
+/**
+ * Retrieves the validations to be added for the newly added object fields.
+ *
+ * @param {Array} addedObjectFieldList - The list of added object fields.
+ * @param {Array} apisToBeCalled - The list of API calls to be made.
+ * @returns {Array} The validations to be added.
+ */
 updateHandlerLogic.getValidationsToBeAdded = function (addedObjectFieldList, apisToBeCalled) {
     let validationsToBeAdded = [];
     addedObjectFieldList.forEach(field => {
