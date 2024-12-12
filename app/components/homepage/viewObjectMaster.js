@@ -75,7 +75,12 @@ const formatObjectMasterList = function(apiResponseData) {
   });
 };
 
-// This is a custom hook, without this, useLazyQuery() must be called whitin ViewObjectMaster.
+/**
+ * Custom hook to load object fields data based on the provided object label name and dialect code.
+ *
+ * @param {Function} setObjectFieldsOfSelectedRow
+ * @returns {Function} - Function to trigger the loading of object fields data.
+ */
 function useLoadObjectFieldsData(setObjectFieldsOfSelectedRow) {
   // You have to use useLazyQuery(), because userQuery() can only be used at the top of a component and you can't put it in a click event. 
   // However, the objectLabelName cannot be obtained before the click event is triggered.
@@ -103,6 +108,10 @@ function useLoadObjectFieldsData(setObjectFieldsOfSelectedRow) {
   return loadObjectFieldsData;
 }
 
+/**
+ * Component: Show the list of object master
+ * @returns {Element}
+ */
 const ViewObjectMaster = () => {
   const navigate = useNavigate();
   const location = useLocation();

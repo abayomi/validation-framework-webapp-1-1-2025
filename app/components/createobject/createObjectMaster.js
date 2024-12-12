@@ -24,7 +24,7 @@ import {
 
 /**
  * Component: The form of creating or editing an object master
- * @returns {void}
+ * @returns {Element}
  */
 const CreateObjectMaster = () => {
     const { objLabelName } = useParams();
