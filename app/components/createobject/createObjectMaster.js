@@ -19,7 +19,7 @@ import {
     updateFieldItems,
     updateHandlerLogic,
     useMultipleMutations,
-    updateFiledRule
+    updateFieldRule
 } from "@/app/components/createobject/createObjectMasterLogic";
 
 /**
@@ -88,7 +88,7 @@ const CreateObjectMaster = () => {
         };
 
         const fieldRuleCheckboxCallback = (fieldUUID, fieldMasterId, checkedRule) => {
-            const updatedFormData = updateFiledRule(formData, fieldUUID, fieldMasterId, checkedRule);
+            const updatedFormData = updateFieldRule(formData, fieldUUID, fieldMasterId, checkedRule);
             setFormData(updatedFormData);
         }
 

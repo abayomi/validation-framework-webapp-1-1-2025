@@ -292,7 +292,7 @@ export function useMultipleMutations() {
     };
 }
 
-export function updateFiledRule(formData, fieldUUID, fieldMasterId, checkedRule) {
+export function updateFieldRule(formData, fieldUUID, fieldMasterId, checkedRule) {
     const newFormData = variableHelper.deepCopy(formData);
     let fieldToBeUpdated = newFormData.fieldItems.find(field => field.fieldMasterId === fieldMasterId && field.id === fieldUUID);
     if (!fieldToBeUpdated) {
