@@ -7,6 +7,10 @@ import { rulesDataChange } from "./formHomeSlice";
 import { propertyGet } from "../../lib/arrayHelper";
 import RulesObject from "./RulesObject";
 
+/**
+ * Component: Show the object fields of an object master
+ * @returns {Element}
+ */
 const FieldsObject = ( props ) => {
     const { dataComeFrom, objectFieldsData } = props;
     const dispatch = useDispatch();

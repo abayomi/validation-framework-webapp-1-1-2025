@@ -2,6 +2,12 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@apollo/client";
 import graphqlForObjectMaster from "../../graphql/objectMasterQueries";
 
+/**
+ * Fetches and manages the list of Object Master data based on the provided dialect code.
+ *
+ * @param {string} dialectCode - The dialect code to fetch the Object Master list for.
+ * @returns {[Array, Function]} - An array containing the list of Object Master data and a function to refresh the data.
+ */
 function fetchObjectMasterList(dialectCode) {
     const [list, setList] = useState([]);
 

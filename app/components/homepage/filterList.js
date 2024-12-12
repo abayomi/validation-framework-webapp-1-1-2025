@@ -4,6 +4,10 @@ import Button from 'react-bootstrap/Button';
 import { propertyGet } from "../../lib/arrayHelper";
 import { dialectCodeOptions } from "../config/dialectCodeMap";
 
+/**
+ * Component: A shared search box for both pages "Object Master" and "Field Master".
+ * @returns {Element}
+ */
 const FilterList = ({ dialectCode, filterText, inputPlaceHolder, onFilterTextChanged, onRefreshClicked, onDialectCodeChanged }) => {
     return (
         <>
@@ -34,6 +38,14 @@ const FilterList = ({ dialectCode, filterText, inputPlaceHolder, onFilterTextCha
     );
 };
 
+/**
+ * Filters a list of data based on a specified field and filter text.
+ *
+ * @param {Array} data - The array of data to filter.
+ * @param {string} field - The field to filter by.
+ * @param {string} filterText - The text to filter the field by.
+ * @returns {Array} - The filtered array of data.
+ */
 const doFilterList = (data, field, filterText) => {
     return data.filter(function(item) {
         const targetField = propertyGet(item, field);

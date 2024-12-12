@@ -5,6 +5,10 @@ import ViewObjectMaster from './viewObjectMaster';
 import ViewFieldMaster from './viewFieldMaster'
 import { useLocation } from "react-router-dom";
 
+/**
+ * Component: Show the menu on the homepage
+ * @returns {Element}
+ */
 const HomepageTabMenu = ({ tabKey = 'viewObjectMaster' }) => {  
   console.log(tabKey);
   const location = useLocation();

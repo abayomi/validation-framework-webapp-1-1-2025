@@ -5,6 +5,10 @@ import { propertyGet } from "../../lib/arrayHelper";
 import withAuth from "../withAuth";
 import Conditions from "./Conditions";
 
+/**
+ * Component: Show the list of validation rules of an object field
+ * @returns {Element}
+ */
 const RulesObject = ({ruleList, isRowExpanded = true}) => {
     // About DataTable's column, refer to https://react-data-table-component.netlify.app/?path=/docs/api-columns--docs
     const columns = [
@@ -47,7 +51,7 @@ const RulesObject = ({ruleList, isRowExpanded = true}) => {
         <DataTable
           highlightOnHover
           pointerOnHover
-          pagination
+          pagination={ruleList.length > 10 /* The pagination part will not be displayed when the number of records is less than 10. */}
           expandableRows
           columns={columns}
           data={ruleList}

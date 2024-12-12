@@ -5,6 +5,10 @@ import withAuth from "../withAuth";
 
 const sortByItemsIdAsc = (conditionData) => [...conditionData].sort((a, b) => a.id - b.id);
 
+/**
+ * Component: Show the details of a rule of an object field
+ * @returns {Element}
+ */
 const Conditions = ({ conditionData }) => {
     const filteredConditionData = uniqueRecords(conditionData);
     if (0 === filteredConditionData.length) {

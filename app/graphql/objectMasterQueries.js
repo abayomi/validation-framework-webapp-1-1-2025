@@ -45,6 +45,7 @@ const graphqlForObjectMaster = {
         objectLabelName
         objectMasterId
         objectName
+        objectDefinition
       }
     }
   `,

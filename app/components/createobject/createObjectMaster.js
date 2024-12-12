@@ -18,9 +18,14 @@ import {
     newEmptyFieldItem,
     updateFieldItems,
     updateHandlerLogic,
-    useMultipleMutations
+    useMultipleMutations,
+    updateFieldRule
 } from "@/app/components/createobject/createObjectMasterLogic";
 
+/**
+ * Component: The form of creating or editing an object master
+ * @returns {Element}
+ */
 const CreateObjectMaster = () => {
     const { objLabelName } = useParams();
     const navigate = useNavigate();
@@ -31,14 +36,28 @@ const CreateObjectMaster = () => {
     const [fieldMasterList, setFieldMasterList] = useState([]);
     const mutationQueryList = useMultipleMutations();
 
-    const goToHomepage = () => {
-        navigate('/');
+    /**
+     * Return to homepage (the list of object master)
+     * @param {boolean} isRefresh - Whether to force refresh the page after returning to homepage
+     * @returns {void}
+     */
+    const goToHomepage = (isRefresh = false) => {
+        const navOptions = {
+            state: {
+                refreshPage: isRefresh
+            }
+        };
+        navigate('/', navOptions);
     }
 
     const rawFieldMasterList = useQuery(loadFetchFieldMetaData, {
         variables: { dialectCode: defaultDialectCode }
     });
 
+    /**
+     * Renders form fields for filling in "Object Field Name" and "Field Master Name".
+     * @returns {Element}
+     */
     const showAddMoreObjectFieldsSection = function() {
         const addOneObjectField = () => {
             const newFieldItems = [...formData.fieldItems, newEmptyFieldItem()];
@@ -69,22 +88,8 @@ const CreateObjectMaster = () => {
         };
 
         const fieldRuleCheckboxCallback = (fieldUUID, fieldMasterId, checkedRule) => {
-            const newFormData = variableHelper.deepCopy(formData);
-            let fieldToBeUpdated = newFormData.fieldItems.find(field => field.fieldMasterId === fieldMasterId && field.id === fieldUUID);
-            if (!fieldToBeUpdated) {
-                return;
-            }
-
-            const ruleExists = fieldToBeUpdated.rules.some(rule => rule.id === checkedRule.id);
-            if (ruleExists) {
-                fieldToBeUpdated.rules = fieldToBeUpdated.rules.filter(rule => rule.id !== checkedRule.id);
-            } else {
-                fieldToBeUpdated.rules = [...fieldToBeUpdated.rules, checkedRule];
-            }
-
-            newFormData.fieldItems = newFormData.fieldItems.map(field => field.id === fieldToBeUpdated.id ? fieldToBeUpdated : field);
-
-            setFormData(newFormData);
+            const updatedFormData = updateFieldRule(formData, fieldUUID, fieldMasterId, checkedRule);
+            setFormData(updatedFormData);
         }
 
         const inputBoxListForAddMore = formData.fieldItems.map(item => (
@@ -96,6 +101,7 @@ const CreateObjectMaster = () => {
                 onDropDownItemClick={ dropDownItemClickHandler(item.id) }
                 fieldMasterList={ fieldMasterList }
                 fieldRuleCheckboxCallback={ fieldRuleCheckboxCallback }
+                isUpdating={ isUpdating }
             />
         ));
 
@@ -124,6 +130,10 @@ const CreateObjectMaster = () => {
         );
     };
 
+    /**
+     * Handling input changes
+     * @returns {void}
+     */
     const inputChangeHandler = (e) => {
         if ('checkbox' === e.target.type) {
             const newObjMasterInUseInd = !formData.objMasterInUseInd;
@@ -153,8 +163,12 @@ const CreateObjectMaster = () => {
 
     const [createValidationObject, createValidationObjectResponse] = useMutation(graphqlForObjectMaster.CreateValidationObject);
 
+    /**
+     * Handle form submission
+     * @param event
+     * @returns {Promise<void>}
+     */
     const submitHandler = async (event) => {
-        // TODO Disable the button after user's click
         event.preventDefault();
 
         const submitData = {
@@ -166,45 +180,51 @@ const CreateObjectMaster = () => {
                 return {
                     fieldMasterId: field.fieldMasterId,
                     objectFieldName: field.objectFieldName,
-                    fieldValidation: field.rules.map(r => {
+                    fieldValidation: field.rules.map(rule => {
                         return {
-                            fieldValidRuleId: r.id
+                            fieldValidRuleId: rule.id
                         };
                     })
                 };
             })
         };
 
-        console.log('submit me', JSON.stringify(submitData));
-
-        return;
-
         try {
-            //console.log('Submitted. Variables: ', JSON.stringify(submitData));
             const response = await createValidationObject({ variables: submitData });
             console.log('response', JSON.stringify(response));
         } catch (error) {
             console.log(error.name, JSON.stringify(error));
             window.alert(`${error.name}: ${error.message}`);
         }
+
+        goToHomepage(true);
     }
 
+    /**
+     * Handling form update operations
+     * @param event
+     * @returns {Promise<void>}
+     */
     const updateHandler = async (event) => {
         event.preventDefault();
 
-        // Check what the user changes
-        const apisToBeCalledFirstGroup = checkUserChanges(formData, formDataSnapshot);
-        if (0 === apisToBeCalledFirstGroup.length) {
-            console.log('The user made no changes, no API call needed.');
+        if (0 === formData.fieldItems.length) {
+            window.alert('You cannot delete all object fields.');
+            return;
         }
 
-        console.log('updated---apisToBeCalledFirstGroup', JSON.stringify(apisToBeCalledFirstGroup));
-        return;
-        
-        let queryResponseList = await updateHandlerLogic.runMutationQuery(apisToBeCalledFirstGroup, mutationQueryList);
-        const addedObjectFieldList = updateHandlerLogic.getAddedObjectFieldList(queryResponseList);
+        // Check what the user changes
+        const apisToBeCalledFirstGroup = checkUserChanges(formData, formDataSnapshot);
 
-        // If there are new object fields, need to call the API to add validation rules for these new object fields. Otherwise these newly added fields cannot be displayed.
+        if (0 === apisToBeCalledFirstGroup.length) {
+            console.log('The user made no changes, no API call needed.');
+            goToHomepage();
+        }
+
+        const firstGroupResponseList = await updateHandlerLogic.runMutationQuery(apisToBeCalledFirstGroup, mutationQueryList);
+        const addedObjectFieldList = updateHandlerLogic.getAddedObjectFieldList(firstGroupResponseList);
+
+        // If there are new object fields, need to call the API to add validation rules for them. Otherwise, these new fields cannot be displayed.
         if (addedObjectFieldList.length) {
             const validationsToBeAdded = updateHandlerLogic.getValidationsToBeAdded(addedObjectFieldList, apisToBeCalledFirstGroup);
             if (validationsToBeAdded.length > 0) {
@@ -216,25 +236,35 @@ const CreateObjectMaster = () => {
                         }
                     }
                 ];
-                queryResponseList = await updateHandlerLogic.runMutationQuery(apisToBeCalledSecondGroup, mutationQueryList);
-                console.log('queryResponseList from apisToBeCalledSecondGroup', JSON.stringify(queryResponseList));
+                const secondGroupResponseList = await updateHandlerLogic.runMutationQuery(apisToBeCalledSecondGroup, mutationQueryList);
+                console.log('queryResponseList from apisToBeCalledSecondGroup', JSON.stringify(secondGroupResponseList));
             }
         }
 
-        goToHomepage();
+        goToHomepage(true);
     }
 
+    /**
+     * Handling form cancellation
+     * @returns {void}
+     */
     const cancelHandler = () => {
         const apisToBeCalled = checkUserChanges(formData, formDataSnapshot);
-        if (apisToBeCalled.length > 0) {
+
+        const nothingWasChanged = 0 === apisToBeCalled.length;
+        if (nothingWasChanged) {
+            goToHomepage(true);
+        } else {
             if (window.confirm('Do you confirm to discard changes?')) {
                 goToHomepage();
             }
-        } else {
-            goToHomepage();
         }
     }
 
+    /**
+     * Reset the form
+     * @returns {void}
+     */
     const resetFormData = () => {
         setFormData(initialFormData);
         setFormDataSnapshot(variableHelper.deepCopy(initialFormData));

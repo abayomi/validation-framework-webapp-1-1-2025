@@ -15,7 +15,7 @@ export function newEmptyFieldItem() {
         fieldXrefId: '0',
         rules: []
     };
-};
+}
 
 export function updateFieldItems(setFormData, formData, newItemValue) {
     const replaceFieldItem = (fieldItems, newItem) => {
@@ -28,23 +28,19 @@ export function updateFieldItems(setFormData, formData, newItemValue) {
 }
 
 export function formatFieldRules(rawRules) {
-    let rules = [];
-
     if (!rawRules || 0 === rawRules.length) {
-        return rules;
+        return [];
     }
 
-    rawRules.forEach(r => {
-        rules.push({
+    return rawRules.map(r => {
+        return {
             id: r.id,
             ruleGroupNumber: r.ruleGroupNumber,
             longDescription: r.longDescription,
             shortDescription: r.shortDescription,
             isMandatory: r.isMandatory
-        });
+        };
     });
-
-    return rules;
 }
 
 export function formatFormData(rawData = null) {
@@ -59,21 +55,6 @@ export function formatFormData(rawData = null) {
         };
     }
 
-    const formateRuleList = (rawRules) => {
-        let ruleList = [];
-        rawRules.forEach(r => {
-            ruleList.push({
-                id: r.id,
-                ruleGroupNumber: r.ruleGroupNumber,
-                longDescription: r.longDescription,
-                shortDescription: r.shortDescription,
-                isMandatory: r.isMandatory
-            });
-        });
-
-        return ruleList;
-    };
-
     return {
         "objectMasterId": rawData.objectMasterId,
         "objectName": rawData.objectName,
@@ -87,7 +68,7 @@ export function formatFormData(rawData = null) {
                 fieldMasterName: f.fieldMasterName, 
                 fieldMasterId: f.fieldMasterId,
                 fieldXrefId: f.fieldXrefId,
-                rules: formateRuleList(f.rules)
+                rules: formatFieldRules(f.rules)
             };
         })
     };
@@ -130,9 +111,9 @@ export function checkUserChanges(formData, formDataSnapshot) {
     }
 
     // Check if a field in the formData snapshot is not in formData: it should be deleted.
-    const fieldItemIds = formData.fieldItems.map(item => item.id);
-    const fieldItemsToBeDeleted = formDataSnapshot.fieldItems.filter(objField => false === fieldItemIds.includes(objField.id));
-    const objectFieldXrefIdList = fieldItemsToBeDeleted.map(objField => objField.fieldXrefId);
+    const fieldItemIds = formData.fieldItems.map(field => field.id);
+    const fieldItemsToBeDeleted = formDataSnapshot.fieldItems.filter(field => false === fieldItemIds.includes(field.id));
+    const objectFieldXrefIdList = fieldItemsToBeDeleted.map(field => field.fieldXrefId);
     if (objectFieldXrefIdList.length) {
         apisToBeCalled.push({
             apiName: 'RemoveFieldFromObject',
@@ -144,26 +125,26 @@ export function checkUserChanges(formData, formDataSnapshot) {
     }
 
     // Check if a field in the formData is not in the formData snapshot: it should be added.
-    const snapshotFieldItemIds = formDataSnapshot.fieldItems.map(item => item.id);
-    const fieldItemsToBeAdded = formData.fieldItems.filter(objField => false === snapshotFieldItemIds.includes(objField.id));
+    const snapshotFieldItemIds = formDataSnapshot.fieldItems.map(field => field.id);
+    const fieldItemsToBeAdded = formData.fieldItems.filter(field => false === snapshotFieldItemIds.includes(field.id));
     if (fieldItemsToBeAdded.length > 0) {
         apisToBeCalled.push({
             apiName: 'AddFieldToObject',
             //apiQuery: graphqlForObjectMaster.AddFieldToObject,
             variables: {
-                addFields: fieldItemsToBeAdded.map(objField => {
+                addFields: fieldItemsToBeAdded.map(field => {
                     return {
-                        fieldMasterId: objField.fieldMasterId,
-                        objectFieldName: objField.objectFieldName,
+                        fieldMasterId: field.fieldMasterId,
+                        objectFieldName: field.objectFieldName,
                         objectMasterId: formData.objectMasterId
                     };
                 })
             },
             extraData: {
-                rulesToBeAdded: fieldItemsToBeAdded.map(objField => {
+                rulesToBeAdded: fieldItemsToBeAdded.map(field => {
                     return {
-                        fieldMasterId: objField.fieldMasterId,
-                        rules: objField.rules // TODO Check if objField.rules is empty.
+                        fieldMasterId: field.fieldMasterId,
+                        rules: field.rules // TODO Check if objField.rules is empty.
                     }
                 })
             }
@@ -173,19 +154,19 @@ export function checkUserChanges(formData, formDataSnapshot) {
     // If a field is neither new nor pending deletion, check if its rule has changed.
     let addValidationsList = [];
     let removeValidationsList = [];
-    const fieldItemsToBeChecked = formData.fieldItems.filter(objField => snapshotFieldItemIds.includes(objField.id));
-    fieldItemsToBeChecked.forEach(objField => {
-        const changedRules = checkObjFieldRulesChanged(objField, formDataSnapshot.fieldItems);
-        changedRules.addedRules.forEach(item => {
+    const fieldItemsToBeChecked = formData.fieldItems.filter(field => snapshotFieldItemIds.includes(field.id));
+    fieldItemsToBeChecked.forEach(field => {
+        const changedRules = checkObjFieldRulesChanged(field, formDataSnapshot.fieldItems);
+        changedRules.addedRules.forEach(changedItem => {
             addValidationsList.push({
-                fieldValidRuleId: item.rule.id,
-                objectFieldXrefId: objField.fieldXrefId
+                fieldValidRuleId: changedItem.rule.id,
+                objectFieldXrefId: field.fieldXrefId
             });
         });
-        changedRules.removedRules.forEach(item => {
+        changedRules.removedRules.forEach(changedItem => {
             removeValidationsList.push({
-                fieldValidRuleId: item.rule.id,
-                objectFieldXrefId: objField.fieldXrefId
+                fieldValidRuleId: changedItem.rule.id,
+                objectFieldXrefId: field.fieldXrefId
             });
         });
     });
@@ -211,13 +192,13 @@ export function checkUserChanges(formData, formDataSnapshot) {
     return apisToBeCalled;
 }
 
-function checkObjFieldRulesChanged(fieldItem, fieldItemsSnapshot) {
+function checkObjFieldRulesChanged(fieldToBeChecked, fieldSnapshot) {
     let changedRules = {
         addedRules: [],
         removedRules: []
     };
 
-    const targetFieldSnapshot = fieldItemsSnapshot.find(fieldSnapshot => fieldSnapshot.id === fieldItem.id);
+    const targetFieldSnapshot = fieldSnapshot.find(field => field.id === fieldToBeChecked.id);
     if (!targetFieldSnapshot) {
         return changedRules;
     }
@@ -226,21 +207,23 @@ function checkObjFieldRulesChanged(fieldItem, fieldItemsSnapshot) {
         return rules.map(r => r.id);
     };
     
-    const snapShotIds = getIds(targetFieldSnapshot.rules);
-    fieldItem.rules.forEach(r => {
-        if (false === snapShotIds.includes(r.id)) {
+    const snapShotRuleIds = getIds(targetFieldSnapshot.rules);
+    fieldToBeChecked.rules.forEach(r => {
+        const notFoundInOldData = false === snapShotRuleIds.includes(r.id);
+        if (notFoundInOldData) {
             changedRules.addedRules.push({
-                fieldMasterId: fieldItem.fieldMasterId,
+                fieldMasterId: fieldToBeChecked.fieldMasterId,
                 rule: r
             });
         }
     });
 
-    const newDataIds = getIds(fieldItem.rules);
+    const newRuleIds = getIds(fieldToBeChecked.rules);
     targetFieldSnapshot.rules.forEach(r => {
-        if (false === newDataIds.includes(r.id)) {
+        const notFoundInNewData = false === newRuleIds.includes(r.id);
+        if (notFoundInNewData) {
             changedRules.removedRules.push({
-                fieldMasterId: fieldItem.fieldMasterId,
+                fieldMasterId: fieldToBeChecked.fieldMasterId,
                 rule: r
             });
         }
@@ -309,23 +292,45 @@ export function useMultipleMutations() {
     };
 }
 
-function getAddedRulesForField(apisToBeCalledFirstGroup, fieldMasterId) {
-    const targetPart = apisToBeCalledFirstGroup.find(item => 'AddFieldToObject' === item.apiName);
-    if (!targetPart) {
+export function updateFieldRule(formData, fieldUUID, fieldMasterId, checkedRule) {
+    const newFormData = variableHelper.deepCopy(formData);
+    let fieldToBeUpdated = newFormData.fieldItems.find(field => field.fieldMasterId === fieldMasterId && field.id === fieldUUID);
+    if (!fieldToBeUpdated) {
+        return;
+    }
+
+    const ruleExists = fieldToBeUpdated.rules.some(rule => rule.id === checkedRule.id);
+    if (ruleExists) {
+        // Remove the existing field
+        fieldToBeUpdated.rules = fieldToBeUpdated.rules.filter(rule => rule.id !== checkedRule.id);
+    } else {
+        // Add a new filed
+        fieldToBeUpdated.rules = [...fieldToBeUpdated.rules, checkedRule];
+    }
+
+    // Replace the original field with the new one.
+    newFormData.fieldItems = newFormData.fieldItems.map(field => field.id === fieldToBeUpdated.id ? fieldToBeUpdated : field);
+
+    return newFormData;
+}
+
+export function getAddedRulesForField(apisToBeCalledFirstGroup, fieldMasterId) {
+    const targetAPIName = apisToBeCalledFirstGroup.find(item => 'AddFieldToObject' === item.apiName);
+    if (!targetAPIName) {
         return [];
     }
 
-    const rulesToBeAdded = targetPart.extraData.rulesToBeAdded;
+    const rulesToBeAdded = targetAPIName.extraData.rulesToBeAdded;
     if (!variableHelper.isArray(rulesToBeAdded)) {
         return [];
     }
-    
-    const target = rulesToBeAdded.find(item => item.fieldMasterId == fieldMasterId);
+
+    const target = rulesToBeAdded.find(item => item.fieldMasterId === fieldMasterId);
     if (!target) {
         return [];
     }
 
-    return Object.entries(target.rules).map(([_, v]) => v);
+    return target.rules;
 }
 
 const updateHandlerLogic = {};
@@ -336,7 +341,7 @@ updateHandlerLogic.runMutationQuery = async function (apisToBeCalled, mutationQu
         const mutationQuery = mutationQueryList[api.apiName].mutationHandler;
         queryResponseList[api.apiName] = await mutationQuery({ variables: api.variables });
         console.log('queryResponseList', JSON.stringify(queryResponseList));
-    };
+    }
 
     return queryResponseList;
 }
@@ -360,16 +365,16 @@ updateHandlerLogic.getAddedObjectFieldList = function (queryResponseList) {
 
 updateHandlerLogic.getValidationsToBeAdded = function (addedObjectFieldList, apisToBeCalled) {
     let validationsToBeAdded = [];
-    addedObjectFieldList.forEach(f => {
-        const addedRules = getAddedRulesForField(apisToBeCalled, f.fieldMasterId);
+    addedObjectFieldList.forEach(field => {
+        const addedRules = getAddedRulesForField(apisToBeCalled, field.fieldMasterId);
         if (0 === addedRules.length) {
             return;
         }
 
-        addedRules.forEach(r => {
+        addedRules.forEach(rule => {
             validationsToBeAdded.push({
-                objectFieldXrefId: f.objectFieldXrefId,
-                fieldValidRuleId: r.id
+                objectFieldXrefId: field.objectFieldXrefId,
+                fieldValidRuleId: rule.id
             });
         });
     });

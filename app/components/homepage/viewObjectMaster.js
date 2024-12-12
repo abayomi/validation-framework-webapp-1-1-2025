@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import DataTable from "react-data-table-component";
 import { useLazyQuery, useMutation } from "@apollo/client";
@@ -15,18 +15,34 @@ import FieldsObject from "./fieldsObject";
 import FilterList, { doFilterList } from "./filterList";
 import fetchObjectMasterList from "./fetchObjectMasterList";
 
+/**
+ * Removes the selected mark from each item in the list.
+ * @param {Array<Object>} rowList - An array of objects, each containing an `isSelected` property.
+ * @returns {Array<Object>} Returns a new array with all `isSelected` properties set to false.
+ */
 const removeSelectedMark = function (rowList) {
   return rowList.map(function (item) {
     return { ...item, isSelected: false };
   });
 };
 
+/**
+ * Marks the selected row in the list.
+ * @param {Array<Object>} rowList - An array of objects, each containing `objectMasterId` and `isSelected` properties.
+ * @param {Array<Object>} selectedRow - The row object to be marked as selected.
+ * @returns {Array<Object>} Returns the updated array with the selected row marked.
+ */
 const markSelectedRow = function (rowList, selectedRow) {
   const foundIndex = rowList.findIndex(x => x.objectMasterId == selectedRow.objectMasterId);
   rowList[foundIndex] = { ...selectedRow, isSelected: true };
   return rowList;
 };
 
+/**
+ * Formats the object field list from API response data.
+ * @param {Array} apiResponseData - The API response data containing the field list.
+ * @returns {Array<Object>} Returns a formatted array of field objects.
+ */
 const formatObjectFieldList = function(apiResponseData) {
   const fieldList = propertyGet(arrayGet(apiResponseData, 0), 'fields', []);
   return fieldList.map(function(item) {
@@ -40,8 +56,13 @@ const formatObjectFieldList = function(apiResponseData) {
       rules: item.rules
     };
   });
-}; 
+};
 
+/**
+ * Formats the object master list from API response data.
+ * @param {Array<Object>} apiResponseData - The API response data containing the object master list.
+ * @returns {Array<Object>} Returns a formatted array of object master items with an added `isSelected` field.
+ */
 const formatObjectMasterList = function(apiResponseData) {
   return apiResponseData.map(function(item) {
     return {
@@ -54,7 +75,12 @@ const formatObjectMasterList = function(apiResponseData) {
   });
 };
 
-// This is a custom hook, without this, useLazyQuery() must be called whitin ViewObjectMaster.
+/**
+ * Custom hook to load object fields data based on the provided object label name and dialect code.
+ *
+ * @param {Function} setObjectFieldsOfSelectedRow
+ * @returns {Function} - Function to trigger the loading of object fields data.
+ */
 function useLoadObjectFieldsData(setObjectFieldsOfSelectedRow) {
   // You have to use useLazyQuery(), because userQuery() can only be used at the top of a component and you can't put it in a click event. 
   // However, the objectLabelName cannot be obtained before the click event is triggered.
@@ -82,8 +108,15 @@ function useLoadObjectFieldsData(setObjectFieldsOfSelectedRow) {
   return loadObjectFieldsData;
 }
 
+/**
+ * Component: Show the list of object master
+ * @returns {Element}
+ */
 const ViewObjectMaster = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { state } = location;
+  const { refreshPage } = state || {};
   const [dialectCode, setDialectCode] = useState(defaultDialectCode);
   const [objectMasterList, setObjectMasterList] = useState([]);
   const [objectFieldsOfSelectedRow, setObjectFieldsOfSelectedRow] = useState(null);
@@ -173,6 +206,12 @@ const ViewObjectMaster = () => {
       ),
     }
   ];
+
+  useEffect(() => {
+    if (refreshPage) {
+      doObjectMasterListRefresh();
+    }
+  }, [refreshPage]);
 
   useEffect(() => {
     if (objectMasterListData) {
