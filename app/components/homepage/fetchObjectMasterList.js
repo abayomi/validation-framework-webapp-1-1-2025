@@ -8,7 +8,7 @@ import graphqlForObjectMaster from "../../graphql/objectMasterQueries";
  * @param {string} dialectCode - The dialect code to fetch the Object Master list for.
  * @returns {[Array, Function]} - An array containing the list of Object Master data and a function to refresh the data.
  */
-function useFetchObjectMasterList(dialectCode) {
+function FetchObjectMasterList(dialectCode) {
     const [list, setList] = useState([]);
 
     const rawData = useQuery(graphqlForObjectMaster.FetchObjectMasterList, {
@@ -30,4 +30,4 @@ function useFetchObjectMasterList(dialectCode) {
     return [list, doRefresh];
 }
 
-export default useFetchObjectMasterList;
+export default FetchObjectMasterList;
