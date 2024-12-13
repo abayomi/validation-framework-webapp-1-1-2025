@@ -56,4 +56,6 @@ const DropdownMenu = ({ optionList, onDropDownItemClick, buttonName = '', custom
   );
 };
 
+CustomMenu.displayName = 'CustomMenu';
+
 export default DropdownMenu;

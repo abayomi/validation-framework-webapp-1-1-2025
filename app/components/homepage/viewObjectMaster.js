@@ -13,7 +13,7 @@ import { eventKeyObjectMaster } from "../createobject/tabMenu";
 import withAuth from "../withAuth";
 import FieldsObject from "./fieldsObject";
 import FilterList, { doFilterList } from "./filterList";
-import fetchObjectMasterList from "./fetchObjectMasterList";
+import useFetchObjectMasterList from "./fetchObjectMasterList";
 
 /**
  * Removes the selected mark from each item in the list.
@@ -121,7 +121,7 @@ const ViewObjectMaster = () => {
   const [objectMasterList, setObjectMasterList] = useState([]);
   const [objectFieldsOfSelectedRow, setObjectFieldsOfSelectedRow] = useState(null);
   const [filterText, setFilterText] = useState('');
-  const [objectMasterListData, doObjectMasterListRefresh] = fetchObjectMasterList(dialectCode);
+  const [objectMasterListData, doObjectMasterListRefresh] = useFetchObjectMasterList(dialectCode);
   const [deleteValidationObject, deleteValidationObjectReponse] = useMutation(graphqlForObjectMaster.DeleteValidationObject);
 
   const editButtonHandler = (objectLabelName) => {
