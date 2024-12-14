@@ -2,8 +2,7 @@
 import { useState } from "react";
 import withAuth from "../withAuth";
 import { useSelector, useDispatch } from 'react-redux'
-import Form from 'react-bootstrap/Form';
-import { nameChange, emailChange, fieldsDataChange } from "./formHomeSlice";
+import { fieldsDataChange } from "./formHomeSlice";
 import Button from 'react-bootstrap/Button';
 import DataTable from 'react-data-table-component';
 import data from "./data";
