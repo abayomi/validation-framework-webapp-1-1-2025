@@ -1,5 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit'
 
+/**
+ * A slice for managing counter state with Redux Toolkit.
+ */
 export const counterSlice =  createSlice({
     name: 'counter',
     initialState: {

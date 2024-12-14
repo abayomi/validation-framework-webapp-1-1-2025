@@ -38,6 +38,12 @@ export function updateFieldItems(setFormData, formData, newItemValue) {
     setFormData({...formData, fieldItems: newFieldItems});
 }
 
+/**
+ * Formats raw field rules into a structured format.
+ *
+ * @param {Array} rawRules - The raw rules to format.
+ * @returns {Array} The formatted field rules.
+ */
 export function formatFieldRules(rawRules) {
     if (!rawRules || 0 === rawRules.length) {
         return [];
