@@ -95,14 +95,14 @@ const Home = () => {
    *
    * @param {Object} row - The data for the clicked row.
    */
-  const onRowClicked = (row, event) => {
+  const onRowClicked = (row) => {
     dispatch(fieldsDataChange(row))
     setFieldsTable(true);
     setFieldsData(row);
   };
 
   const objectMetaData = data.data.FetchObjectMetaData;
-  const ExpandedComponent = ({ data1 }) => <pre>{JSON.stringify(data1, null, 2)}</pre>;
+
   return (
     <div>
       {transformData(objectMetaData)}
