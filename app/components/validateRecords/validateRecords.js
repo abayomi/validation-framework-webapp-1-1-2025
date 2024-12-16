@@ -1,7 +1,7 @@
 "use client";
 import withAuth from "../withAuth";
 import React, { useState, useEffect } from "react";
-import { Modal, Alert, Button, Form } from 'react-bootstrap';
+import { Button, Form } from 'react-bootstrap';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { v4 as uuidv4 } from 'uuid';
