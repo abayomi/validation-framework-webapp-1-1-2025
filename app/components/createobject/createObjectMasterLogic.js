@@ -21,6 +21,10 @@ export function newEmptyFieldItem() {
     };
 }
 
+export function replaceFieldItem(fieldItems, newItem) {
+    return fieldItems.map(item => (item.id === newItem.id) ? {...item, ...newItem} : item);
+}
+
 /**
  * Updates the field items in the form data with a new item value.
  *
@@ -29,10 +33,6 @@ export function newEmptyFieldItem() {
  * @param {Object} newItemValue - The new item value to update in the field items.
  */
 export function updateFieldItems(setFormData, formData, newItemValue) {
-    const replaceFieldItem = (fieldItems, newItem) => {
-        return fieldItems.map(item => (item.id === newItem.id) ? {...item, ...newItem} : item);
-    }
-
     const newFieldItems = replaceFieldItem(formData.fieldItems, newItemValue);
 
     setFormData({...formData, fieldItems: newFieldItems});
