@@ -18,6 +18,14 @@ import { ADD_RULE_TO_ENTERPRISE_FIELD } from '../../../graphql/fieldMasterMutati
 import { dialectCodeOptions } from "../../config/dialectCodeMap";
 import { uniqueRecords } from "../../../lib/arrayHelper";
 
+/**
+ * Custom toggle component for an accordion.
+ *
+ * @param {Object} props - The component props.
+ * @param {string} props.eventkey - The event key for the accordion item.
+ * @param {function} props.deleteOnClick - The function to call when the delete button is clicked.
+ * @returns {JSX.Element}
+ */
 function CustomToggle({ eventkey, deleteOnClick }) {
 
     const decoratedOnClick = useAccordionButton(eventkey);
@@ -36,6 +44,11 @@ function CustomToggle({ eventkey, deleteOnClick }) {
     );
 }
 
+/**
+ * Component for creating or updating rules.
+ *
+ * @returns {JSX.Element}
+ */
 const CreateRules = ({ eventkey, isUpdate, deleteOnClick, item, fieldMasterId = 0, dialectCode, ruleGroupNumberList }) => {
 
     const disabled = isUpdate && item.id > 0;

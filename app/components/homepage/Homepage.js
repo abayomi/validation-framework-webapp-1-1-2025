@@ -20,6 +20,13 @@ const Home = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate();
 
+  /**
+   * Creates table data by adding a fieldsCount property to each item and pushing it to the table object.
+   *
+   * @param {Array} data - The array of data items.
+   * @param {Array} tableObj - The table object to push the modified items into.
+   * @returns {Array<Object>}
+   */
   const createTableDataWithObjProp = (data, tableObj) => {
     return data.map(item => {
       item.fieldsCount = item.fields.length
@@ -28,6 +35,12 @@ const Home = () => {
     });
   };
 
+  /**
+   * Transforms the provided data and returns a JSX element displaying a data table.
+   *
+   * @param {Array} data - The array of data items to transform.
+   * @returns {JSX.Element}
+   */
   const transformData = (data) => {
     let tableObj = [];
     createTableDataWithObjProp(
@@ -76,7 +89,13 @@ const Home = () => {
       reorder: false
     }
   ];
-  const onRowClicked = (row, event) => { 
+
+  /**
+   * Handles the click event for a row in the data table.
+   *
+   * @param {Object} row - The data for the clicked row.
+   */
+  const onRowClicked = (row, event) => {
     dispatch(fieldsDataChange(row))
     setFieldsTable(true);
     setFieldsData(row);

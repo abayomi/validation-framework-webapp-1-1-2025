@@ -11,6 +11,10 @@ import { defaultDialectCode } from "../config/dialectCodeMap";
 import { uniqueRecords } from "../../lib/arrayHelper";
 import FilterList, { doFilterList } from "./filterList";
 
+/**
+ * Component: Show the list of field master
+ * @returns {JSX.Element}
+ */
 const ViewFieldMaster = () => {
   const [rulesData, setRulesData] = useState([]);
   const [dialectCode, setDialectCode] = useState(defaultDialectCode);

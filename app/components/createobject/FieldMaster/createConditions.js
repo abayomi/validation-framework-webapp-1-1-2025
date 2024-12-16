@@ -5,6 +5,11 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import {conditionTypeOptions} from './ruleValidationCodeMap';
 
+/**
+ * Component for creating or updating conditions.
+ *
+ * @returns {JSX.Element} The rendered component.
+ */
 const CreateConditions = (props) => {
     const {eventkey, isUpdate, onConditionChange, item } = props
     const disabled = isUpdate && item.id;
