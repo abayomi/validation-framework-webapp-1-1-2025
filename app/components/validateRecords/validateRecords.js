@@ -14,6 +14,11 @@ import DropdownMenu from "../common/DropdownMenu";
 import { propertyGet } from "../../lib/arrayHelper";
 import AlertWindow from "./alertWindow";
 
+/**
+ * Component for validating records.
+ *
+ * @returns {JSX.Element}
+ */
 const ValidateRecords = () => {
   const initRecordId = 10;
   const [objectName, setObjectName] = useState('');
@@ -88,6 +93,12 @@ const ValidateRecords = () => {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
+  /**
+   * Handles changes to the records by updating the record items state.
+   *
+   * @param {number} index - The index of the record item to update.
+   * @param {Object} currentRecordItem - The updated record item.
+   */
   const handleRecordsChange = (index, currentRecordItem) => {
     const updateRecordItems = [...recordItems];
     updateRecordItems[index] = currentRecordItem;
@@ -95,6 +106,11 @@ const ValidateRecords = () => {
     setRecordItems(updateRecordItems);
   }
 
+  /**
+   * Handles the form submission by creating a batch object and loading validation records.
+   *
+   * @param {Object} e - The event object.
+   */
   const handleSubmit = (e) => {
     e.preventDefault();
     const batch = {
@@ -113,12 +129,23 @@ const ValidateRecords = () => {
     handleShow();
   }
 
+  /**
+   * Handles the click event for the add button, adding a new record item to the state.
+   *
+   * @param {Object} event - The event object.
+   */
   const onAddBtnClick = (event) => {
     const updateRecordItems = [...recordItems, { 'recordId': recordCurrentId + 1, 'fields': [{}] }];
     setRecordCurrentId(recordCurrentId + 1);
     setRecordItems(updateRecordItems);
   };
 
+  /**
+   * Maps the object list to an array of objects containing key-value pairs for dropdown menu data.
+   *
+   * @param {Array} objectList - The list of objects to map.
+   * @returns {Array}
+   */
   const getDropdownMenuDataMapping = (objectList) => {
     return objectList.map(obj => {
       return {
@@ -128,6 +155,11 @@ const ValidateRecords = () => {
     });
   };
 
+  /**
+   * Deletes a record item from the state based on the provided index.
+   *
+   * @param {number} index - The index of the record item to delete.
+   */
   const onDeleteRecord = (index) => {
     const updateRecordItems = [...recordItems];
     updateRecordItems.splice(index - 1, 1);

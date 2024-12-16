@@ -54,12 +54,22 @@ const ViewFieldMaster = () => {
     }
   ];
 
+  /**
+   * Updates the row data and navigates to the update page with the provided field data.
+   *
+   * @param {Object} fieldData - The data for the field to update.
+   */
   const rowUpdate = (fieldData) => {
     // bring the dialectcode value to the update page
     const updateFieldData = { ...fieldData, dialectCode };
     navigate(`/updatemasterobject/field`, { state: { updateFieldData } });
   };
 
+  /**
+   * Handles the click event for a row in the data table, setting the rules data with unique records.
+   *
+   * @param {Object} row - The data for the clicked row.
+   */
   const onRowClicked = (row) => {
     const uniqueRules = uniqueRecords(row.rules);
     setRulesData(uniqueRules);

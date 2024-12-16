@@ -14,12 +14,18 @@ const Navbars = () => {
   const isAuth = !!localStorage.getItem(tokenKeyName);
   const navigate = useNavigate();
 
+  /**
+   * Logs in the user by setting an invalid token in local storage and navigating to the profile page.
+   */
   const loginUser = () => {
     const invalidToken = "some-login-token";
     localStorage.setItem(tokenKeyName, invalidToken);
     navigate('/profile/Vijit');
   };
 
+  /**
+   * Logs out the user by removing the token from local storage and navigating to the home page.
+   */
   const logoutUser = () => {
     localStorage.removeItem(tokenKeyName);
     navigate('/');

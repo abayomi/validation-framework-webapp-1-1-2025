@@ -1,5 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit'
 
+/**
+ * Slice for managing navigation key state.
+ */
 export const navSlice =  createSlice({
     name: 'navKey',
     initialState: {
