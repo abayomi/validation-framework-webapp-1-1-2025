@@ -110,7 +110,7 @@ function useLoadObjectFieldsData(setObjectFieldsOfSelectedRow) {
 
 /**
  * Component: Show the list of object master
- * @returns {Element}
+ * @returns {JSX.Element}
  */
 const ViewObjectMaster = () => {
   const navigate = useNavigate();
@@ -127,7 +127,13 @@ const ViewObjectMaster = () => {
   const editButtonHandler = (objectLabelName) => {
     return () => navigate(`/updatemasterobject/object/${objectLabelName}`);
   }
-  
+
+  /**
+   * Handles the delete button click event for an object label name.
+   *
+   * @param {string} objLableName - The label name of the object to delete.
+   * @returns {function} A function that handles the delete operation.
+   */
   const deleteButtonHandler = (objLableName) => {
     const changeObjMasterInUseInd = (response) => {
       const deleteValidationObject = arrayGet(propertyGet(response, 'data.DeleteValidationObject'), 0);

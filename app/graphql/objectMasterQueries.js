@@ -1,5 +1,8 @@
 import {gql} from '@apollo/client'
 
+/**
+ * GraphQL queries for managing object master data. You can get these queries from the AWS AppSync.
+ */
 const graphqlForObjectMaster = {
   FetchObjectMasterList: gql`
     query MyQuery($dialectCode: DialectCodes!) {

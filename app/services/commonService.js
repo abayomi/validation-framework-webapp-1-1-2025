@@ -1,5 +1,8 @@
 import axios from 'axios';
 
+/**
+ * @deprecated Content from the early stages of the project, currently not in use.
+ */
 export const onAuthenticate = payload => {
   const URL = 'https://jsonplaceholder.typicode.com/posts?_start=10&_limit=10';
   return axios(URL, {
@@ -15,6 +18,9 @@ export const onAuthenticate = payload => {
     });
 };
 
+/**
+ * @deprecated Content from the early stages of the project, currently not in use.
+ */
 export const onAuthenticate2 = payload => {
   const URL = 'https://jsonplaceholder.typicode.com/posts?_start=10&_limit=10';
   return axios(URL, {

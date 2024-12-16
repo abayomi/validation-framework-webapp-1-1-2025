@@ -1,4 +1,8 @@
 "use client";
+
+/**
+ * An object containing options for different dialect codes and their corresponding language names.
+ */
 export const dialectCodeOptions = {
     "us_en": "US English",
     "ca_en": "Canadian English",
@@ -7,4 +11,7 @@ export const dialectCodeOptions = {
     "mx_es": "Mexican Spanish",
 };
 
-export const defaultDialectCode = "us_en"; // Currently, only us_en is enabled in our system.
+/**
+ * Currently, only us_en is enabled in our system.
+ */
+export const defaultDialectCode = "us_en";

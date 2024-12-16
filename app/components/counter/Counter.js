@@ -4,6 +4,11 @@ import { useSelector, useDispatch } from 'react-redux'
 import { decrement, increment } from './counterSlice'
 import { Button } from 'react-bootstrap'
 
+/**
+ * Counter component that displays the current count and provides buttons to increment or decrement the count.
+ *
+ * @returns {JSX.Element}
+ */
 const Counter = () => {
     const count = useSelector(state => state.counter.value)
     const dispatch = useDispatch()

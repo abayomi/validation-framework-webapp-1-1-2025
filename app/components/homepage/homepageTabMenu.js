@@ -7,7 +7,7 @@ import { useLocation } from "react-router-dom";
 
 /**
  * Component: Show the menu on the homepage
- * @returns {Element}
+ * @returns {JSX.Element}
  */
 const HomepageTabMenu = ({ tabKey = 'viewObjectMaster' }) => {  
   console.log(tabKey);

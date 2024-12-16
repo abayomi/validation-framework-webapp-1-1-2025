@@ -25,6 +25,12 @@ export const conditionTypeOptions = {
     '6': '6 - ARG Params'
 };
 
+/**
+ * Returns an array of error code options based on the provided validation code.
+ *
+ * @param {string} validationCode - The validation code to get error code options for.
+ * @returns {string[]} An array of error code options.
+ */
 export const getErrorCodeOptions = (validationCode) => {
     switch (validationCode) {
         case '1':
@@ -42,6 +48,12 @@ export const getErrorCodeOptions = (validationCode) => {
     }
 };
 
+/**
+ * Returns an array of condition objects based on the provided validation code.
+ *
+ * @param {string} validationCode - The validation code to get conditions for.
+ * @returns {Object[]}
+ */
 export const getConditions = (validationCode) => {
     switch (validationCode) {
         case '1':

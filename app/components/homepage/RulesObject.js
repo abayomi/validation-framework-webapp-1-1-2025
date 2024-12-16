@@ -7,7 +7,7 @@ import Conditions from "./Conditions";
 
 /**
  * Component: Show the list of validation rules of an object field
- * @returns {Element}
+ * @returns {JSX.Element}
  */
 const RulesObject = ({ruleList, isRowExpanded = true}) => {
     // About DataTable's column, refer to https://react-data-table-component.netlify.app/?path=/docs/api-columns--docs

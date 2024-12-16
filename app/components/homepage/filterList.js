@@ -6,7 +6,7 @@ import { dialectCodeOptions } from "../config/dialectCodeMap";
 
 /**
  * Component: A shared search box for both pages "Object Master" and "Field Master".
- * @returns {Element}
+ * @returns {JSX.Element}
  */
 const FilterList = ({ dialectCode, filterText, inputPlaceHolder, onFilterTextChanged, onRefreshClicked, onDialectCodeChanged }) => {
     return (

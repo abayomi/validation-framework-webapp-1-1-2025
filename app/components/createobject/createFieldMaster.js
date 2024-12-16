@@ -11,6 +11,10 @@ import { dialectCodeOptions, defaultDialectCode } from "../config/dialectCodeMap
 import { uniqueRecords } from "../../lib/arrayHelper";
 import { CREATE_ENTERPRISE_FIELD, REMOVE_RULE_FROM_ENTERPRISE_FIELD } from "../../graphql/fieldMasterMutations";
 
+/**
+ * Component: The form of creating or editing a field master
+ * @returns {JSX.Element}
+ */
 const CreateFieldMasterObject = ({ location, confirmFunction = window.confirm }) => {
   const isUpdate = Boolean(location.pathname === "/updatemasterobject/object" || location.pathname === "/updatemasterobject/field");
   const navigate = useNavigate();
@@ -97,16 +101,29 @@ const CreateFieldMasterObject = ({ location, confirmFunction = window.confirm })
     }
   }, [removeData, removeError]);
 
+  /**
+   * Handles the click event for the add button, setting the state to add a new rule item.
+   */
   const onAddBtnClick = () => {
     setAdding(true);
     setActiveKey(0);
     setRuleItems((prev) => [...prev, { 'id': 0 }]);
   };
 
+  /**
+   * Handles the click event for the back button, navigating to the home page with a specific tab key.
+   */
   const onBackBtnClick = () => {
     navigate('/', { state: { tabKey: 'viewFieldMaster' } });
   };
 
+  /**
+   * Handles the click event for deleting a rule.
+   *
+   * @param {Object} e - The event object.
+   * @param {number} index - The index of the rule to delete.
+   * @returns {Promise<void>}
+   */
   const deleteOnClick = async (e, index) => {
     console.log(index);
     e.stopPropagation();
@@ -131,6 +148,10 @@ const CreateFieldMasterObject = ({ location, confirmFunction = window.confirm })
     setAdding(false);
   };
 
+  /**
+   * Handling input changes
+   * @returns {void}
+   */
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
@@ -138,6 +159,11 @@ const CreateFieldMasterObject = ({ location, confirmFunction = window.confirm })
     });
   };
 
+  /**
+   * Handle form submission
+   * @param e
+   * @returns {Promise<void>}
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {

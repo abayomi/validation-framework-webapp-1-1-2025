@@ -1,6 +1,5 @@
 "use client";
 import styles from "./page.module.css";
-import About from  "./components/about/about";
 import Counter from "./components/counter/Counter";
 import Navbar from "./components/navbar/Navbar";
 import Profile from "./components/profile/Profile";
@@ -39,6 +38,10 @@ const link = from([
   })
 ]);
 
+/**
+ * Creates an Apollo Client instance.
+ * @type {ApolloClient<NormalizedCacheObject>}
+ */
 const client = new ApolloClient({
   cache: new InMemoryCache(),
   link: link,
@@ -54,6 +57,10 @@ const client = new ApolloClient({
   }
 });
 
+/**
+ * Home component that sets up the main application structure.
+ * @returns {JSX.Element}
+ */
 export default function Home() {
   const [isBrowser, setIsBrowser] = useState(false);
 
@@ -71,7 +78,6 @@ export default function Home() {
             <div className="container mt-2" style={{ marginTop: "40px" }}>
               <Routes>
                 <Route path="/" element={ <ViewTabMenu /> } />
-                <Route path="about" element={ <About /> } />          
                 <Route path="counter" element={ <Counter /> } />
                 <Route path="profile/:name" element={ <Profile /> }/>              
                 <Route path="createmasterobject" element={ <TabMenu /> } />        

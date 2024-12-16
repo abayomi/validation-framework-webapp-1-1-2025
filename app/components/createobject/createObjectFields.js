@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
@@ -92,7 +92,7 @@ function getRuleIdList(existingRuleList) {
  * @param {String} fieldMasterName
  * @param {function} onChangeHandler
  * @param {String} fieldUUID
- * @returns {Element}
+ * @returns {JSX.Element}
  */
 function renderRuleList(groupedOriginalRuleList, currObjMasterRules, fieldMasterName, onChangeHandler, fieldUUID) {
     if (variableHelper.isEmptyObject(currObjMasterRules)) {
@@ -160,7 +160,7 @@ function hasValidFieldRules(rules) {
 /**
  * Component: create or edit an object master
  * @param {Object} props
- * @returns {Element}
+ * @returns {JSX.Element}
  * @constructor
  */
 const CreateObjectFields = (props) => {

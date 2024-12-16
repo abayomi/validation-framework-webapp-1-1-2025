@@ -5,7 +5,11 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { useState } from "react";
 
-
+/**
+ * Component for rendering and managing object fields.
+ *
+ * @returns {JSX.Element} The rendered object fields component.
+ */
 const ObjectFields = (props) => {
     const {deleteRow, id, item, fieldNameList, onChange} = props
     const [fieldItem, setFieldItem] = useState( item ?? []);

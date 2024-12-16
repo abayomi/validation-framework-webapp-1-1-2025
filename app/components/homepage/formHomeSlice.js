@@ -1,5 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit'
 
+/**
+ * Slice for managing form home state.
+ */
 export const formHomeSlice =  createSlice({
     name: 'user',
     initialState: {

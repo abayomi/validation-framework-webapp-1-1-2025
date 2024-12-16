@@ -2,14 +2,16 @@
 import { useState } from "react";
 import withAuth from "../withAuth";
 import { useSelector, useDispatch } from 'react-redux'
-import Form from 'react-bootstrap/Form';
-import { nameChange, emailChange, fieldsDataChange } from "./formHomeSlice";
+import { fieldsDataChange } from "./formHomeSlice";
 import Button from 'react-bootstrap/Button';
 import DataTable from 'react-data-table-component';
 import data from "./data";
 import FieldsObject from "./fieldsObject";
 import { useNavigate } from "react-router-dom";
 
+/**
+ * @deprecated An UI at the beginning of the project is no longer used.
+ */
 const Home = () => {
   const name = useSelector(state => state.user.name)
   const email = useSelector(state => state.user.email)
@@ -18,6 +20,13 @@ const Home = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate();
 
+  /**
+   * Creates table data by adding a fieldsCount property to each item and pushing it to the table object.
+   *
+   * @param {Array} data - The array of data items.
+   * @param {Array} tableObj - The table object to push the modified items into.
+   * @returns {Array<Object>}
+   */
   const createTableDataWithObjProp = (data, tableObj) => {
     return data.map(item => {
       item.fieldsCount = item.fields.length
@@ -26,6 +35,12 @@ const Home = () => {
     });
   };
 
+  /**
+   * Transforms the provided data and returns a JSX element displaying a data table.
+   *
+   * @param {Array} data - The array of data items to transform.
+   * @returns {JSX.Element}
+   */
   const transformData = (data) => {
     let tableObj = [];
     createTableDataWithObjProp(
@@ -74,14 +89,20 @@ const Home = () => {
       reorder: false
     }
   ];
-  const onRowClicked = (row, event) => { 
+
+  /**
+   * Handles the click event for a row in the data table.
+   *
+   * @param {Object} row - The data for the clicked row.
+   */
+  const onRowClicked = (row) => {
     dispatch(fieldsDataChange(row))
     setFieldsTable(true);
     setFieldsData(row);
   };
 
   const objectMetaData = data.data.FetchObjectMetaData;
-  const ExpandedComponent = ({ data1 }) => <pre>{JSON.stringify(data1, null, 2)}</pre>;
+
   return (
     <div>
       {transformData(objectMetaData)}

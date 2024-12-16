@@ -3,6 +3,17 @@ import { Card, Row, Col, Form, Button } from 'react-bootstrap';
 import ObjectFields from './objectFields';
 import { useState } from "react";
 
+/**
+ * Component for rendering and managing a record card with fields.
+ *
+ * @param {Object} props - The component props.
+ * @param {number} props.id - The unique identifier for the record item.
+ * @param {Object} props.item - The record item object.
+ * @param {function} props.onChange - The function to call when a record value changes.
+ * @param {Array} props.fieldNameList - The list of field names.
+ * @param {function} props.onDelete - The function to call when the delete button is clicked.
+ * @returns {JSX.Element}
+ */
 const RecordCard = ({ id, item, onChange, fieldNameList, onDelete }) => {
     const [recordItem, setRecordItem] = useState(item ?? {});
     const [fieldItems, setFieldItems] = useState(item?.fields ?? []);
