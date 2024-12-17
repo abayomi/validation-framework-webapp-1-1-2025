@@ -514,9 +514,6 @@ describe('The test cases for the function checkUserChanges()', () => {
         changedFormData.fieldItems[0].rules = changedFormData.fieldItems[0].rules.slice(0, 1);
 
         const result = checkUserChanges(changedFormData, formDataSnapshot);
-
-        //console.log(JSON.stringify(result));
-
         const hasRemoveValidationFromObjectField = result.find(item => 'RemoveValidationFromObjectField' === item.apiName);
         expect(hasRemoveValidationFromObjectField instanceof Object).toBe(true);
     });
@@ -535,7 +532,6 @@ describe('The test cases for the function checkUserChanges()', () => {
         ];
 
         const result = checkUserChanges(changedFormData, formDataSnapshot);
-
         const hasAddValidationToObjectField = result.find(item => 'AddValidationToObjectField' === item.apiName);
         expect(hasAddValidationToObjectField instanceof Object).toBe(true);
     });
