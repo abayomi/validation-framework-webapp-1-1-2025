@@ -26,7 +26,7 @@ import { uniqueRecords } from "../../../lib/arrayHelper";
  * @param {function} props.deleteOnClick - The function to call when the delete button is clicked.
  * @returns {JSX.Element}
  */
-function CustomToggle({ eventkey, deleteOnClick }) {
+function CustomToggle({ eventkey, onDeleteClick }) {
 
     const decoratedOnClick = useAccordionButton(eventkey);
 
@@ -37,7 +37,7 @@ function CustomToggle({ eventkey, deleteOnClick }) {
                     Rule - {eventkey == '0' ? 'New' : eventkey}
                 </span>
             </div>
-            <Button variant="danger" size="sm" onClick={(e) => deleteOnClick(e, eventkey)}>
+            <Button variant="danger" size="sm" onClick={(e) => onDeleteClick(e, eventkey)}>
                 Delete
             </Button>
         </div>
@@ -49,7 +49,7 @@ function CustomToggle({ eventkey, deleteOnClick }) {
  *
  * @returns {JSX.Element}
  */
-const CreateRules = ({ eventkey, isUpdate, deleteOnClick, item, fieldMasterId = 0, dialectCode, ruleGroupNumberList }) => {
+const CreateRules = ({ eventkey, isUpdate, onDeleteClick, item, fieldMasterId = 0, dialectCode, ruleGroupNumberList }) => {
 
     const disabled = isUpdate && item.id > 0;
     const navigate = useNavigate();
@@ -143,13 +143,13 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, item, fieldMasterId = 
     return (
         <div key={eventkey}>
             <Accordion.Item eventkey={eventkey}>
-                <CustomToggle eventkey={eventkey} deleteOnClick={deleteOnClick} />
+                <CustomToggle eventkey={eventkey} onDeleteClick={onDeleteClick} />
                 <Accordion.Collapse eventKey={eventkey}>
                     <div className="p-2">
                         <Form onSubmit={handleSubmit} data-testid='rule-form-element'>
                             <Row>
                                 <Form.Group as={Col} xs={3} className="mb-3" controlId="validationRuleCode">
-                                    <Form.Label>Validation Code</Form.Label>
+                                <Form.Label>Validation Code <b>*</b></Form.Label>
                                     <Form.Select aria-label="Validation code" name="type" value={rule.type} onChange={handleChange} disabled={disabled} required>
                                         <option></option>
                                         {Object.entries(validationCodeOptions).map(([key, value]) => (
@@ -159,7 +159,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, item, fieldMasterId = 
                                 </Form.Group>
 
                                 <Form.Group as={Col} className="mb-3" xs={6} controlId="errorCode">
-                                    <Form.Label>Validation Error Code</Form.Label>
+                                <Form.Label>Validation Error Code <b>*</b></Form.Label>
                                     <Form.Select aria-label="Validation errorMessage" name="errorCode" value={rule.errorCode} onChange={handleChange} disabled={disabled} required>
                                         {getErrorCodeOptions(rule.type).map((key) => (
                                             <option key={key} value={key}>
@@ -170,7 +170,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, item, fieldMasterId = 
                                 </Form.Group>
 
                                 <Form.Group as={Col} className="mb-3" controlId="ruleGroupNumber">
-                                    <Form.Label>Rule Group Number</Form.Label>
+                                <Form.Label>Rule Group Number <b>*</b></Form.Label>
                                     <InputGroup className="mb-3">
                                         <Form.Control type="text" name="ruleGroupNumber" value={ruleGroupNumber ?? ''} placeholder="" onChange={e => setRuleGroupNumber(e.target.value)} disabled={disabled} required />
                                         {!disabled && ruleGroupNumberList.length > 0 && <DropdownButton
@@ -190,7 +190,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, item, fieldMasterId = 
                             </Row>
                             <Row>
                                 <Form.Group className="mb-3 col-3" as={Col} controlId="dialectCode">
-                                    <Form.Label>Dialect code</Form.Label>
+                                <Form.Label>Dialect code <b>*</b></Form.Label>
                                     <Form.Select aria-label="Dialect code" value={rule.dialectCode ?? dialectCode} disabled required>
                                         {Object.entries(dialectCodeOptions).map(([key, value]) => (
                                             <option key={key} value={key}>{value}</option>
@@ -205,7 +205,7 @@ const CreateRules = ({ eventkey, isUpdate, deleteOnClick, item, fieldMasterId = 
                                     </Form.Check>
                                 </Form.Group>
                                 <Form.Group as={Col} className="mb-3" xs={3} controlId="shortDescription">
-                                    <Form.Label>Short Description</Form.Label>
+                                    <Form.Label>Short Description <b>*</b></Form.Label>
                                     <Form.Control type="text" name="shortDescription" value={rule.shortDescription ?? ""} placeholder="" onChange={handleChange} disabled={disabled} required />
                                 </Form.Group>
                                 <Form.Group as={Col} className="mb-3" controlId="longDescription">

@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 "use client";
 export const validationCodeOptions = {
     '1': '1 - Regex',

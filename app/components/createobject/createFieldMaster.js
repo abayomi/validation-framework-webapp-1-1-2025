@@ -8,15 +8,15 @@ import CreateRules from "./FieldMaster/createRules";
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
 import { dialectCodeOptions, defaultDialectCode } from "../config/dialectCodeMap";
-import { uniqueRecords } from "../../lib/arrayHelper";
+import { uniqueRecords, propertyGet } from "../../lib/arrayHelper";
 import { CREATE_ENTERPRISE_FIELD, REMOVE_RULE_FROM_ENTERPRISE_FIELD } from "../../graphql/fieldMasterMutations";
 
 /**
  * Component: The form of creating or editing a field master
  * @returns {JSX.Element}
  */
-const CreateFieldMasterObject = ({ location, confirmFunction = window.confirm }) => {
-  const isUpdate = Boolean(location.pathname === "/updatemasterobject/object" || location.pathname === "/updatemasterobject/field");
+const CreateFieldMasterObject = ({ location }) => {
+  const isUpdate = Boolean(location.pathname === "/updatemasterobject/field");
   const navigate = useNavigate();
   const [dialectCode, setDialectCode] = useState(defaultDialectCode);
   const emptyFormData = {
@@ -39,7 +39,7 @@ const CreateFieldMasterObject = ({ location, confirmFunction = window.confirm })
   useEffect(() => {
     if (isUpdate && location.state) {
       setAdding(false);
-      const fieldData = location.state.updateFieldData;
+      const fieldData = propertyGet(location, 'state.updateFieldData');
       if (!fieldData) {
         return;
       }
@@ -62,7 +62,7 @@ const CreateFieldMasterObject = ({ location, confirmFunction = window.confirm })
       setFormData(emptyFormData);
       setRuleItems([]);
     }
-  }, [isUpdate, location.state]);
+  }, [isUpdate, location]);
 
   useEffect(() => {
     if (createData) {
@@ -84,14 +84,9 @@ const CreateFieldMasterObject = ({ location, confirmFunction = window.confirm })
   useEffect(() => {
     if (removeData) {
       const { RemoveRuleFromEnterpriseField } = removeData;
-      let removeDeleteId = deleteId;
-      // for testing
-      if (confirmFunction !== window.confirm) {
-        removeDeleteId = 1;
-      }
-      if (RemoveRuleFromEnterpriseField.status && removeDeleteId) {
-        alert(`Deleted successfully: ${removeDeleteId}`);
-        const updatedRuleItems = ruleItems.filter(item => item.id !== removeDeleteId);
+      if (RemoveRuleFromEnterpriseField.status && deleteId) {
+        alert(`Deleted successfully: ${deleteId}`);
+        const updatedRuleItems = ruleItems.filter(item => item.id !== deleteId);
         setRuleItems(updatedRuleItems);
         setDeleteId(null);
       }
@@ -114,26 +109,32 @@ const CreateFieldMasterObject = ({ location, confirmFunction = window.confirm })
    * Handles the click event for the back button, navigating to the home page with a specific tab key.
    */
   const onBackBtnClick = () => {
+    const userConfirmed = confirm("Are you sure you want to return the list page?");
+
+    if (!userConfirmed) {
+      return;
+    }
+
     navigate('/', { state: { tabKey: 'viewFieldMaster' } });
   };
 
   /**
-   * Handles the click event for deleting a rule.
-   *
-   * @param {Object} e - The event object.
-   * @param {number} index - The index of the rule to delete.
-   * @returns {Promise<void>}
-   */
-  const deleteOnClick = async (e, index) => {
+    * Handles the click event for deleting a rule.
+    *
+    * @param {Object} e - The event object.
+    * @param {number} index - The index of the rule to delete.
+    * @returns {Promise<void>}
+    */
+  const onDeleteClick = async (e, index) => {
     console.log(index);
     e.stopPropagation();
+    const userConfirmed = confirm("Are you sure you want to delete this rule?");
+
+    if (!userConfirmed) {
+      return;
+    }
+
     if (index > 0) {
-      const userConfirmed = confirmFunction("Are you sure you want to delete this rule?");
-
-      if (!userConfirmed) {
-        return;
-      }
-
       const variables = {
         field_valid_rule_id: index,
       };
@@ -142,10 +143,11 @@ const CreateFieldMasterObject = ({ location, confirmFunction = window.confirm })
       setDeleteId(index);
       await removeRuleFromEnterpriseField({ variables });
     }
-
-    const updatedRuleItems = ruleItems.filter(item => item.id !== index);
-    setRuleItems(updatedRuleItems);
-    setAdding(false);
+    else {
+      const updatedRuleItems = ruleItems.filter(item => item.id !== index);
+      setRuleItems(updatedRuleItems);
+      setAdding(false);
+    }
   };
 
   /**
@@ -198,7 +200,7 @@ const CreateFieldMasterObject = ({ location, confirmFunction = window.confirm })
           <Form.Control type="text" placeholder="" value={formData.fieldMasterId} disabled />
         </Form.Group>
         <Form.Group className="mb-3 col-3" as={Col} controlId="dialectCode">
-          <Form.Label>Dialect Code</Form.Label>
+          <Form.Label>Dialect Code <b>*</b></Form.Label>
           <Form.Select aria-label="Dialect code" value={formData.dialectCode} onChange={handleInputChange} disabled={isUpdate} required>
             <option value=""></option>
             {Object.entries(dialectCodeOptions).map(([key, value]) => (
@@ -207,11 +209,11 @@ const CreateFieldMasterObject = ({ location, confirmFunction = window.confirm })
           </Form.Select>
         </Form.Group>
         <Form.Group className="mb-3 col-10" as={Col} controlId="fieldName">
-          <Form.Label>Field Name</Form.Label>
+          <Form.Label>Field Name <b>*</b></Form.Label>
           <Form.Control type="text" placeholder="" value={formData.fieldName} onChange={handleInputChange} disabled={isUpdate} required />
         </Form.Group>
         <Form.Group className="mb-3 col-10" as={Col} controlId="fieldDefinition">
-          <Form.Label>Field Definition</Form.Label>
+          <Form.Label>Field Definition <b>*</b></Form.Label>
           <Form.Control as="textarea" rows={2} placeholder="" value={formData.fieldDefinition} onChange={handleInputChange} disabled={isUpdate} required />
         </Form.Group>
         <Form.Check className="mb-3 col-10" id="enterpriseFieldInd">
@@ -250,10 +252,10 @@ const CreateFieldMasterObject = ({ location, confirmFunction = window.confirm })
         {ruleItems.map((item, index) => {
           return (
             <CreateRules
-              key={item.id ?? '0'}
-              eventkey={item.id ?? '0'}
+              key={item.id}
+              eventkey={item.id}
               isUpdate={isUpdate}
-              deleteOnClick={deleteOnClick}
+              onDeleteClick={onDeleteClick}
               item={item}
               fieldMasterId={formData.fieldMasterId}
               dialectCode={dialectCode}

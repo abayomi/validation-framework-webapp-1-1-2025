@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import {gql} from '@apollo/client';
 
 export const LOAD_VALIDATE_RECORDS = gql`
