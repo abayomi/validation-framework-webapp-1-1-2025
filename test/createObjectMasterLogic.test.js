@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React from "react";
 import {
     formatFieldRules,
     formatFormData,
     getAddedRulesForField,
     newEmptyFieldItem,
     updateFieldItems,
-    replaceFieldItem
+    replaceFieldItem,
+    updateHandlerLogic
 } from "@/app/components/createobject/createObjectMasterLogic.js";
 
 const mockRawRules = [
@@ -43,6 +44,60 @@ const mockFormData = {
     ]
 };
 
+const mockAPIsToBeCalledFirstGroup = [
+    {
+        "apiName": "RemoveFieldFromObject",
+        "variables": {
+            "xrefIds": ["1712", "1713"]
+        }
+    },
+    {
+        "apiName": "AddFieldToObject",
+        "variables": {
+            "addFields": [
+                {
+                    "fieldMasterId": "2",
+                    "objectFieldName": "test 222",
+                    "objectMasterId": "390"
+                },
+                {
+                    "fieldMasterId":"13",
+                    "objectFieldName":"test 333",
+                    "objectMasterId":"390"
+                }
+            ]
+        },
+        "extraData": {
+            "rulesToBeAdded": [
+                {
+                    "fieldMasterId": "2",
+                    "rules": [
+                        {
+                            "id": "2",
+                            "ruleGroupNumber": 10,
+                            "longDescription": "Corp code / client number valid",
+                            "shortDescription": "Corp cd/cli no valid",
+                            "isMandatory": true
+                        }
+                    ]
+                },
+                {
+                    "fieldMasterId":"13",
+                    "rules":[
+                        {
+                            "id":"13",
+                            "ruleGroupNumber":10,
+                            "longDescription":"Currency code (USD)",
+                            "shortDescription":"Currency cd (USD)",
+                            "isMandatory":true
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+];
+
 // Run: npm test -- createObjectMasterLogic.test.js
 describe('The test cases for the function newEmptyFieldItem()', () => {
     it('Function newEmptyFieldItem() 1st test case', () => {
@@ -54,60 +109,6 @@ describe('The test cases for the function newEmptyFieldItem()', () => {
 });
 
 describe('The test cases for the function getAddedRulesForField()', () => {
-    const mockAPIsToBeCalledFirstGroup = [
-        {
-            "apiName": "RemoveFieldFromObject",
-            "variables": {
-                "xrefIds": ["1712", "1713"]
-            }
-        },
-        {
-            "apiName": "AddFieldToObject",
-            "variables": {
-                "addFields": [
-                    {
-                        "fieldMasterId": "2",
-                        "objectFieldName": "test 222",
-                        "objectMasterId": "390"
-                    },
-                    {
-                        "fieldMasterId":"13",
-                        "objectFieldName":"test 333",
-                        "objectMasterId":"390"
-                    }
-                ]
-            },
-            "extraData": {
-                "rulesToBeAdded": [
-                    {
-                        "fieldMasterId": "2",
-                        "rules": [
-                            {
-                                "id": "2",
-                                "ruleGroupNumber": 10,
-                                "longDescription": "Corp code / client number valid",
-                                "shortDescription": "Corp cd/cli no valid",
-                                "isMandatory": true
-                            }
-                        ]
-                    },
-                    {
-                        "fieldMasterId":"13",
-                        "rules":[
-                            {
-                                "id":"13",
-                                "ruleGroupNumber":10,
-                                "longDescription":"Currency code (USD)",
-                                "shortDescription":"Currency cd (USD)",
-                                "isMandatory":true
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
-    ];
-
     it('Function getAddedRulesForField() 1st test case', () => {
         const mockFieldMasterId = '2'; // Should be a string
         const result = getAddedRulesForField(mockAPIsToBeCalledFirstGroup, mockFieldMasterId);
@@ -227,7 +228,6 @@ describe('The test cases for the function replaceFieldItem()', () => {
     });
 });
 
-
 describe('The test cases for the function updateFieldItems()', () => {
     // Mock useState
     const setState = jest.fn();
@@ -248,5 +248,83 @@ describe('The test cases for the function updateFieldItems()', () => {
             ...mockFormData,
             fieldItems: [newItemValue]
         });
+    });
+});
+
+describe('The test cases for the class updateHandlerLogic', () => {
+    it('Method getAddedObjectFieldList() 1st test case', () => {
+        const mockQueryResponseList = {
+            AddFieldToObject: {
+                data: {
+                    AddFieldToObject: [
+                        {
+                            objectFieldXrefId: '1413',
+                            objectMasterId: '37',
+                            fieldMasterId: '11'
+                        },
+                        {
+                            objectFieldXrefId: '1415',
+                            objectMasterId: '38',
+                            fieldMasterId: '12'
+                        }
+                    ]
+                }
+            }
+        };
+        const result = updateHandlerLogic.getAddedObjectFieldList(mockQueryResponseList);
+        expect(result.length).toBe(2);
+    });
+
+    it('Method runMutationQuery() 1st test case', async () => {
+        const apisToBeCalled = [
+            {apiName: 'api1', variables: {var1: 'value1'}},
+            {apiName: 'api2', variables: {var2: 'value2'}}
+        ];
+
+        const mutationQueryList = {
+            api1: {mutationHandler: jest.fn().mockResolvedValue('response1')},
+            api2: {mutationHandler: jest.fn().mockResolvedValue('response2')}
+        };
+
+        const expectedResponse = {
+            api1: 'response1',
+            api2: 'response2'
+        };
+
+        const result = await updateHandlerLogic.runMutationQuery(apisToBeCalled, mutationQueryList);
+
+        expect(result).toEqual(expectedResponse);
+        expect(mutationQueryList.api1.mutationHandler).toHaveBeenCalledWith({ variables: { var1: 'value1' } });
+        expect(mutationQueryList.api2.mutationHandler).toHaveBeenCalledWith({ variables: { var2: 'value2' } });
+    });
+});
+
+describe('The test cases for the class getValidationsToBeAdded', () => {
+    it('Method getValidationsToBeAdded() 1st test case', () => {
+        const mockAddedObjectFieldList = []; // Test: Empty array
+        const result = updateHandlerLogic.getValidationsToBeAdded(mockAddedObjectFieldList, mockAPIsToBeCalledFirstGroup);
+        expect(result.length).toBe(0);
+    });
+
+    it('Method getValidationsToBeAdded() 2nd test case', () => {
+        const mockAddedObjectFieldList = [
+            {
+                objectFieldXrefId: '1314',
+                fieldMasterId: '2'
+            }
+        ];
+        const result = updateHandlerLogic.getValidationsToBeAdded(mockAddedObjectFieldList, mockAPIsToBeCalledFirstGroup);
+        expect(result.length).toBe(1);
+    });
+
+    it('Method getValidationsToBeAdded() 3rd test case', () => {
+        const mockAddedObjectFieldList = [
+            {
+                objectFieldXrefId: '1314',
+                fieldMasterId: '200' // Test: No such fieldMasterId
+            }
+        ];
+        const result = updateHandlerLogic.getValidationsToBeAdded(mockAddedObjectFieldList, mockAPIsToBeCalledFirstGroup);
+        expect(result.length).toBe(0);
     });
 });
