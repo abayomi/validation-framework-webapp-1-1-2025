@@ -22,6 +22,7 @@ Run `npm test -- viewObjectMaster.test.js`
 * [Common Test Scenarios with React Testing Library](https://react-testing-library-examples.netlify.app/)
 * [Firing Events](https://testing-library.com/docs/dom-testing-library/api-events/)
 * [Best Practices for Writing Tests with React Testing Library](https://claritydev.net/blog/improving-react-testing-library-tests#google_vignette)
+* [How to ignore lines in Jest](https://github.com/istanbuljs/nyc?tab=readme-ov-file#parsing-hints-ignoring-lines)
 
 ## GraphQL references
 
