@@ -1,3 +1,5 @@
+/* npm test -- createObjectMasterLogic.test.js */
+
 import React from "react";
 import {
     formatFieldRules,
@@ -6,8 +8,11 @@ import {
     newEmptyFieldItem,
     updateFieldItems,
     replaceFieldItem,
-    updateHandlerLogic
+    updateHandlerLogic,
+    checkObjFieldRulesChanged,
+    checkUserChanges
 } from "@/app/components/createobject/createObjectMasterLogic.js";
+import variableHelper from "@/app/lib/variableHelper";
 
 const mockRawRules = [
     {
@@ -326,5 +331,212 @@ describe('The test cases for the class getValidationsToBeAdded', () => {
         ];
         const result = updateHandlerLogic.getValidationsToBeAdded(mockAddedObjectFieldList, mockAPIsToBeCalledFirstGroup);
         expect(result.length).toBe(0);
+    });
+});
+
+describe('The test cases for the function checkObjFieldRulesChanged()', () => {
+    const mockFieldToBeChecked = {
+        "id": "396537e5-b076-4979-af56-2492fc215788",
+        "objectFieldName": "dec 9 after ",
+        "fieldMasterName": "cntry_cd",
+        "fieldMasterId": "12",
+        "fieldXrefId": "1717",
+        "rules": [
+            {
+                "id": "11",
+                "ruleGroupNumber": 10,
+                "longDescription": "Regular expression",
+                "shortDescription": "Regex",
+                "isMandatory": true
+            }
+        ]
+    };
+    const mockFieldSnapshot = [
+        {
+            "id": "1f44ffc2-05a6-4443-b28e-b02e24b674eb",
+            "objectFieldName": "acih_dlr_asgn_no_20241202_2057",
+            "fieldMasterName": ">0",
+            "fieldMasterId": "37",
+            "fieldXrefId": "1713",
+            "rules": [
+                {
+                    "id": "39",
+                    "ruleGroupNumber": 10,
+                    "longDescription": "Regular expression",
+                    "shortDescription": "Regex",
+                    "isMandatory": true
+                }
+            ]
+        },
+        {
+            "id": "396537e5-b076-4979-af56-2492fc215788",
+            "objectFieldName": "dec 9 after ",
+            "fieldMasterName": "cntry_cd",
+            "fieldMasterId": "12",
+            "fieldXrefId": "1717",
+            "rules": [
+                {
+                    "id": "11",
+                    "ruleGroupNumber": 10,
+                    "longDescription": "Regular expression",
+                    "shortDescription": "Regex",
+                    "isMandatory": true
+                }
+            ]
+        },
+        {
+            "id": "e705ad4c-3c28-45fc-b39e-048913117adc",
+            "objectFieldName": "test rule",
+            "fieldMasterName": ">0",
+            "fieldMasterId": "37",
+            "fieldXrefId": "1714",
+            "rules": [
+                {
+                    "id": "39",
+                    "ruleGroupNumber": 10,
+                    "longDescription": "Regular expression",
+                    "shortDescription": "Regex",
+                    "isMandatory": true
+                }
+            ]
+        }];
+
+    it('Function checkObjFieldRulesChanged() 1st test case', () => {
+        const result = checkObjFieldRulesChanged(mockFieldToBeChecked, mockFieldSnapshot);
+        expect(result.addedRules.length).toBe(0);
+        expect(result.removedRules.length).toBe(0);
+    });
+
+    it('Function checkObjFieldRulesChanged() 2nd test case', () => {
+        const fieldToBeChecked = {...mockFieldToBeChecked, id: 'no-such-id'};
+        const result = checkObjFieldRulesChanged(fieldToBeChecked, mockFieldSnapshot);
+        expect(result.addedRules.length).toBe(0);
+        expect(result.removedRules.length).toBe(0);
+    });
+
+    it('Function checkObjFieldRulesChanged() 3rd test case', () => {
+        const fieldToBeChecked = {
+            ...mockFieldToBeChecked,
+            rules: [
+                ...mockFieldToBeChecked.rules,
+                { // Add a new rule
+                    "id": "12",
+                    "ruleGroupNumber": 10,
+                    "longDescription": "Allow Null",
+                    "shortDescription": "Allow Null",
+                    "isMandatory": true
+                }
+            ]
+        };
+        const result = checkObjFieldRulesChanged(fieldToBeChecked, mockFieldSnapshot);
+        expect(result.addedRules.length).toBe(1);
+        expect(result.removedRules.length).toBe(0);
+    });
+
+    it('Function checkObjFieldRulesChanged() 4th test case', () => {
+        const fieldToBeChecked = {
+            ...mockFieldToBeChecked,
+            rules: [
+                { // Add a new rule and remove a rule
+                    "id": "12",
+                    "ruleGroupNumber": 10,
+                    "longDescription": "Allow Null",
+                    "shortDescription": "Allow Null",
+                    "isMandatory": true
+                }
+            ]
+        };
+        const result = checkObjFieldRulesChanged(fieldToBeChecked, mockFieldSnapshot);
+        expect(result.addedRules.length).toBe(1);
+        expect(result.removedRules.length).toBe(1);
+    });
+});
+
+describe('The test cases for the function checkUserChanges()', () => {
+    const formData = mockFormData;
+    const formDataSnapshot = variableHelper.deepCopy(formData);
+
+    it('Function checkUserChanges() 1st test case', () => {
+        const result = checkUserChanges(formData, formDataSnapshot);
+        expect(result.length).toBe(0); // Nothing changes
+    });
+
+    it('Function checkUserChanges() 2nd test case', () => {
+        const changedFormData1 = {
+            ...formData,
+            objectName: 'New Test Label Name'
+        };
+        const result1 = checkUserChanges(changedFormData1, formDataSnapshot);
+        expect(result1.length).toBe(1);
+
+        const changedFormData2 = {
+            ...formData,
+            objectDef: 'New Test Def'
+        };
+        const result2 = checkUserChanges(changedFormData2, formDataSnapshot);
+        expect(result2.length).toBe(1);
+    });
+
+    it('Function checkUserChanges() 3rd test case', () => {
+        const changedFormData = {
+            ...formData,
+            objMasterInUseInd: false
+        };
+        const result = checkUserChanges(changedFormData, formDataSnapshot);
+        expect(result.length).toBe(1);
+    });
+
+    it('Function checkUserChanges() 4th test case', () => {
+        const changedFormData = {
+            ...formData,
+            fieldItems: [
+                { // Add a field and remove a field
+                    "id":"new-uuid-id",
+                    "objectFieldName":"Test Field Name",
+                    "fieldMasterName":"Test Master Name",
+                    "fieldMasterId":"138",
+                    "fieldXrefId":"1418",
+                    "rules": mockRawRules
+                }
+            ]
+        };
+        const result = checkUserChanges(changedFormData, formDataSnapshot);
+
+        const hasRemoveFieldFromObject = result.find(item => 'RemoveFieldFromObject' === item.apiName);
+        expect(hasRemoveFieldFromObject instanceof Object).toBe(true);
+
+        const hasAddFieldToObject = result.find(item => 'AddFieldToObject' === item.apiName);
+        expect(hasAddFieldToObject instanceof Object).toBe(true);
+    });
+
+    it('Function checkUserChanges() 5th test case', () => {
+        const changedFormData = formData;
+        changedFormData.fieldItems[0].rules = changedFormData.fieldItems[0].rules.slice(0, 1);
+
+        const result = checkUserChanges(changedFormData, formDataSnapshot);
+
+        //console.log(JSON.stringify(result));
+
+        const hasRemoveValidationFromObjectField = result.find(item => 'RemoveValidationFromObjectField' === item.apiName);
+        expect(hasRemoveValidationFromObjectField instanceof Object).toBe(true);
+    });
+
+    it('Function checkUserChanges() 6th test case', () => {
+        const changedFormData = formData;
+        changedFormData.fieldItems[0].rules = [
+            ...changedFormData.fieldItems[0].rules,
+            { // Add a rule
+                id: '333',
+                ruleGroupNumber: '10',
+                longDescription: 'The long description',
+                shortDescription: 'The short description',
+                isMandatory: false
+            }
+        ];
+
+        const result = checkUserChanges(changedFormData, formDataSnapshot);
+
+        const hasAddValidationToObjectField = result.find(item => 'AddValidationToObjectField' === item.apiName);
+        expect(hasAddValidationToObjectField instanceof Object).toBe(true);
     });
 });
