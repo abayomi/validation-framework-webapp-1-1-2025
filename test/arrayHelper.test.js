@@ -1,3 +1,5 @@
+/* npm test -- arrayHelper.test.js */
+
 import {
     arrayGet,
     propertyGet,
