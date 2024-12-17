@@ -403,7 +403,6 @@ updateHandlerLogic.runMutationQuery = async function (apisToBeCalled, mutationQu
     for (const api of apisToBeCalled) {
         const mutationQuery = mutationQueryList[api.apiName].mutationHandler;
         queryResponseList[api.apiName] = await mutationQuery({ variables: api.variables });
-        console.log('queryResponseList', JSON.stringify(queryResponseList));
     }
 
     return queryResponseList;
