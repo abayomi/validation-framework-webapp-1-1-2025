@@ -6,8 +6,7 @@ module.exports = {
       "^.+\\.css$": "jest-css-modules-transform"
     },
     transformIgnorePatterns: [
-      "node_modules/(?!(your-module|another-module)/)",
-      "\\.css$"
+      "node_modules/(?!(your-module|another-module)/)"
     ],
     moduleNameMapper: {
       '^@/(.*)$': '<rootDir>/$1',

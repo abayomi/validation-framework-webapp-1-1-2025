@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import DataTable from "react-data-table-component";
@@ -84,26 +84,26 @@ const formatObjectMasterList = function(apiResponseData) {
 function useLoadObjectFieldsData(setObjectFieldsOfSelectedRow) {
   // You have to use useLazyQuery(), because userQuery() can only be used at the top of a component and you can't put it in a click event. 
   // However, the objectLabelName cannot be obtained before the click event is triggered.
-  const [lazyLoadQuery, rawObjectFieldsData] = useLazyQuery(graphqlForObjectMaster.FetchObjectMetaDataByLabel);
-  const loadObjectFieldsData = (objectLabelName, dialectCode) => {
+  const [lazyLoadQuery, { data, error }] = useLazyQuery(graphqlForObjectMaster.FetchObjectMetaDataByLabel);
+  const loadObjectFieldsData = useCallback((objectLabelName, dialectCode) => {
     lazyLoadQuery({
       variables: { 
         objectLabelName: objectLabelName,
         dialectCode: dialectCode
       }
     });
-  };
+  }, [lazyLoadQuery]);
 
   useEffect(() => {
     // Show Object Fields section
-    if (rawObjectFieldsData.error) {
-      console.log('Error from GraphQL API: ', rawObjectFieldsData.error.message);
+    if (error) {
+      console.log('Error from GraphQL API: ', error);
     }
-    if (rawObjectFieldsData.data) {
-      const objectFieldList = formatObjectFieldList(rawObjectFieldsData.data.FetchObjectMetaDataByLabel);
+    if (data) {
+      const objectFieldList = formatObjectFieldList(data.FetchObjectMetaDataByLabel);
       setObjectFieldsOfSelectedRow(objectFieldList);
     }
-  }, [rawObjectFieldsData]);
+  }, [data, error]);
 
   return loadObjectFieldsData;
 }
@@ -136,8 +136,8 @@ const ViewObjectMaster = () => {
    */
   const deleteButtonHandler = (objLableName) => {
     const changeObjMasterInUseInd = (response) => {
-      const deleteValidationObject = arrayGet(propertyGet(response, 'data.DeleteValidationObject'), 0);
-      const deletedObjectMasterId = variableHelper.isObject(deleteValidationObject) ? deleteValidationObject.objectMasterId : 0;
+      const deleteResponseData = arrayGet(propertyGet(response, 'data.DeleteValidationObject'), 0);
+      const deletedObjectMasterId = variableHelper.isObject(deleteResponseData) ? deleteResponseData.objectMasterId : 0;
       if (deletedObjectMasterId > 0) {
         const updatedList = objectMasterList.map(item => {
           if (item.objectMasterId === deletedObjectMasterId) {
@@ -227,7 +227,7 @@ const ViewObjectMaster = () => {
 
   useEffect(() => {
     if (deleteValidationObjectReponse.error) {
-      console.log('Error from GraphQL API: ', deleteValidationObjectReponse.error.message);
+      console.log('Error from GraphQL API: ', deleteValidationObjectReponse.error);
     }
     if (deleteValidationObjectReponse.data) {
       console.log('Deletion successful', JSON.stringify(deleteValidationObjectReponse.data));
