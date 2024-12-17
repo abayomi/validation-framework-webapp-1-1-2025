@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 /**
  * The dummy data used for UI at the beginning of the project is no longer used.
  * @deprecated

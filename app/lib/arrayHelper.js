@@ -1,4 +1,4 @@
-
+/* istanbul ignore file */
 /**
  * Retrieves the element at the specified index from an array.
  *

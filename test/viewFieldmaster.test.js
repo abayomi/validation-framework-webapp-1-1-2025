@@ -142,7 +142,6 @@ it('filters items based on dialectCode', async () => {
   render(<ViewFieldMaster />);
 
   const selectElement = document.querySelector('select[name="select_dialectCode"]');
-  const options = Array.from(selectElement.options).map(option => option.value);
   selectElement.selectedIndex = 1;
   expect(selectElement).toBeInTheDocument();
   act(() => {

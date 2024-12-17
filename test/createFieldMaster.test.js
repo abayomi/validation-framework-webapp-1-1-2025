@@ -1,12 +1,10 @@
 import React, { act } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MockedProvider } from '@apollo/client/testing';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import CreateFieldMasterObject from '../app/components/createobject/createFieldMaster';
 import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
 import '@testing-library/jest-dom';
-import { gql, useMutation } from '@apollo/client';
-import { CREATE_ENTERPRISE_FIELD, REMOVE_RULE_FROM_ENTERPRISE_FIELD } from '../app/graphql/fieldMasterMutations';
+import { useMutation } from '@apollo/client';
 
 jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
@@ -62,85 +60,61 @@ const mockFieldUpdateWithoutRule = {
   }
 };
 
-const mocks = [
-  {
-    request: {
-      query: CREATE_ENTERPRISE_FIELD,
-      variables: {
-        dialectCode: 'en-US',
-        fieldName: 'Test Field',
-        fieldDefinition: 'This is a test field',
-        enterpriseFieldInd: false,
-        fieldMasterInUseInd: true,
-      },
-    },
-    result: {
-      data: {
-        CreateEnterpriseField: [
-          {
-            fieldMasterId: '1',
-            fieldName: 'Test Field',
-            fieldDefinition: 'This is a test field',
-          },
-        ],
-      },
-    },
-  },
-  {
-    request: {
-      query: REMOVE_RULE_FROM_ENTERPRISE_FIELD,
-      variables: {
-        field_valid_rule_id: 1,
-      },
-    },
-    result: {
-      data: {
-        RemoveRuleFromEnterpriseField: {
-          status: true,
-        },
-      },
-    },
-  },
-];
-
-useNavigate.mockReturnValue(jest.fn());
-const mockUseMutation = useMutation;
-const mockCreateField = jest.fn();
-const mockRemoveRuleField = jest.fn();
-useMutation.mockReturnValue([mockCreateField, { data: null, loading: false, error: null }]);
-useMutation.mockReturnValue([mockRemoveRuleField, { data: null, loading: false, error: null }]);
+const mockNavigate = jest.fn();
+useNavigate.mockReturnValue(mockNavigate);
+const mockMutationFunction = jest.fn();
 
 it('renders CreateFieldMasterObject and submits form', async () => {
-  const mockCreateEnterpriseField = jest.fn().mockResolvedValue({ data: null });
   const variables = {
-    fieldMasterId: 678,
-    dialectCode: "en_us",
+    dialectCode: "us_en",
     fieldName: 'Test Field',
     fieldDefinition: 'This is a test field',
-    enterpriseFieldInd: false,
+    enterpriseFieldInd: true,
     fieldMasterInUseInd: true,
   };
+  useMutation.mockImplementation((query) => {
+    const [attributes, setAttributes] = useState({});
 
-  useMutation.mockReturnValue([mockCreateEnterpriseField, { data: null, loading: false, error: null }]);
+    const useMutationMock = ({ variables: passedVariables } = {}) => {
+      console.log(passedVariables);
+      setAttributes({
+        data: {
+          CreateEnterpriseField: [passedVariables]
+        }
+      })
+    };
+    return [useMutationMock, attributes];
+  });
+  const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => { });
+
   render(<CreateFieldMasterObject location={{ pathname: '/createmasterobject/field' }} />);
 
   // Check if the form is rendered
-  expect(screen.getByLabelText('Dialect Code')).toBeInTheDocument();
+  expect(screen.getByLabelText(/Dialect Code \*/i)).toBeInTheDocument();
 
   // Fill out the form
   fireEvent.change(screen.getByLabelText(/Field Name/i), { target: { value: variables.fieldName } });
   fireEvent.change(screen.getByLabelText(/Field Definition/i), { target: { value: variables.fieldDefinition } });
+  fireEvent.click(screen.getByLabelText(/Enterprise Field Indicator/i));
 
-  const createFieldSpy = jest.spyOn({ mockCreateEnterpriseField }, 'mockCreateEnterpriseField').mockImplementation((...args) => {
-    return { data: { CreateEnterpriseField: [variables] } };
+  await act(async () => {
+   // Submit the form
+    fireEvent.click(screen.getByText(/Submit/i));
   });
-  // Submit the form
-  fireEvent.click(screen.getByText(/Submit/i));
 
-  createFieldSpy.mockRestore();
+  await waitFor(() => {
+    expect(alertSpy).toHaveBeenCalledWith('Field Master added successfully!');
+    expect(mockNavigate).toHaveBeenCalledWith('/updatemasterobject/field', expect.anything());
+    expect(screen.getByLabelText(/Field Name/i)).toHaveValue(variables.fieldName);
+    expect(screen.getByLabelText(/Field Definition/i)).toHaveValue(variables.fieldDefinition);
+    expect(screen.getByLabelText(/Enterprise Field Indicator/i)).toBeChecked();
+    expect(screen.getByLabelText(/Field Master In-Use Indicator/i)).toBeChecked();
+  });
+  
+  alertSpy.mockRestore();
 });
 
-it('should log an error when form submission fails', async () => {
+  it('should log an error when form submission fails', async () => {
   const mockCreateEnterpriseField = jest.fn().mockResolvedValue({ data: null });
   const variables = {
     fieldMasterId: 678,
@@ -155,7 +129,7 @@ it('should log an error when form submission fails', async () => {
   render(<CreateFieldMasterObject location={{ pathname: '/createmasterobject/field' }} />);
 
   // Check if the form is rendered
-  expect(screen.getByLabelText('Dialect Code')).toBeInTheDocument();
+  expect(screen.getByLabelText(/Dialect Code \*/i)).toBeInTheDocument();
 
   // Fill out the form
   fireEvent.change(screen.getByLabelText(/Field Name/i), { target: { value: variables.fieldName } });
@@ -166,97 +140,94 @@ it('should log an error when form submission fails', async () => {
   });
   // Submit the form
   const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
-  fireEvent.click(screen.getByText(/Submit/i));
+  await act(async () => {
+    fireEvent.click(screen.getByText(/Submit/i));
+  });
   expect(consoleErrorSpy).toHaveBeenCalledWith('Error submitting form:', expect.any(Error));
   createFieldSpy.mockRestore();
+  consoleErrorSpy.mockRestore();
 });
 
-it('renders CreateFieldMasterObject and deletes a rule', async () => {
-  const mockConfirm = jest.fn().mockReturnValue(true);
-  const mockCreateField = jest.fn();
-  const mockRemoveRuleFromEnterpriseField = jest.fn();
-
-  useMutation
-    .mockReturnValueOnce([mockCreateField, { data: null, loading: false, error: null }])
-    .mockReturnValueOnce([mockRemoveRuleFromEnterpriseField, { data: null, loading: false, error: null }]);
-
-  render(<CreateFieldMasterObject confirmFunction={mockConfirm} location={{ pathname: '/updatemasterobject/field', state: mockFieldUpdate }} />);
-
-  expect(screen.getByLabelText('Field Master ID')).toHaveValue('682');
-  expect(screen.getByLabelText('Field Name')).toHaveValue('test682');
-  expect(screen.getByLabelText('Field Definition')).toHaveValue('testDefinition');
-  // expect(screen.getByLabelText('Enterprise Field Indicator').value).toBe('true');
-  // expect(screen.getByLabelText('Field Master In-Use Indicator').value).toBe('true');
-
-  // Delete the rule
-  await act(async () => {
-    const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => { });
-    fireEvent.click(screen.getByText(/Delete/i));
-  });
-  useMutation
-    .mockReturnValueOnce([mockCreateField, { data: null, loading: false, error: null }])
-    .mockReturnValueOnce([mockRemoveRuleFromEnterpriseField, { data: { 'RemoveRuleFromEnterpriseField': { status: test } }, loading: false, error: null }]);
-
-  render(<CreateFieldMasterObject confirmFunction={mockConfirm} location={{ pathname: '/updatemasterobject/field', state: mockFieldUpdate }} />);
-});
-
-it('renders CreateFieldMasterObject and add a rule', async () => {
+it('renders updateMasterObject and add a rule then delete', async () => {
+  useMutation.mockReturnValue([mockMutationFunction, { data: null, loading: false, error: null }]);
+  const confirmSpy = jest.spyOn(window, 'confirm').mockImplementation(() => true);
   render(<CreateFieldMasterObject location={{ pathname: '/updatemasterobject/field', state: mockFieldUpdateWithoutRule }} />);
 
   // Add the rule
-  fireEvent.click(screen.getByText(/Add/i));
+  fireEvent.click(screen.getByText(/Add Rules/i));
 
-  // change Rule Validation Code
-  fireEvent.change(screen.getByLabelText('Validation Code'), { target: { name: 'type', value: '1' } });
+  await waitFor(() => {
+    expect(screen.getByText(/Rule - New/i)).toBeInTheDocument();
+  });
 
-  //   // Wait for the success message
-  //   await waitFor(() => {
-  //     expect(screen.getByText(/Deleted successfully: 1/i)).toBeInTheDocument();
-  //   });
+  const buttonElements = screen.getAllByRole('button');
+  const deleteButtons = buttonElements.filter(button => button.textContent === 'Delete');
+  expect(deleteButtons.length).toBe(1);
+
+  // Delete the rule
+  await act(async () => {
+    fireEvent.click(deleteButtons[0]);
+  });
+  await waitFor(async () => {
+    expect(confirmSpy).toHaveBeenCalledWith('Are you sure you want to delete this rule?');
+  });
+
+  const buttonElementsAfterDelete = screen.getAllByRole('button');
+  const deleteButtonsAfterDelete = buttonElementsAfterDelete.filter(button => button.textContent === 'Delete');
+  expect(deleteButtonsAfterDelete.length).toBe(0);
+  confirmSpy.mockRestore();
 });
 
-it('renders CreateFieldMasterObject and submits form', async () => {
-  const mockCreateEnterpriseField = jest.fn().mockResolvedValue({ data: null });
+it('Without EnterpriseFieldInd is valid', () => {
+  useMutation.mockReturnValue([mockMutationFunction, { data: null, loading: false, error: null }]);
+
   const variables = {
-    fieldMasterId: 678,
-    dialectCode: "en_us",
-    fieldName: 'Test Field',
-    fieldDefinition: 'This is a test field',
-    enterpriseFieldInd: false,
-    fieldMasterInUseInd: true,
+    'fieldMasterId': 682,
+    'fieldName': 'test682',
+    'fieldDefinition': 'testDefinition',
+    'dialectCode': 'us_en',
   };
-  const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => { });
-  useMutation
-    .mockReturnValueOnce([mockCreateEnterpriseField, { data: { CreateEnterpriseField: [variables] }, loading: false, error: null }]);
-  render(<CreateFieldMasterObject location={{ pathname: '/updatemasterobject/field' }} />);
+
+  const mockFieldUpdateWithoutEnterpriseFieldInd = {
+    updateFieldData: variables
+  };
+  render(<CreateFieldMasterObject location={{ pathname: '/updatemasterobject/field', state: mockFieldUpdateWithoutEnterpriseFieldInd }} />);
 });
 
-it('renders CreateFieldMasterObject and after delete rule', async () => {
-  const mockCreateEnterpriseField = jest.fn().mockResolvedValue({ data: null });
-  const mockRemoveRuleFromEnterpriseField = jest.fn().mockResolvedValue({ data: null });
-
-  useMutation
-    .mockReturnValueOnce([mockCreateEnterpriseField, { data: null, loading: false, error: null }])
-    .mockReturnValueOnce([mockRemoveRuleFromEnterpriseField, { data: { RemoveRuleFromEnterpriseField: { status: true } }, loading: false, error: null }]);
-
-  const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => { });
-  const mockConfirm = jest.fn().mockReturnValue(true);
-  render(<CreateFieldMasterObject confirmFunction={mockConfirm} location={{ pathname: '/updatemasterobject/field' }} />);
+it('should render the checkbox', () => {
+  useMutation.mockReturnValue([mockMutationFunction, { data: null, loading: false, error: null }]);
+  const variables = {
+    'fieldMasterId': 682,
+    'fieldName': 'test682',
+    'fieldDefinition': 'testDefinition',
+    'dialectCode': 'us_en',
+  };
+  const mockFieldUpdateWithoutEnterpriseFieldInd = {
+    updateFieldData: variables
+  };
+  render(<CreateFieldMasterObject location={{ pathname: '/updatemasterobject/field', state: mockFieldUpdateWithoutEnterpriseFieldInd }} />);
+  const checkbox = screen.getByLabelText(/Enterprise Field Indicator/i);
+  expect(checkbox).not.toBeChecked();
+  expect(checkbox).toBeDisabled();
+  const checkboxInUse = screen.getByLabelText(/Field Master In-Use Indicator/i);
+  expect(checkboxInUse).not.toBeChecked();
 });
 
 it('renders CreateFieldMasterObject and do not want to delete rule', async () => {
-  const mockCreateEnterpriseField = jest.fn().mockResolvedValue({ data: null });
-  const mockRemoveRuleFromEnterpriseField = jest.fn().mockResolvedValue({ data: null });
+  useMutation.mockReturnValue([mockMutationFunction, { data: null, loading: false, error: null }]);
 
-  useMutation
-    .mockReturnValueOnce([mockCreateEnterpriseField, { data: null, loading: false, error: null }])
-    .mockReturnValueOnce([mockRemoveRuleFromEnterpriseField, { data: null, loading: false, error: null }]);
+  const confirmSpy = jest.spyOn(window, 'confirm').mockImplementation(() => false);
+  render(<CreateFieldMasterObject location={{ pathname: '/updatemasterobject/field', state: mockFieldUpdate }} />);
+  expect(screen.getByText(/Delete/i)).toBeInTheDocument();
 
-  const mockConfirm = jest.fn().mockReturnValue(false);
-  render(<CreateFieldMasterObject confirmFunction={mockConfirm} location={{ pathname: '/updatemasterobject/field', state: mockFieldUpdate }} />);
-  act(() => {
+  await act(async () => {
     fireEvent.click(screen.getByText(/Delete/i));
   });
+
+  waitFor(() => {
+    expect(confirmSpy).toHaveBeenCalledWith();
+  });
+  confirmSpy.mockRestore();
 });
 
 it('renders CreateFieldMasterObject and encounter an error when attempting to delete a rule.', async () => {
@@ -270,6 +241,7 @@ it('renders CreateFieldMasterObject and encounter an error when attempting to de
   const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => { });
   render(<CreateFieldMasterObject location={{ pathname: '/updatemasterobject/field' }} />);
   expect(alertSpy).toHaveBeenCalledWith(errorMessage);
+  alertSpy.mockRestore();
 });
 
 it('renders UpdateFieldMasterObject and fieldData is empty', async () => {
@@ -281,13 +253,72 @@ it('renders UpdateFieldMasterObject and fieldData is empty', async () => {
     .mockReturnValueOnce([mockRemoveRuleFromEnterpriseField, { data: null, loading: false, error: null }]);
 
   render(<CreateFieldMasterObject location={{ pathname: '/updatemasterobject/field', state: {} }} />);
+
+  const fieldNameInput = screen.getByRole('textbox', { name: /Field Name \*/i });
+  expect(fieldNameInput).toBeInTheDocument();
+  expect(fieldNameInput).toHaveValue('');
 });
 
 it('should navigate to the correct route when back button is clicked', () => {
-  const navigate = useNavigate();
+  useMutation.mockReturnValue([mockMutationFunction, { data: null, loading: false, error: null }]);
+  const confirmSpy = jest.spyOn(window, 'confirm')
+    .mockImplementationOnce(() => false)
+    .mockImplementationOnce(() => true);
   render(<CreateFieldMasterObject location={{ pathname: '/updatemasterobject/field', state: {} }} />);
 
-  fireEvent.click(screen.getByText(/Back/i));
 
-  expect(navigate).toHaveBeenCalledWith('/', { state: { tabKey: 'viewFieldMaster' } });
+  fireEvent.click(screen.getByText(/Back/i));
+  waitFor(() => {
+    expect(confirmSpy).toHaveBeenCalledWith('Are you sure you want to return the list page');
+  });
+  fireEvent.click(screen.getByText(/Back/i));
+  waitFor(() => {
+    expect(useNavigate).toHaveBeenCalledWith('/', { state: { tabKey: 'viewFieldMaster' } });
+  });
+  confirmSpy.mockRestore();
+});
+
+it('renders UpdateFieldMasterObject and deletes a rule', async () => {
+  useMutation.mockImplementation((query) => {
+    const [attributes, setAttributes] = useState({});
+
+    const useMutationMock = ({ variables: passedVariables } = {}) => {
+      console.log(passedVariables);
+      setAttributes({
+        data: {
+          RemoveRuleFromEnterpriseField: { status: true }
+        },
+        error: null,
+        loading: null
+      })
+    };
+    return [useMutationMock, attributes];
+  });
+
+  const confirmSpy = jest.spyOn(window, 'confirm').mockImplementation(() => true);
+  const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => true);
+  render(<CreateFieldMasterObject location={{ pathname: '/updatemasterobject/field', state: mockFieldUpdate }} />);
+
+  const buttonElements = screen.getAllByRole('button');
+  const deleteButtons = buttonElements.filter(button => button.textContent === 'Delete');
+  expect(deleteButtons.length).toBe(1);
+
+  // Delete the rule
+  await act(async () => {
+    fireEvent.click(screen.getByText(/Delete/i));
+  });
+
+  await waitFor(() => {
+    expect(alertSpy).toHaveBeenCalledWith('Deleted successfully: 1');
+  });
+
+  await act(async () => {
+    // Ensure all state updates are processed
+    const buttonElementsAfterDelete = screen.getAllByRole('button');
+    const deleteButtonsAfterDelete = buttonElementsAfterDelete.filter(button => button.textContent === 'Delete');
+    expect(deleteButtonsAfterDelete.length).toBe(0);
+  });
+
+  confirmSpy.mockRestore();
+  alertSpy.mockRestore();
 });

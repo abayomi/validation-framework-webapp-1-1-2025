@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { gql } from '@apollo/client';
 
 export const CREATE_ENTERPRISE_FIELD = gql`

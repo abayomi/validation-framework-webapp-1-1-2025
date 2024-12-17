@@ -16,6 +16,9 @@ function FetchObjectMasterList(dialectCode) {
     });
 
     useEffect(() => {
+        if (!rawData) {
+            return ;
+        }
         // Render the list of Object Master
         if (rawData.error) {
             console.log('Error from GraphQL API: ', rawData.error.message);
@@ -26,7 +29,6 @@ function FetchObjectMasterList(dialectCode) {
     }, [rawData]);
 
     const doRefresh = () => rawData.refetch();
-
     return [list, doRefresh];
 }
 

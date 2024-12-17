@@ -1,11 +1,10 @@
 import React, { act } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { gql, useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
 
 import CreateRules from '../app/components/createobject/FieldMaster/createRules';
-import {getErrorCodeOptions, getConditions, validationCodeOptions} from '../app/components/createobject/FieldMaster/ruleValidationCodeMap';
 
 jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
@@ -82,7 +81,7 @@ describe('CreateRules Component', () => {
     id: 0,
     eventkey: 0,
     isUpdate: false,
-    deleteOnClick: jest.fn(),
+    onDeleteClick: jest.fn(),
     onRuleChange: jest.fn(),
     ruleGroupNumberList: [1,4,7],
     dialectCode: 'us_en',
@@ -102,7 +101,7 @@ describe('CreateRules Component', () => {
     id: 1,
     eventkey: 1,
     isUpdate: true,
-    deleteOnClick: jest.fn(),
+    onDeleteClick: jest.fn(),
     onRuleChange: jest.fn(),
     ruleGroupNumberList: [],
     item: {
@@ -118,11 +117,16 @@ describe('CreateRules Component', () => {
     }
   };
 
+  const Label_Short_Description = /Short Description \*/i;
+  const Label_Validation_Code = /Validation Code \*/i;
+  const Label_Validation_Error_Code = /Validation Error Code \*/i;
+  const Label_Rule_Group_Number = /Rule Group Number \*/i;
+
   it('renders without crashing', () => {
     const { container } = render(<CreateRules {...mockProps} />);
-    expect(screen.getByLabelText('Validation Code')).toBeInTheDocument();
-    expect(screen.getByLabelText('Validation Error Code')).toBeInTheDocument();
-    expect(screen.getByLabelText('Rule Group Number')).toBeInTheDocument();
+    expect(screen.getByLabelText(Label_Validation_Code)).toBeInTheDocument();
+    expect(screen.getByLabelText(Label_Validation_Error_Code)).toBeInTheDocument();
+    expect(screen.getByLabelText(Label_Rule_Group_Number)).toBeInTheDocument();
     
     const dropdownItem = container.querySelector('.dropdown-menu');
     const links = dropdownItem.querySelectorAll('a');
@@ -137,15 +141,15 @@ describe('CreateRules Component', () => {
 
   it('renders correctly when isUpdate is true', () => {
     const { container  } = render(<CreateRules {...mockPropsUpdate} />);
-    expect(screen.getByLabelText('Validation Code')).toHaveValue('2');
-    expect(screen.getByLabelText('Validation Error Code')).toHaveValue('3');
-    expect(screen.getByLabelText('Rule Group Number')).toHaveValue('123');
+    expect(screen.getByLabelText(Label_Validation_Code)).toHaveValue('2');
+    expect(screen.getByLabelText(Label_Validation_Error_Code)).toHaveValue('3');
+    expect(screen.getByLabelText(Label_Rule_Group_Number)).toHaveValue('123');
     const dropdownMenu  = container.querySelector('.dropdown-menu');
     expect(dropdownMenu).toBeNull();
 
     expect(screen.getByLabelText('Mandatory Rule')).toBeInTheDocument();
     expect(screen.getByLabelText('Mandatory Rule').value).toBe('on');
-    expect(screen.getByLabelText('Short Description')).toHaveValue('Short description test');
+    expect(screen.getByLabelText(Label_Short_Description)).toHaveValue('Short description test');
     expect(screen.getByLabelText('Long Description')).toHaveValue('Long description test');
 
     const conditionTypeInput = screen.getAllByTestId('condition-type-input');
@@ -170,12 +174,12 @@ describe('CreateRules Component', () => {
     render(<CreateRules {...mockProps} />);
     expect(screen.getByText('Rule - New'));
     act(() => {
-      fireEvent.change(screen.getByLabelText('Validation Code'), { target: { name: 'type', value: '3' } });
+      fireEvent.change(screen.getByLabelText(Label_Validation_Code), { target: { name: 'type', value: '3' } });
       expect(getErrorCodeOptions).toHaveBeenCalled();
       expect(getErrorCodeOptions).toHaveBeenCalledWith('3');
       expect(getConditions).toHaveBeenCalled();
       expect(getConditions).toHaveBeenCalledWith('3');
-      expect(screen.getByLabelText('Validation Error Code')).toHaveValue('4');
+      expect(screen.getByLabelText(Label_Validation_Error_Code)).toHaveValue('4');
       const conditionTypeInput = screen.getAllByTestId('condition-type-input');
       const conditionTypeInput0 = conditionTypeInput[0];
       expect(conditionTypeInput0.value).toBe('5');
@@ -185,27 +189,27 @@ describe('CreateRules Component', () => {
   it('should call setRuleGroupNumber with eventKey when not disabled and list is not empty', () => {
     const { container } = render(<CreateRules {...mockProps} />);
 
-    expect(screen.getByLabelText('Rule Group Number')).toHaveValue('');
+    expect(screen.getByLabelText(Label_Rule_Group_Number)).toHaveValue('');
     const dropdownItem = container.querySelector('.dropdown-menu');
     const links = dropdownItem.querySelectorAll('a');
     fireEvent.click(links[1]);
 
     waitFor(() => {
-      expect(screen.getByLabelText('Rule Group Number')).toHaveValue('4');
+      expect(screen.getByLabelText(Label_Rule_Group_Number)).toHaveValue('4');
     });
   });
 
   it('should call setRuleGroupNumber with correct value when input changes', () => {
     render(<CreateRules {...mockProps} />);
-    const input = screen.getByLabelText('Rule Group Number');
+    const input = screen.getByLabelText(Label_Rule_Group_Number);
     fireEvent.change(input, { target: { value: '2' } });
-    expect(screen.getByLabelText('Rule Group Number')).toHaveValue('2');
+    expect(screen.getByLabelText(Label_Rule_Group_Number)).toHaveValue('2');
   });
 
   it('handleConditionChange updates rule and calls onRuleChange', () => {
     const testTextareaValue = 'updatedCondition2';
     render(<CreateRules {...mockProps} />);
-    fireEvent.change(screen.getByLabelText('Validation Code'), { target: { name: 'type', value: '3' } });
+    fireEvent.change(screen.getByLabelText(Label_Validation_Code), { target: { name: 'type', value: '3' } });
     const textarea = screen.getByTestId('condition-type-value');
     fireEvent.change(textarea, { target: { value: testTextareaValue } });
     expect(textarea).toHaveTextContent(testTextareaValue);
@@ -215,12 +219,12 @@ describe('CreateRules Component', () => {
     render(<CreateRules {...mockProps} />);
 
     const testTextareaValue = 'updatedCondition1';
-    fireEvent.change(screen.getByLabelText('Validation Code'), { target: { name: 'type', value: '1' } });
+    fireEvent.change(screen.getByLabelText(Label_Validation_Code), { target: { name: 'type', value: '1' } });
     const textarea = screen.getByTestId('condition-type-value');
     fireEvent.change(textarea, { target: { value: testTextareaValue } });
-    const input = screen.getByLabelText('Rule Group Number');
+    const input = screen.getByLabelText(Label_Rule_Group_Number);
     fireEvent.change(input, { target: { value: '2' } });
-    const shortDescription = screen.getByLabelText('Short Description');
+    const shortDescription = screen.getByLabelText(Label_Short_Description);
     fireEvent.change(shortDescription, { target: { value: 'test short' } });
     const mandatoryRuleCheckbox = screen.getByLabelText('Mandatory Rule');
     fireEvent.click(mandatoryRuleCheckbox);
@@ -253,12 +257,12 @@ describe('CreateRules Component', () => {
     render(<CreateRules {...newMockProps} />);
 
     const testTextareaValue = 'updatedCondition1';
-    fireEvent.change(screen.getByLabelText('Validation Code'), { target: { name: 'type', value: '1' } });
+    fireEvent.change(screen.getByLabelText(Label_Validation_Code), { target: { name: 'type', value: '1' } });
     const textarea = screen.getByTestId('condition-type-value');
     fireEvent.change(textarea, { target: { value: testTextareaValue } });
-    const input = screen.getByLabelText('Rule Group Number');
+    const input = screen.getByLabelText(Label_Rule_Group_Number);
     fireEvent.change(input, { target: { value: '2' } });
-    const shortDescription = screen.getByLabelText('Short Description');
+    const shortDescription = screen.getByLabelText(Label_Short_Description);
     fireEvent.change(shortDescription, { target: { value: 'test short' } });
     fireEvent.submit(screen.getByTestId('rule-form-element'));
     expect(mockAddRuleToEnterpriseField).toHaveBeenCalledWith({
@@ -324,14 +328,14 @@ describe('CreateRules Component', () => {
     });
   });
 
-  it('calls deleteOnClick with correct arguments', () => {
-      const deleteOnClickMock = jest.fn();
-      const newMockPropsUpdate = {...mockPropsUpdate, ['deleteOnClick']: deleteOnClickMock};
+  it('calls onDeleteClick with correct arguments', () => {
+      const onDeleteClickMock = jest.fn();
+      const newMockPropsUpdate = {...mockPropsUpdate, ['onDeleteClick']: onDeleteClickMock};
 
       render(<CreateRules {...newMockPropsUpdate} />);
 
       const deleteButton = screen.getByText('Delete');
       fireEvent.click(deleteButton);
-      expect(deleteOnClickMock).toHaveBeenCalled();
+      expect(onDeleteClickMock).toHaveBeenCalled();
   });
 });

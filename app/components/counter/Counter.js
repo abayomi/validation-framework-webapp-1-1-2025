@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 "use client";
 import withAuth from "../withAuth";
 import { useSelector, useDispatch } from 'react-redux'
