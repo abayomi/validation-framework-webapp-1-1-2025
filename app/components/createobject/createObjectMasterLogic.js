@@ -224,7 +224,7 @@ export function checkUserChanges(formData, formDataSnapshot) {
  * @param {Array} fieldSnapshot - The snapshot of the field data to compare against.
  * @returns {Object} An object containing arrays of added and removed rules.
  */
-function checkObjFieldRulesChanged(fieldToBeChecked, fieldSnapshot) {
+export function checkObjFieldRulesChanged(fieldToBeChecked, fieldSnapshot) {
     let changedRules = {
         addedRules: [],
         removedRules: []
