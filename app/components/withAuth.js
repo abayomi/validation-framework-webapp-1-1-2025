@@ -7,14 +7,18 @@ import {Navigate} from 'react-router-dom';
  * @returns {React.ComponentType} - The component wrapped with authentication logic.
  */
 const withAuth = (Component) => {
-    return (props) => {
+    // Do not be tempted to omit this variable name, otherwise you will trigger an error when
+    // executing npm run build: Component definition is missing display name react/display-name
+    const AuthRoute = (props) => {
       const isAuth = !!localStorage.getItem("token");
       if (isAuth) {
           return <Component {...props} />;
       } else {
           return <Navigate to="/" />;
       }
-  };
+    };
+
+    return AuthRoute;
 };
 
 export default withAuth;
