@@ -6,6 +6,11 @@ Webapp used to interact with the query and mutation portion of the validation fr
 2. Run `npm run dev`
 3. Go to `http://localhost:3000/`
 
+## How to build
+
+Run `npm run build`
+
+Notice: On Element's computer, this command might fail because the 'dist' directory already exists and is not empty. Additionally, you might encounter issues deleting the directory due to insufficient permissions.
 
 ## Unit test
 
