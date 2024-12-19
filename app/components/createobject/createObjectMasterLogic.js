@@ -21,6 +21,10 @@ export function newEmptyFieldItem() {
     };
 }
 
+export function replaceFieldItem(fieldItems, newItem) {
+    return fieldItems.map(item => (item.id === newItem.id) ? {...item, ...newItem} : item);
+}
+
 /**
  * Updates the field items in the form data with a new item value.
  *
@@ -29,10 +33,6 @@ export function newEmptyFieldItem() {
  * @param {Object} newItemValue - The new item value to update in the field items.
  */
 export function updateFieldItems(setFormData, formData, newItemValue) {
-    const replaceFieldItem = (fieldItems, newItem) => {
-        return fieldItems.map(item => (item.id === newItem.id) ? {...item, ...newItem} : item);
-    }
-
     const newFieldItems = replaceFieldItem(formData.fieldItems, newItemValue);
 
     setFormData({...formData, fieldItems: newFieldItems});
@@ -224,7 +224,7 @@ export function checkUserChanges(formData, formDataSnapshot) {
  * @param {Array} fieldSnapshot - The snapshot of the field data to compare against.
  * @returns {Object} An object containing arrays of added and removed rules.
  */
-function checkObjFieldRulesChanged(fieldToBeChecked, fieldSnapshot) {
+export function checkObjFieldRulesChanged(fieldToBeChecked, fieldSnapshot) {
     let changedRules = {
         addedRules: [],
         removedRules: []
@@ -403,7 +403,6 @@ updateHandlerLogic.runMutationQuery = async function (apisToBeCalled, mutationQu
     for (const api of apisToBeCalled) {
         const mutationQuery = mutationQueryList[api.apiName].mutationHandler;
         queryResponseList[api.apiName] = await mutationQuery({ variables: api.variables });
-        console.log('queryResponseList', JSON.stringify(queryResponseList));
     }
 
     return queryResponseList;

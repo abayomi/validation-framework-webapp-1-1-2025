@@ -16,7 +16,7 @@ export function arrayGet(array, index, defaultValue = null) {
         return defaultValue;
     }
 
-    return array[index];
+    return array[index] ? array[index] : defaultValue;
 }
 
 /**

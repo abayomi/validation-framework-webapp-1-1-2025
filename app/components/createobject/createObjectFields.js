@@ -17,7 +17,7 @@ import { formatFieldRules } from "@/app/components/createobject/createObjectMast
  * @param {Array<Object>} fieldMasterList
  * @returns {Array<Object>}
  */
-function mapOptionList(fieldMasterList) {
+export function mapOptionList(fieldMasterList) {
     return fieldMasterList.map(item => {
         return {
             key: item.fieldMasterId,
