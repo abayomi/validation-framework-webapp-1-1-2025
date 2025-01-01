@@ -1,4 +1,18 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# CDK files
+cdk-deployment/*.js
+cdk-deployment/bin/*.js
+cdk-deployment/lib/*.js
+cdk-deployment/test/*.js
+!cdk-deployment/jest.config.js
+cdk-deployment/*.d.ts
+cdk-deployment/bin/*.d.ts
+cdk-deployment/lib/*.d.ts
+cdk-deployment/test/*.d.ts
+cdk-deployment/node_modules
+# CDK asset staging directory
+cdk-deployment/.cdk.staging
+cdk-deployment/cdk.out
 
 # dependencies
 /node_modules

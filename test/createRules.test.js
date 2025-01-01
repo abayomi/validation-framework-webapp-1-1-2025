@@ -15,7 +15,7 @@ jest.mock('@apollo/client', () => ({
   useMutation: jest.fn(),
 }));
 
-jest.mock('../app/graphql/fieldmasterMutations', () => ({
+jest.mock('../app/graphql/fieldMasterMutations', () => ({
   ADD_RULE_TO_ENTERPRISE_FIELD: jest.fn(),
 }));
 
