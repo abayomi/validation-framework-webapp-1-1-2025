@@ -28,6 +28,10 @@ export class EBApplnStack extends cdk.Stack {
         '.gitignore',        // Exclude the .gitignore file
         '.git/**',        // Exclude the .git file
         '.github/**',            // Exclude the .git directory
+        'test/**',            // not needed for deployment
+        '.eslintrc.json',            // not needed for deployment
+        'jest.config.js',            // not needed for deployment
+        'jest.setup.js',            // not needed for deployment
       ],
     });
 
