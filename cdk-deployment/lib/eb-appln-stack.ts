@@ -6,7 +6,6 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 
 console.log(__dirname);
-console.log(__dirname);
 
 export interface EBEnvProps extends cdk.StackProps {
   // Autoscaling group configuration
