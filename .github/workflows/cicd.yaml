@@ -37,6 +37,14 @@ jobs:
       - name: Build CDK Stack
         working-directory: ./cdk-deployment
         run: npm run build
+        
+      - name: Diff AWS CDK Stack
+        working-directory: ./cdk-deployment
+        run: "npx cdk diff ValApp-cdk-is-subfolder --ci --require-approval never --no-asset-metadata"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "us-east-2"
 
       - name: Deploy AWS CDK Stack
         working-directory: ./cdk-deployment
